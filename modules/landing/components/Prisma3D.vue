@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { usePrismaCanvas } from '../composables/usePrismaCanvas';
 import { usePrismaScroll } from '../composables/usePrismaScroll';
+import { useAppStatus } from '../composables/useAppStatus';
 
 const props = defineProps<{
     scrollTrigger?: HTMLElement;
@@ -9,6 +10,7 @@ const props = defineProps<{
 
 const { canvasRef, images, loadImages, render, initCanvas, destroyCanvas } = usePrismaCanvas();
 const { initScroll, destroyScroll } = usePrismaScroll();
+const { setReady } = useAppStatus();
 const glowRef = ref<HTMLElement | null>(null);
 
 onMounted(async () => {
@@ -18,6 +20,9 @@ onMounted(async () => {
 
     await loadImages();
     render(0, 1);
+    
+    // Notify system that assets are ready
+    setReady(true);
 
     const trigger = props.scrollTrigger || canvasRef.value.parentElement;
     if (!trigger) return;
