@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Hero from '../sections/Hero.vue';
+import PainSection from '../sections/PainSection.vue';
 import Navbar from '../components/Navbar.vue';
 import { useAppStatus } from '../composables/useAppStatus';
 
@@ -16,9 +17,11 @@ const { isReady } = useAppStatus();
             :class="isReady ? 'opacity-100' : 'opacity-0 pointer-events-none'"
         >
             <Hero />
-            <section class="h-[100dvh] flex items-center justify-center bg-gray-900 border-t border-gray-800">
-                <h2 class="text-white font-serif text-4xl">Siguiente Sección</h2>
-            </section>
+            
+            <!-- Pulling up the next section to eliminate dead space -->
+            <div class="relative z-20">
+                <PainSection />
+            </div>
         </div>
     </main>
 </template>

@@ -23,12 +23,10 @@ export function usePrismaScroll() {
             scrollTrigger: {
                 trigger, 
                 start: 'top top',
-                end: '+=150%',
-                scrub: true, // Perfect sync for frame animation
+                end: '+=140%',
+                scrub: 1, // Smooth but responsive
                 pin: true,
                 anticipatePin: 1.5,
-                fastScrollEnd: true,
-                preventOverlaps: true,
             },
             onUpdate: () => onRender(currentFrame.index, zoomScale.value),
         });
