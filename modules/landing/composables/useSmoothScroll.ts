@@ -9,12 +9,12 @@ export function useSmoothScroll() {
         if (!href) return;
 
         gsap.to(window, {
-            duration: 1.2,
+            duration: 0.3, // Más lento para mayor elegancia
             scrollTo: {
                 y: href,
                 offsetY: 120
             },
-            ease: "power4.inOut"
+            ease: "expo.inOut" // Transición más suave y fluida
         });
     };
 

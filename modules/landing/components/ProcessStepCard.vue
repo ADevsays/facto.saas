@@ -24,7 +24,7 @@ defineProps<{
         <h3 class="text-xl font-serif text-white mb-3 tracking-tight">
             {{ title }}
         </h3>
-        <p class="text-gray-400 font-sans leading-relaxed text-[15px] opacity-80">
+        <p class="text-gray-400 font-sans leading-relaxed text-md opacity-80">
             {{ description }}
         </p>
 

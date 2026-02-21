@@ -17,7 +17,7 @@ defineProps<{
             {{ title }}
         </h3>
         
-        <p class="text-gray-400 font-sans leading-relaxed text-[15px] opacity-80 group-hover:opacity-100 transition-opacity">
+        <p class="text-gray-400 font-sans leading-relaxed text-md opacity-80 group-hover:opacity-100 transition-opacity">
             {{ description }}
         </p>
     </div>

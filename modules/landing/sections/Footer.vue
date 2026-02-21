@@ -2,18 +2,10 @@
 import FooterCTA from '../components/FooterCTA.vue';
 import FooterContactInfo from '../components/FooterContactInfo.vue';
 import FooterNavigation from '../components/FooterNavigation.vue';
+import { NAV_LINKS, SOCIAL_LINKS } from '../const/navigation';
 
-const navLinks = [
-    { name: 'Solución', href: '#solution' },
-    { name: 'Proceso', href: '#process' },
-    { name: 'FAQ', href: '#faq' },
-];
-
-const socialLinks = [
-    { name: 'Twitter', href: '#', handle: '@factos_agency' },
-    { name: 'Instagram', href: '#', handle: '@factos.saas' },
-    { name: 'LinkedIn', href: '#', handle: 'factos-studio' },
-];
+const navLinks = NAV_LINKS;
+const socialLinks = SOCIAL_LINKS;
 </script>
 
 <template>
@@ -30,7 +22,7 @@ const socialLinks = [
                 
                 <!-- 2. Contact Section -->
                 <FooterContactInfo 
-                    email="hello@factos.studio" 
+                    email="adevsaysinfo@gmail.com" 
                     :socials="socialLinks" 
                 />
 
@@ -42,7 +34,7 @@ const socialLinks = [
             <!-- Copyright Line -->
             <div class="mt-32 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
                 <p class="text-gray-600 text-[10px] uppercase tracking-widest">
-                    © 2024 FACTOS STUDIO. ALL RIGHTS RESERVED.
+                    © 2026 Adevsays
                 </p>
                 <div class="flex gap-8">
                     <a href="#" class="text-gray-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors">Privacy Policy</a>

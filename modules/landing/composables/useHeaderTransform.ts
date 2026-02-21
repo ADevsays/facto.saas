@@ -17,24 +17,21 @@ export function useHeaderTransform() {
                 scrollTrigger: {
                     trigger: 'body',
                     start: 'top top',
-                    end: '+=150%', // Aligned with Hero pinning
-                    scrub: 1,
-                    snap: {
-                        snapTo: [0, 0.1, 0.25, 0.4], 
-                        duration: { min: 0.2, max: 0.6 },
-                        delay: 0.05,
-                        ease: 'power2.inOut' 
-                    }
+                    end: '+=120%', // Aligned with Hero pinning
+                    scrub: 1.5, // Un toque de suavidad sin perder respuesta
                 }
             });
 
             // Sincronizar aparición de links y CTA
             if (isDesktop && linksElement) {
+                // Forzar estado inicial
+                gsap.set(linksElement, { opacity: 0 });
+                
                 tl.to(linksElement, {
                     opacity: 1,
-                    duration: 0.05,
-                    ease: 'none'
-                }, 0);
+                    duration: 0.15,
+                    ease: 'power2.inOut'
+                }, 0.02); // Inicia casi inmediatamente al scrollear
             }
 
             if (ctaElement) {
@@ -52,9 +49,9 @@ export function useHeaderTransform() {
                     borderColor: 'rgba(0, 212, 255, 0.4)',
                     backdropFilter: 'blur(12px)',
                     filter: 'drop-shadow(0 0 15px rgba(0, 212, 255, 0.3))',
-                    duration: 0.15,
-                    ease: 'power2.out'
-                }, 0.25);
+                    duration: 0.4, // Más suave
+                    ease: 'power2.inOut'
+                }, 0.2);
             }
 
             // PHASE 3: Final Snap (0.25 to 0.4)
@@ -66,9 +63,9 @@ export function useHeaderTransform() {
                 y: isDesktop ? 25 : 14,
                 paddingLeft: isDesktop ? '2.5rem' : '1.5rem',
                 paddingRight: isDesktop ? '2.5rem' : '1.5rem',
-                duration: 0.15,
-                ease: 'power3.out'
-            }, 0.25);
+                duration: 0.5, // Transición de ancho más larga y suave
+                ease: 'power2.inOut' // Curva mucho más fluida para el cambio de tamaño
+            }, 0.15); // Empieza un poco antes para que se sienta más orgánico
 
             // Freeze state from 40% to the end
             tl.to({}, { duration: 0.6 }); 

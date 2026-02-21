@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useHeaderTransform } from '../composables/useHeaderTransform';
 import { useSmoothScroll } from '../composables/useSmoothScroll';
+import { NAV_LINKS } from '../const/navigation';
 
 const pillRef = ref<HTMLElement | null>(null);
 const headerRef = ref<HTMLElement | null>(null);
@@ -19,11 +20,7 @@ onMounted(() => {
     }
 });
 
-const navLinks = [
-    { name: 'Solución', href: '#solution' },
-    { name: 'Proceso', href: '#process' },
-    { name: 'FAQ', href: '#faq' },
-];
+const navLinks = NAV_LINKS;
 </script>
 
 <template>
@@ -45,7 +42,7 @@ const navLinks = [
                         <a 
                             :href="link.href" 
                             @click="scrollToSection($event, link.href)"
-                            class="text-gray-400 hover:text-white text-sm font-medium tracking-wide transition-colors uppercase whitespace-nowrap"
+                            class="font-medium text-gray-400 hover:text-white text-sm  tracking-wide transition-colors uppercase whitespace-nowrap"
                         >
                             {{ link.name }}
                         </a>

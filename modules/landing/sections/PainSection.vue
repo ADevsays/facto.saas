@@ -2,23 +2,23 @@
 import SectionHeaderAnimated from '../components/SectionHeaderAnimated.vue';
 import FeatureCard from '../components/FeatureCard.vue';
 
-const accentColor = '#ffe200';
+const accentColor = 'red';
 
 const cards = [
     {
-        icon: "🔥",
-        title: "Psicología de Conversión",
-        description: "No solo creamos interfaces bonitas. Diseñamos flujos cognitivos que guían al usuario hacia la acción de forma instintiva."
+        icon: "🛑",
+        title: "Desconfianza total",
+        description: "Presumes tu MRR con capturas de pantalla y nadie te cree."
     },
     {
-        icon: "⚡",
-        title: "Velocidad Extrema",
-        description: "Optimizamos cada línea de código y cada imagen para asegurar una carga instantánea. El 53% de los usuarios abandonan si tarda +3s."
+        icon: "🥀",
+        title: "Irrelevancia Extrema",
+        description: "No apareces en ninguna plataforma referente en español."
     },
     {
-        icon: "🎯",
-        title: "Enfoque en Resultados",
-        description: "Implementamos analítica avanzada y seguimiento de eventos para que sepas exactamente qué está pasando en tu landing."
+        icon: "📌",
+        title: "Sin alternativas",
+        description: "Allá afuera solo manejan Stripe y no tu pasarela para enseñar tu MRR."
     }
 ];
 </script>
@@ -28,9 +28,9 @@ const cards = [
         <div class="max-w-7xl mx-auto">
             <!-- Header Componentized -->
             <SectionHeaderAnimated 
-                pill-text="SOUND FAMILIAR?"
-                title-main="Tu landing no vende"
-                title-accent="porque no impacta."
+                pill-text="¿TE SUENA?"
+                title-main="Tu saas está"
+                title-accent="siendo ignorado"
                 :accent-color="accentColor"
                 :bounce-interval="10000"
             />
@@ -50,7 +50,7 @@ const cards = [
             <!-- Bottom Text -->
             <div class="text-center">
                 <p class="text-white/40 italic text-2xl font-serif">
-                    "El diseño es el embajador silencioso de tu marca."
+                    Pero hay una solución...
                 </p>
             </div>
         </div>

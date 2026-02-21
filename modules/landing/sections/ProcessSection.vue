@@ -6,21 +6,21 @@ import ProcessStepCard from '../components/ProcessStepCard.vue';
 const steps = [
     {
         number: "01",
-        title: "Estrategia & Discovery",
-        duration: "4 días",
-        description: "Analizamos tu mercado, competencia y objetivos para trazar la ruta de conversión perfecta."
+        title: "Inscribe tu startup",
+        duration: "1 min",
+        description: "Agrega tu startup totalmente gratis en un click. Vuélvete un founder reconocido o mantente anónimo."
     },
     {
         number: "02",
-        title: "Diseño 3D & UX",
-        duration: "10 días",
-        description: "Creamos mundos inmersivos y flujos de usuario que no solo impresionan, sino que guían a la acción."
+        title: "Pon tu API key de sólo lectura",
+        duration: "1 min",
+        description: "Para que los datos sean reales, los traeremos directamente de tu pasarela de pago con seguridad."
     },
     {
         number: "03",
-        title: "Desarrollo & Lanzamiento",
-        duration: "7 días",
-        description: "Coding de alta precisión con Nuxt 3 y GSAP para asegurar un rendimiento y SEO impecable."
+        title: "Presume tu nuevo backlink",
+        duration: "5 min",
+        description: "Eso es todo. Comparte en tus redes sociales que un sitio profesional te está enlazando junto a tus resultados reales."
     }
 ];
 </script>
@@ -44,9 +44,9 @@ const steps = [
                     class="mb-8 !text-gray-300" 
                 />
                 
-                <h2 class="text-white font-serif text-4xl leading-[1.1] tracking-[-0.08em]  lg:w-1/2">
-                    Del concepto al despliegue <br>
-                    <span class="text-gray-400">en tiempo récord.</span>
+                <h2 class="text-white font-serif text-[clamp(2.5rem,8vw,4rem)] leading-[1.1] tracking-[-0.08em]  lg:w-1/2">
+                    De ser ignorado a tener <br>
+                    <span class="text-gray-400">tráfico orgánico</span>
                 </h2>
             </div>
 
@@ -64,10 +64,10 @@ const steps = [
                 <!-- Vertical Line (Extra Tenue) -->
                 <div class="w-[2px] h-20 bg-gradient-to-b from-white/5 to-transparent mb-12"></div>
                 <h3 class="text-white font-serif text-3xl mb-10 max-w-lg leading-tight">
-                    ¿Listo para elevar tu presencia digital?
+                    ¿Listo para explotar tu tráfico?
                 </h3>
                 <GlassButton href="#contact">
-                    Agendar Consultoría
+                    Sé uno de los primeros
                 </GlassButton>
             </div>
         </div>

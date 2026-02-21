@@ -25,19 +25,19 @@ const cards = [
 </script>
 
 <template>
-    <section id="solution" class="py-32 px-6 bg-[#030305] overflow-hidden">
+    <section id="solution" class="py-32 pb-40 px-6 bg-[#030305] overflow-hidden">
         <div class="max-w-7xl mx-auto">
             <!-- Header Part -->
             <div class="mb-24 flex flex-col justify-center items-center ">
                 <StatusPill 
-                    text="LA SOLUCIÓN FACTOS" 
+                    text="LA SOLUCIÓN FACTO" 
                     :pulse="false" 
                     class="mb-2 font-bold !text-[#00D4FF]" 
                 />
                 
-                <h2 class="uppercase text-center text-white font-serif text-[clamp(2.5rem,4vw,2.75rem)] leading-[1.2] tracking-tight lg:w-1/2">
-                    Tu visión en una <br>
-                    <span class="outline-text">máquina</span>
+                <h2 class="uppercase text-center text-white font-serif text-[clamp(2.5rem,8vw,4.8rem)] leading-[1.2] tracking-tight lg:w-full">
+                    Conviértete en una <br>
+                    <span class="outline-text">startup verificada</span>
                 </h2>
             </div>
 
@@ -56,27 +56,6 @@ const cards = [
 </template>
 
 <style scoped>
-.outline-text {
-    background: linear-gradient(
-        120deg, 
-        rgba(255, 255, 255, 0) 30%, 
-        rgba(255, 255, 255, 0.8) 50%, 
-        rgba(255, 255, 255, 0) 70%
-    );
-    background-size: 200% auto;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: rgba(0, 212, 255, 0.3);
-    filter: drop-shadow(0 0 15px rgba(0, 212, 255, 0.4));
-    animation: shine 12s ease-in-out infinite;
-    display: inline-block;
-}
-
-@keyframes shine {
-    0% { background-position: -100% 0; }
-    100% { background-position: 100% 0; }
-}
-
 /* Aplicar el celeste del botón a toda la pill */
 :deep(.text-white\/70) {
     color: #00D4FF !important;

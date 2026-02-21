@@ -24,7 +24,7 @@ export function usePrismaScroll() {
                 trigger, 
                 start: 'top top',
                 end: '+=140%',
-                scrub: 1, // Smooth but responsive
+                scrub: 1, // Sincronizado con el header, más reactivo
                 pin: true,
                 anticipatePin: 1.5,
             },
