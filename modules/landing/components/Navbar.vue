@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useHeaderTransform } from '../composables/useHeaderTransform';
+import IconArrowRight from './icons/IconArrowRight.vue';
 
 const pillRef = ref<HTMLElement | null>(null);
 const headerRef = ref<HTMLElement | null>(null);
@@ -50,9 +51,7 @@ const navLinks = [
                     class="bg-white text-black px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-cyan-400 transition-colors flex items-center space-x-2 shrink-0"
                 >
                     <span class="hidden xs:inline">Book a Call</span>
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
+                    <IconArrowRight class="w-3 h-3" />
                 </a>
             </div>
         </nav>
