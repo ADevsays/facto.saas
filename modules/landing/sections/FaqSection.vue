@@ -24,7 +24,16 @@ const faqs = [
 const openIndex = ref<number | null>(null);
 
 const toggle = (index: number) => {
-    openIndex.value = openIndex.value === index ? null : index;
+    if (openIndex.value !== null && openIndex.value !== index) {
+        // Primero cerramos el que está abierto
+        openIndex.value = null;
+        // Esperamos a que la animación de cierre esté avanzada para abrir el siguiente
+        setTimeout(() => {
+            openIndex.value = index;
+        }, 350);
+    } else {
+        openIndex.value = openIndex.value === index ? null : index;
+    }
 };
 </script>
 
