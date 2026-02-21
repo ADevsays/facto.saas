@@ -16,7 +16,7 @@ const { scrollToSection } = useSmoothScroll();
                 <a 
                     :href="link.href" 
                     @click="scrollToSection($event, link.href)"
-                    class="text-white/60 hover:text-white text-lg font-serif transition-all hover:pl-2"
+                    class="text-white/60 hover:text-white text-sm font-serif transition-all hover:pl-1"
                 >
                     {{ link.name }}
                 </a>

@@ -4,20 +4,20 @@ import FaqItem from '../components/FaqItem.vue';
 
 const faqs = [
     {
-        question: "¿Cuánto tiempo toma desarrollar una landing page?",
-        answer: "Nuestro proceso estándar toma entre 2 y 3 semanas. Esto nos permite asegurar que cada detalle técnico, desde la optimización del modelo 3D hasta el rendimiento SEO, sea impecable."
+        question: "¿Tengo que poner la API key de mi pasarela de pago?",
+        answer: "Sí, para poder verificar los ingresos reales de tu startup se tomaran los datos desde tu pasarela de pago. Esto es totalmente seguro porque será un API de sólo lectura, lo que significa que no se puede hacer nada más que ver esos datos."
     },
     {
-        question: "¿Por qué el diseño 3D es mejor para la conversión?",
-        answer: "El 3D inmersivo captura la atención de inmediato y aumenta el tiempo de permanencia. Un usuario que interactúa con la página tiene un 40% más de probabilidades de recordar tu marca y completar una acción."
+        question: "¿Por qué esto aumentará mi tráfico orgánico?",
+        answer: "Cuando un sitio web es enlazado externamente por una página relevante, Google lo considera como un indicador de calidad y relevancia. Esto puede aumentar el tráfico orgánico de tu sitio web."
     },
     {
-        question: "¿Qué tecnologías utilizan para el desarrollo?",
-        answer: "Trabajamos con Nuxt 3 para la velocidad del lado del servidor, GSAP para animaciones fluidas y Three.js o WebGL refinada para la integración de elementos 3D de alta gama."
+        question: "¿Qué métricas serán públicas en mi perfil?",
+        answer: "Puedes decidir si adjuntar tus redes sociales o mantenerte privado. De tu startup se enseñará su ingreso mensual recurrente (MRR) y el tráfico que reciba mensualmente."
     },
     {
-        question: "¿Tendré control sobre el contenido después del lanzamiento?",
-        answer: "Absolutamente. Entregamos el proyecto con una estructura modular limpia. Si lo deseas, podemos integrar un CMS para que puedas actualizar textos e imágenes sin tocar una sola línea de código."
+        question: "¿Qué gano al inscribir mi startup aquí?",
+        answer: "Vas a obtener credibilidad, impresiones totalmente gratuitas desde los usuarios de Facto.saas y relevancia mediática."
     }
 ];
 

@@ -1,25 +1,25 @@
 <script setup lang="ts">
 import StatusPill from '../components/StatusPill.vue';
 import SolutionCard from '../components/SolutionCard.vue';
-import IconCode from '../components/icons/IconCode.vue';
+import IconShieldCheck from '../components/icons/IconShieldCheck.vue';
 import IconRocket from '../components/icons/IconRocket.vue';
 import IconLayers from '../components/icons/IconLayers.vue';
 
 const cards = [
     {
-        icon: IconCode,
-        title: "Arquitectura Escalable",
-        description: "Construimos con las tecnologías más modernas para que tu web crezca sin límites ni deudas técnicas."
+        icon: IconShieldCheck,
+        title: "Credibilidad Real",
+        description: "Tu MRR será público y verificable. Tendrás un certificado de tus resultados."
     },
     {
         icon: IconRocket,
-        title: "SEO de Alto Rendimiento",
-        description: "No solo es rápida, también es visible. Optimizamos cada etiqueta para que Google adore tu nuevo sitio."
+        title: "SEO potenciado",
+        description: "Serás enlazado por una página relevante. ¡SEO mejorado gratis!"
     },
     {
         icon: IconLayers,
-        title: "Diseño Modular",
-        description: "Componentes limpios y reutilizables que permiten iteraciones rápidas y un mantenimiento supersencillo."
+        title: "Análisis profundo",
+        description: "Tienes una biblioteca de tu competencia al alcance de tu mano, ¡y sus resultados!"
     }
 ];
 </script>
