@@ -26,7 +26,7 @@ defineExpose({
     <div ref="container" class="absolute inset-0 z-10 bg-transparent flex justify-center items-center flex-col pointer-events-none text-center mix-blend-difference">
         <!-- Elements marked with .reveal-item move up and fade in automatically -->
         <h1 class="reveal-item text-white font-serif text-[12vw] md:text-[7rem] leading-[0.85] tracking-tight mb-8 opacity-0">
-            Landing Pages <br>That Convert.
+            Demuestra que tu <br> SaaS es real
         </h1>
 
         <p class="reveal-item font-sans text-gray-300 text-lg md:text-xl mt-4 max-w-xl opacity-0 uppercase tracking-[0.2em] font-light">

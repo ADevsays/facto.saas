@@ -1,15 +1,19 @@
 <script setup lang="ts">
+import { useSmoothScroll } from '../composables/useSmoothScroll';
 import IconArrowRight from './icons/IconArrowRight.vue';
 
 defineProps<{
     href: string;
 }>();
+
+const { scrollToSection } = useSmoothScroll();
 </script>
 
 <template>
     <div class="mb-32 text-center md:text-left">
         <a 
             :href="href" 
+            @click="scrollToSection($event, href)"
             class="group inline-block relative"
         >
             <h2 class="text-white font-serif text-[15vw] md:text-[12rem] leading-[0.85] tracking-tighter hover:text-[#00D4FF] transition-colors duration-700 uppercase">

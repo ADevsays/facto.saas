@@ -4,9 +4,9 @@ import FooterContactInfo from '../components/FooterContactInfo.vue';
 import FooterNavigation from '../components/FooterNavigation.vue';
 
 const navLinks = [
-    { name: 'Expertise', href: '#expertise' },
-    { name: 'Process', href: '#process' },
-    { name: 'Results', href: '#results' },
+    { name: 'Solución', href: '#solution' },
+    { name: 'Proceso', href: '#process' },
+    { name: 'FAQ', href: '#faq' },
 ];
 
 const socialLinks = [
@@ -17,7 +17,7 @@ const socialLinks = [
 </script>
 
 <template>
-    <footer class="bg-[#030305] pt-32 pb-12 px-6 overflow-hidden">
+    <footer id="contact" class="bg-[#030305] pt-32 pb-12 px-6 overflow-hidden">
         <div class="max-w-7xl mx-auto">
             <!-- 1. Huge Final CTA -->
             <FooterCTA href="#contact" />

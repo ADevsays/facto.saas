@@ -4,7 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 export function useHeaderTransform() {
-    const initHeaderAnimation = (headerElement: HTMLElement, pillElement: HTMLElement, linksElement?: HTMLElement) => {
+    const initHeaderAnimation = (pillElement: HTMLElement, linksElement?: HTMLElement, ctaElement?: HTMLElement) => {
         const mm = gsap.matchMedia();
 
         mm.add({
@@ -20,20 +20,41 @@ export function useHeaderTransform() {
                     end: '+=150%', // Aligned with Hero pinning
                     scrub: 1,
                     snap: {
-                        snapTo: [0, 0.1, 0.25, 0.4], // Snaps to exactly these progress points
+                        snapTo: [0, 0.1, 0.25, 0.4], 
                         duration: { min: 0.2, max: 0.6 },
                         delay: 0.05,
-                        ease: 'power2.inOut'
+                        ease: 'power2.inOut' 
                     }
                 }
             });
 
+            // Sincronizar aparición de links y CTA
             if (isDesktop && linksElement) {
                 tl.to(linksElement, {
                     opacity: 1,
-                    duration: 0.1,
+                    duration: 0.05,
                     ease: 'none'
                 }, 0);
+            }
+
+            if (ctaElement) {
+                // Inicia visible como texto plano (fase 1)
+                gsap.set(ctaElement, { 
+                    opacity: 1, 
+                    backgroundColor: 'rgba(0, 212, 255, 0)',
+                    borderColor: 'rgba(0, 212, 255, 0)',
+                    backdropFilter: 'blur(0px)'
+                });
+
+                // Activar el fondo glass sincronizado con el encogimiento del pill (0.25)
+                tl.to(ctaElement, {
+                    backgroundColor: 'rgba(0, 212, 255, 0.08)',
+                    borderColor: 'rgba(0, 212, 255, 0.4)',
+                    backdropFilter: 'blur(12px)',
+                    filter: 'drop-shadow(0 0 15px rgba(0, 212, 255, 0.3))',
+                    duration: 0.15,
+                    ease: 'power2.out'
+                }, 0.25);
             }
 
             // PHASE 3: Final Snap (0.25 to 0.4)

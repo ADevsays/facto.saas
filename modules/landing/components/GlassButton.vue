@@ -1,14 +1,25 @@
 <script setup lang="ts">
-defineProps<{
+import { useSmoothScroll } from '../composables/useSmoothScroll';
+
+const props = defineProps<{
     href?: string;
     text?: string;
 }>();
+
+const { scrollToSection } = useSmoothScroll();
+
+const handleClick = (e: Event) => {
+    if (props.href?.startsWith('#')) {
+        scrollToSection(e, props.href);
+    }
+};
 </script>
 
 <template>
     <div class="my-6 pointer-events-auto">            
         <a 
             :href="href || '#'"
+            @click="handleClick"
             class="group bg-white text-black relative inline-flex items-center justify-center px-10 py-4 font-bold uppercase tracking-widest text-sm rounded-full transition-all duration-700 hover:scale-[1.03]"
         >
             <span class="relative z-10 flex items-center gap-2">

@@ -26,7 +26,7 @@ const steps = [
 </script>
 
 <template>
-    <section class="relative py-32 px-6 bg-[#08080A] overflow-hidden">
+    <section id="process" class="relative py-32 px-6 bg-[#08080A] overflow-hidden">
         <!-- Subtle Grid/Mesh Background -->
         <div class="absolute inset-0 z-0 opacity-[0.02]" 
              style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 60px 60px;">
@@ -44,7 +44,7 @@ const steps = [
                     class="mb-8 !text-gray-300" 
                 />
                 
-                <h2 class="text-white font-serif text-[clamp(2.5rem,4vw,2.75rem)] leading-[1.1] tracking-[0.001em] lg:w-1/2">
+                <h2 class="text-white font-serif text-4xl leading-[1.1] tracking-[-0.08em]  lg:w-1/2">
                     Del concepto al despliegue <br>
                     <span class="text-gray-400">en tiempo récord.</span>
                 </h2>

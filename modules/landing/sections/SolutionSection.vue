@@ -25,7 +25,7 @@ const cards = [
 </script>
 
 <template>
-    <section class="py-32 px-6 bg-[#030305] overflow-hidden">
+    <section id="solution" class="py-32 px-6 bg-[#030305] overflow-hidden">
         <div class="max-w-7xl mx-auto">
             <!-- Header Part -->
             <div class="mb-24 flex flex-col justify-center items-center ">

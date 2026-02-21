@@ -1,22 +1,28 @@
 <script setup lang="ts">
 import { useHeaderTransform } from '../composables/useHeaderTransform';
-import IconArrowRight from './icons/IconArrowRight.vue';
+import { useSmoothScroll } from '../composables/useSmoothScroll';
 
 const pillRef = ref<HTMLElement | null>(null);
 const headerRef = ref<HTMLElement | null>(null);
 const linksRef = ref<HTMLElement | null>(null);
+const ctaRef = ref<HTMLElement | null>(null);
 const { initHeaderAnimation } = useHeaderTransform();
+const { scrollToSection } = useSmoothScroll();
 
 onMounted(() => {
     if (headerRef.value && pillRef.value) {
-        initHeaderAnimation(headerRef.value, pillRef.value, linksRef.value || undefined);
+        initHeaderAnimation(
+            pillRef.value, 
+            linksRef.value || undefined,
+            ctaRef.value || undefined
+        );
     }
 });
 
 const navLinks = [
-    { name: 'Expertise', href: '#expertise' },
-    { name: 'Process', href: '#process' },
-    { name: 'Results', href: '#results' },
+    { name: 'Solución', href: '#solution' },
+    { name: 'Proceso', href: '#process' },
+    { name: 'FAQ', href: '#faq' },
 ];
 </script>
 
@@ -29,14 +35,18 @@ const navLinks = [
         >
             <!-- Logo Section (Left) -->
             <div class="flex justify-start items-center">
-                <span class="font-serif text-white text-xl font-bold tracking-tighter">FACTOS<span class="text-cyan-400">®</span></span>
+                <span class="font-serif text-white text-xl font-bold tracking-tighter">FACTO<span class="text-cyan-600">®</span> </span>
             </div>
 
             <!-- Desktop Links (Center) -->
             <div class="hidden md:flex justify-center items-center">
                 <ul ref="linksRef" class="flex items-center gap-16 md:opacity-0">
                     <li v-for="link in navLinks" :key="link.name">
-                        <a :href="link.href" class="text-gray-400 hover:text-white text-sm font-medium tracking-wide transition-colors uppercase whitespace-nowrap">
+                        <a 
+                            :href="link.href" 
+                            @click="scrollToSection($event, link.href)"
+                            class="text-gray-400 hover:text-white text-sm font-medium tracking-wide transition-colors uppercase whitespace-nowrap"
+                        >
                             {{ link.name }}
                         </a>
                     </li>
@@ -46,12 +56,12 @@ const navLinks = [
             <!-- CTA Section (Right) -->
             <div class="flex justify-end items-center">
                 <a 
-                    href="https://cal.com/motionviz/15min?overlayCalendar=true"
-                    target="_blank"
-                    class="bg-white text-black px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-cyan-400 transition-colors flex items-center space-x-2 shrink-0"
+                    ref="ctaRef"
+                    href="#contact"
+                    @click="scrollToSection($event, '#contact')"
+                    class="glass-fluid-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest flex items-center shrink-0 transition-colors"
                 >
-                    <span class="hidden xs:inline">Book a Call</span>
-                    <IconArrowRight class="w-3 h-3" />
+                    Empezar
                 </a>
             </div>
         </nav>
@@ -62,5 +72,30 @@ const navLinks = [
 /* Ensure the backdrop blur doesn't clip badly */
 nav {
     will-change: width, background-color, backdrop-filter, border-color, max-width;
+}
+
+.glass-fluid-btn {
+    color: #fff;
+    background: linear-gradient(
+        120deg, 
+        rgba(255, 255, 255, 0) 30%, 
+        rgba(255, 255, 255, 0.15) 50%, 
+        rgba(255, 255, 255, 0) 70%
+    );
+    background-size: 200% auto;
+    border: 1px solid transparent;
+    animation: shine 12s ease-in-out infinite;
+    transition: color 0.4s ease, border-color 0.4s ease;
+}
+
+.glass-fluid-btn:hover {
+    border-color: rgba(0, 212, 255, 0.5);
+    background-color: rgba(0, 212, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+@keyframes shine {
+    0% { background-position: -100% 0; }
+    100% { background-position: 100% 0; }
 }
 </style>
