@@ -1,4 +1,3 @@
-import { submitLead } from '../services/leadService'
 
 const currentStep = ref(1);
 const totalSteps = 3;
@@ -47,11 +46,14 @@ export function useBetaForm() {
             isLoading.value = true;
             submitError.value = null;
             try {
-                await submitLead({
-                        email: form.email,
-                        startupUrl: form.startupUrl,
-                        gateway: form.gateway === 'Otra' ? form.gatewayOther : form.gateway,
-                        motivation: form.motivation,
+                await $fetch('/api/beta/submit', {
+                        method: 'POST',
+                        body: {
+                            email: form.email,
+                            startupUrl: form.startupUrl,
+                            gateway: form.gateway === 'Otra' ? form.gatewayOther : form.gateway,
+                            motivation: form.motivation,
+                        },
                     });
                 isSubmitted.value = true;
             } catch (err: any) {

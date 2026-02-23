@@ -12,12 +12,11 @@ export function useLeadsDashboard() {
     const loading = ref(false)
     const error = ref<string | null>(null)
 
-    const fetchStats = async () => {
-        const data = await $fetch<LeadStats>('/api/admin/stats', { headers: getHeaders() })
-        stats.value = data
+    const fetchStatsData = async () => {
+        stats.value = await $fetch<LeadStats>('/api/admin/stats', { headers: getHeaders() })
     }
 
-    const fetchLeads = async () => {
+    const fetchLeadsData = async () => {
         const data = await $fetch<{ leads: Lead[], total: number }>('/api/admin/leads', {
             headers: getHeaders(),
             query: { page: page.value, limit },
@@ -30,7 +29,7 @@ export function useLeadsDashboard() {
         loading.value = true
         error.value = null
         try {
-            await Promise.all([fetchStats(), fetchLeads()])
+            await Promise.all([fetchStatsData(), fetchLeadsData()])
         } catch (err: any) {
             error.value = err?.status === 401
                 ? 'Clave incorrecta.'
@@ -43,13 +42,13 @@ export function useLeadsDashboard() {
     const nextPage = async () => {
         if (page.value * limit >= total.value) return
         page.value++
-        await fetchLeads()
+        await fetchLeadsData()
     }
 
     const prevPage = async () => {
         if (page.value <= 1) return
         page.value--
-        await fetchLeads()
+        await fetchLeadsData()
     }
 
     return { stats, leads, total, page, limit, loading, error, load, nextPage, prevPage }
