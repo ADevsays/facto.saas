@@ -9,19 +9,21 @@ const props = defineProps<{
 }>();
 
 const { canvasRef, images, loadImages, render, initCanvas, destroyCanvas } = usePrismaCanvas();
-const { initScroll, destroyScroll } = usePrismaScroll();
+const { initScroll, reinit, destroyScroll } = usePrismaScroll();
 const { setReady } = useAppStatus();
 const glowRef = ref<HTMLElement | null>(null);
 
 onMounted(async () => {
     if (!canvasRef.value) return;
 
-    initCanvas(() => render(0, 1));
+    initCanvas(() => {
+        render(0, 1);
+        reinit();
+    });
 
     await loadImages();
     render(0, 1);
     
-    // Notify system that assets are ready
     setReady(true);
 
     const trigger = props.scrollTrigger || canvasRef.value.parentElement;
@@ -37,8 +39,8 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-    destroyCanvas();
     destroyScroll();
+    destroyCanvas();
 });
 </script>
 

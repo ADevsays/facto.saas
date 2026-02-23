@@ -51,12 +51,11 @@ export function usePrismaCanvas() {
         }
     };
 
-    const syncCanvasSize = (onResize?: () => void) => {
+    const syncCanvasSize = () => {
         if (canvasRef.value?.parentElement) {
             const container = canvasRef.value.parentElement;
             canvasRef.value.width = container.offsetWidth;
             canvasRef.value.height = container.offsetHeight;
-            onResize?.();
         }
     };
 
@@ -64,14 +63,16 @@ export function usePrismaCanvas() {
         if (!canvasRef.value) return;
         context.value = canvasRef.value.getContext('2d');
 
-        syncCanvasSize(onResize);
+        syncCanvasSize();
+        onResize?.();
 
         resizeListener = () => {
             if (debounceTimer !== null) clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
-                syncCanvasSize(onResize);
+                syncCanvasSize();
+                onResize?.();
                 debounceTimer = null;
-            }, 100);
+            }, 250);
         };
 
         window.addEventListener('resize', resizeListener, { passive: true });

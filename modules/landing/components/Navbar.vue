@@ -8,7 +8,7 @@ const pillRef = ref<HTMLElement | null>(null);
 const headerRef = ref<HTMLElement | null>(null);
 const linksRef = ref<HTMLElement | null>(null);
 const ctaRef = ref<HTMLElement | null>(null);
-const { initHeaderAnimation } = useHeaderTransform();
+const { initHeaderAnimation, destroyHeaderAnimation } = useHeaderTransform();
 const { scrollToSection } = useSmoothScroll();
 const { open: openBetaModal } = useBetaModal();
 
@@ -20,6 +20,10 @@ onMounted(() => {
             ctaRef.value || undefined
         );
     }
+});
+
+onUnmounted(() => {
+    destroyHeaderAnimation();
 });
 
 const navLinks = NAV_LINKS;
