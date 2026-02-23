@@ -34,7 +34,7 @@ const steps = computed(() => t.value.process.steps.map((step, index) => ({
                     class="mb-8 !text-gray-300" 
                 />
                 
-                <h2 class="text-white font-serif text-[clamp(2.5rem,8vw,4rem)] leading-[1.1] tracking-[-0.08em]  lg:w-1/2">
+                <h2 class="text-white font-serif text-[clamp(2.2rem,8vw,4rem)] leading-[1.1] tracking-[-0.08em]  lg:w-1/2">
                     {{ t.process.titleBase }} <br>
                     <span class="text-gray-400">{{ t.process.titleAccent }}</span>
                 </h2>

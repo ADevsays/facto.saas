@@ -3,7 +3,7 @@ import { SPANISH_SPEAKING_COUNTRIES } from '../const/languages';
 import es from '../locales/es.json';
 import en from '../locales/en.json';
 
-const language = ref('en');
+const language = ref('es');
 const country = ref('');
 
 export function useLanguage() {
@@ -18,7 +18,7 @@ export function useLanguage() {
       
       if (internalGeo.country) {
         country.value = internalGeo.country;
-        language.value = internalGeo.language || 'en';
+        language.value = internalGeo.language || 'es';
         return;
       }
 
@@ -31,8 +31,8 @@ export function useLanguage() {
       
     } catch (error) {
       console.error('[LanguageManager] Error detecting location:', error);
-      const browserLang = typeof navigator !== 'undefined' ? navigator.language.split('-')[0] : 'en';
-      language.value = browserLang === 'es' ? 'es' : 'en';
+      const browserLang = typeof navigator !== 'undefined' ? navigator.language.split('-')[0] : 'es';
+      language.value = browserLang === 'en' ? 'en' : 'es';
     }
   };
 

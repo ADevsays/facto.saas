@@ -66,11 +66,21 @@ export function usePrismaCanvas() {
         syncCanvasSize();
         onResize?.();
 
+        let lastWidth = window.innerWidth;
+
         resizeListener = () => {
             if (debounceTimer !== null) clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
+                const currentWidth = window.innerWidth;
+                const widthChanged = currentWidth !== lastWidth;
+                lastWidth = currentWidth;
+
                 syncCanvasSize();
-                onResize?.();
+
+                if (widthChanged) {
+                    onResize?.();
+                }
+
                 debounceTimer = null;
             }, 250);
         };
