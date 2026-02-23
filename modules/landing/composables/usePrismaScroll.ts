@@ -14,22 +14,26 @@ interface PrismaScrollOptions {
 export function usePrismaScroll() {
     const currentFrame = { index: 0 };
     const zoomScale = { value: 1 };
+    let scrollTriggerInstance: ScrollTrigger | null = null;
 
     const initScroll = ({ trigger, textElement, glowElement, totalFrames, onRender }: PrismaScrollOptions) => {
         const zoomStartRatio = 0.25;
 
-        // Unified timeline for pinned animation and fade out
         const tl = gsap.timeline({
             scrollTrigger: {
                 trigger, 
                 start: 'top top',
                 end: '+=140%',
-                scrub: 1, // Sincronizado con el header, más reactivo
+                scrub: 1,
                 pin: true,
                 anticipatePin: 1.5,
+                onRefresh: () => onRender(currentFrame.index, zoomScale.value),
             },
             onUpdate: () => onRender(currentFrame.index, zoomScale.value),
         });
+
+        scrollTriggerInstance = ScrollTrigger.getById(tl.scrollTrigger?.vars?.id as string)
+            ?? tl.scrollTrigger as ScrollTrigger;
 
         tl.to(currentFrame, {
             index: totalFrames,
@@ -41,16 +45,13 @@ export function usePrismaScroll() {
             ease: 'power2.in',
         }, zoomStartRatio);
 
-        // Neon Glow Animation
         if (glowElement) {
-            // Start Color: #1f2123 (Crystalline Charcoal) con transparencia
             gsap.set(glowElement, { 
                 backgroundColor: '#1a1a1a', 
                 opacity: 1,
                 boxShadow: 'rgb(183 184 185 / 50%) 0px 0px 50px 10px' 
             });
 
-            // Transition: Gradient from #e0ca1a to #b35505
             tl.to(glowElement, {
                 backgroundImage: 'linear-gradient(to bottom, #e0ca1a, #b35505)',
                 backgroundColor: 'transparent',
@@ -61,7 +62,6 @@ export function usePrismaScroll() {
             }, 0.1);
         }
 
-        // Text specific animation: move up and fade out
         if (textElement) {
             tl.to(textElement, {
                 y: -100, 
@@ -70,7 +70,6 @@ export function usePrismaScroll() {
             }, 0.6);
         }
 
-        // Final section fade out
         tl.to(trigger, {
             opacity: 0,
             ease: 'power1.in'
@@ -78,7 +77,8 @@ export function usePrismaScroll() {
     };
 
     const destroyScroll = () => {
-        ScrollTrigger.getAll().forEach(t => t.kill());
+        scrollTriggerInstance?.kill();
+        scrollTriggerInstance = null;
     };
 
     return {

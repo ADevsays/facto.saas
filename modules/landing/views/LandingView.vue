@@ -7,9 +7,15 @@ import FaqSection from '../sections/FaqSection.vue';
 import Footer from '../sections/Footer.vue';
 import Navbar from '../components/Navbar.vue';
 import BetaAccessModal from '../sections/BetaAccessModal.vue';
+import { useLanguage } from '../composables/useLanguage';
 import { useAppStatus } from '../composables/useAppStatus';
 
 const { isReady } = useAppStatus();
+const { detectLanguage } = useLanguage();
+
+onMounted(() => {
+    detectLanguage();
+});
 </script>
 
 <template>

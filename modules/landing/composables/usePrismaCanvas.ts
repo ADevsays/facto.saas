@@ -2,7 +2,8 @@ export function usePrismaCanvas() {
     const canvasRef = ref<HTMLCanvasElement | null>(null);
     const context = ref<CanvasRenderingContext2D | null>(null);
     const images = ref<HTMLImageElement[]>([]);
-    let resizeObserver: ResizeObserver | null = null;
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    let resizeListener: (() => void) | null = null;
 
     const loadImages = async () => {
         const imagesGlob = import.meta.glob('@/assets/landing/prisma/*.jpg', { eager: true, import: 'default' });
@@ -10,7 +11,7 @@ export function usePrismaCanvas() {
         const sortedPaths = Object.keys(imagesGlob).sort((a, b) => {
             const numA = parseInt(a.match(/frame-(\d+)/)?.[1] || '0');
             const numB = parseInt(b.match(/frame-(\d+)/)?.[1] || '0');
-            return numA - numB;           
+            return numA - numB;
         });
 
         const promises = sortedPaths.map((path) => {
@@ -43,14 +44,14 @@ export function usePrismaCanvas() {
 
             const centerShift_x = (canvas.width - img.width * ratio) / 2;
             const centerShift_y = (canvas.height - img.height * ratio) / 2;
-            
+
             ctx.globalAlpha = opacity;
             ctx.drawImage(img, 0, 0, img.width, img.height, centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
             ctx.globalAlpha = 1;
         }
     };
 
-    const handleResize = (onResize?: () => void) => {
+    const syncCanvasSize = (onResize?: () => void) => {
         if (canvasRef.value?.parentElement) {
             const container = canvasRef.value.parentElement;
             canvasRef.value.width = container.offsetWidth;
@@ -63,15 +64,28 @@ export function usePrismaCanvas() {
         if (!canvasRef.value) return;
         context.value = canvasRef.value.getContext('2d');
 
-        resizeObserver = new ResizeObserver(() => handleResize(onResize));
-        if (canvasRef.value.parentElement) {
-            resizeObserver.observe(canvasRef.value.parentElement);
-        }
-        handleResize(onResize);
+        syncCanvasSize(onResize);
+
+        resizeListener = () => {
+            if (debounceTimer !== null) clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                syncCanvasSize(onResize);
+                debounceTimer = null;
+            }, 100);
+        };
+
+        window.addEventListener('resize', resizeListener, { passive: true });
     };
 
     const destroyCanvas = () => {
-        resizeObserver?.disconnect();
+        if (resizeListener) {
+            window.removeEventListener('resize', resizeListener);
+            resizeListener = null;
+        }
+        if (debounceTimer !== null) {
+            clearTimeout(debounceTimer);
+            debounceTimer = null;
+        }
     };
 
     return {
