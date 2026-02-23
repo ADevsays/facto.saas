@@ -7,18 +7,18 @@ export function useAdminAuth() {
 
     const init = () => {
         if (import.meta.client) {
-            adminKey.value = sessionStorage.getItem(SESSION_KEY) ?? ''
+            adminKey.value = localStorage.getItem(SESSION_KEY) ?? ''
         }
     }
 
     const login = (key: string) => {
         adminKey.value = key.trim()
-        sessionStorage.setItem(SESSION_KEY, adminKey.value)
+        localStorage.setItem(SESSION_KEY, adminKey.value)
     }
 
     const logout = () => {
         adminKey.value = ''
-        sessionStorage.removeItem(SESSION_KEY)
+        localStorage.removeItem(SESSION_KEY)
     }
 
     const getHeaders = () => ({ 'x-admin-key': adminKey.value })

@@ -35,11 +35,25 @@ export default defineEventHandler(async () => {
         return acc
     }, {})
 
-    const dailyCounts = (dailyResult.data ?? []).reduce<Record<string, number>>((acc, { submitted_at }) => {
-        const day = submitted_at.slice(0, 10)
-        acc[day] = (acc[day] ?? 0) + 1
-        return acc
-    }, {})
+    // Initialize the last 30 days with 0
+    const dailyCounts: Record<string, number> = {}
+    const now = new Date()
+    for (let i = 29; i >= 0; i--) {
+        const d = new Date(now)
+        d.setDate(d.getDate() - i)
+        const day = d.toISOString().slice(0, 10)
+        dailyCounts[day] = 0
+    }
+
+    // Populate with actual data
+    if (dailyResult.data) {
+        dailyResult.data.forEach(({ submitted_at }) => {
+            const day = submitted_at.slice(0, 10)
+            if (dailyCounts[day] !== undefined) {
+                dailyCounts[day]++
+            }
+        })
+    }
 
     return {
         total: totalResult.count ?? 0,
