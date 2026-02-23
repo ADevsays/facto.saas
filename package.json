@@ -9,13 +9,17 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.97.0",
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^1.3.1",
+    "chart.js": "^4.5.1",
     "gsap": "^3.14.2",
     "nuxt": "^3.15.2",
-    "vue": "^3.5.13"
+    "vue": "^3.5.13",
+    "vue-chartjs": "^5.3.3"
   },
   "devDependencies": {
-    "@nuxtjs/tailwindcss": "^6.14.0"
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "@types/node": "^25.3.0"
   }
 }

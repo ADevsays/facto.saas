@@ -1,6 +1,11 @@
+import { submitLead } from '../services/leadService'
+
 const currentStep = ref(1);
 const totalSteps = 3;
 const isSubmitted = ref(false);
+const isLoading = ref(false);
+const submitError = ref<string | null>(null);
+
 
 const form = reactive({
     startupUrl: '',
@@ -34,20 +39,31 @@ export function useBetaForm() {
         if (gw !== 'Otra') form.gatewayOther = '';
     };
 
-    const next = () => {
+    const next = async () => {
         if (!canProceed.value) return;
         if (currentStep.value < totalSteps) {
             currentStep.value++;
         } else {
-            console.log('[Facto Beta] Form submission:', {
-                startupUrl: form.startupUrl,
-                gateway: form.gateway === 'Otra' ? form.gatewayOther : form.gateway,
-                motivation: form.motivation,
-                email: form.email,
-            });
-            isSubmitted.value = true;
+            isLoading.value = true;
+            submitError.value = null;
+            try {
+                await submitLead({
+                        email: form.email,
+                        startupUrl: form.startupUrl,
+                        gateway: form.gateway === 'Otra' ? form.gatewayOther : form.gateway,
+                        motivation: form.motivation,
+                    });
+                isSubmitted.value = true;
+            } catch (err: any) {
+                submitError.value = err?.data?.message === 'Email already registered'
+                    ? 'Este email ya está registrado.'
+                    : 'Algo salió mal. Intenta de nuevo.';
+            } finally {
+                isLoading.value = false;
+            }
         }
     };
+
 
     const back = () => {
         if (currentStep.value > 1) currentStep.value--;
@@ -67,6 +83,8 @@ export function useBetaForm() {
         currentStep,
         totalSteps,
         isSubmitted,
+        isLoading,
+        submitError,
         form,
         gateways,
         motivations,

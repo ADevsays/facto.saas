@@ -1,7 +1,25 @@
+import { fileURLToPath, URL } from 'node:url'
+import { readdirSync, statSync } from 'node:fs'
+import { join } from 'node:path'
+
+const modulesDir = fileURLToPath(new URL('./modules', import.meta.url))
+
+const moduleServerDirs = readdirSync(modulesDir)
+    .map(name => join(modulesDir, name, 'server'))
+    .filter(p => { try { return statSync(p).isDirectory() } catch { return false } })
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss'],
+  nitro: {
+    scanDirs: moduleServerDirs,
+  },
+  runtimeConfig: {
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,
+    adminSecretKey: process.env.ADMIN_SECRET_KEY,
+  },
   app: {
     head: {
       link: [
