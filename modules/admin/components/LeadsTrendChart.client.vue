@@ -14,20 +14,27 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip,
 
 const props = defineProps<{ byDay: Record<string, number> }>()
 
-const chartData = computed(() => ({
-    labels: Object.keys(props.byDay),
-    datasets: [{
-        label: 'Leads',
-        data: Object.values(props.byDay),
-        borderColor: 'rgba(0,212,255,0.7)',
-        backgroundColor: 'rgba(0,212,255,0.04)',
-        borderWidth: 1.5,
-        pointRadius: 2.5,
-        pointBackgroundColor: 'rgba(0,212,255,0.9)',
-        tension: 0.4,
-        fill: true,
-    }],
-}))
+const chartData = computed(() => {
+    const keys = Object.keys(props.byDay)
+    return {
+        labels: keys.map(k => {
+            const [_, m, d] = k.split('-')
+            return `${d}/${m}`
+        }),
+        datasets: [{
+            label: 'Leads',
+            data: Object.values(props.byDay),
+            borderColor: 'rgba(0,212,255,0.7)',
+            backgroundColor: 'rgba(0,212,255,0.04)',
+            borderWidth: 1.5,
+            pointRadius: (ctx: any) => ctx.raw === 0 ? 0 : 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: 'rgba(0,212,255,0.9)',
+            tension: 0.4,
+            fill: true,
+        }],
+    }
+})
 
 const chartOptions = {
     responsive: true,
@@ -35,8 +42,12 @@ const chartOptions = {
     plugins: { legend: { display: false } },
     scales: {
         x: {
-            grid: { color: 'rgba(255,255,255,0.04)' },
-            ticks: { color: 'rgba(255,255,255,0.25)', maxTicksLimit: 7, font: { family: 'Inter', size: 10 } },
+            grid: { display: false },
+            ticks: { 
+                color: 'rgba(255,255,255,0.25)', 
+                maxTicksLimit: 8, 
+                font: { family: 'Inter', size: 10 },
+            },
         },
         y: {
             grid: { color: 'rgba(255,255,255,0.04)' },
