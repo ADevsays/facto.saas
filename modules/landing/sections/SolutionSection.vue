@@ -35,7 +35,7 @@ const cards = [
                     class="mb-4 font-bold !text-[#00D4FF]" 
                 />
                 
-                <h2 class="uppercase text-center text-white font-serif text-[clamp(2.1rem,8vw,4.8rem)] leading-[1.2] tracking-tight lg:w-full">
+                <h2 class="uppercase text-center text-white font-serif text-[clamp(2rem,8vw,4.8rem)] leading-[1.2] tracking-tight lg:w-full">
                     Conviértete en una <br>
                     <span class="outline-text">startup verificada</span>
                 </h2>
