@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useBetaForm } from '../composables/useBetaForm';
+import { useLanguage } from '../composables/useLanguage';
 
 const { canProceed, currentStep, totalSteps, isLoading, submitError, next, back } = useBetaForm();
+const { t } = useLanguage();
 </script>
 
 <template>
@@ -18,7 +20,7 @@ const { canProceed, currentStep, totalSteps, isLoading, submitError, next, back 
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                 </svg>
-                <span class="hidden sm:inline">Atrás</span>
+                <span class="hidden sm:inline">{{ t.beta.nav.back }}</span>
             </button>
 
             <button
@@ -30,14 +32,16 @@ const { canProceed, currentStep, totalSteps, isLoading, submitError, next, back 
                     ? 'background: rgba(0,212,255,0.12); border: 1px solid rgba(0,212,255,0.5); box-shadow: 0 0 20px rgba(0,212,255,0.1);'
                     : 'background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);'"
             >
-                <span>{{ isLoading ? 'Enviando…' : currentStep === totalSteps ? 'Solicitar acceso' : 'Continuar' }}</span>
+                <span>{{ isLoading ? t.beta.nav.sending : currentStep === totalSteps ? t.beta.nav.submit : t.beta.nav.continue }}</span>
                 <svg v-if="!isLoading" class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                 </svg>
             </button>
         </div>
 
-        <p v-if="submitError" class="text-right text-xs mt-2 text-red-400">{{ submitError }}</p>
+        <p v-if="submitError" class="text-right text-xs mt-2 text-red-400">
+            {{ submitError === 'Este email ya está registrado.' ? t.beta.errors.emailTaken : t.beta.errors.generic }}
+        </p>
     </div>
 </template>
 

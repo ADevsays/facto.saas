@@ -2,27 +2,17 @@
 import StatusPill from '../components/StatusPill.vue';
 import GlassButton from '../components/GlassButton.vue';
 import ProcessStepCard from '../components/ProcessStepCard.vue';
+import { useLanguage } from '../composables/useLanguage';
+import { computed } from 'vue';
 
-const steps = [
-    {
-        number: "01",
-        title: "Inscribe tu startup",
-        duration: "1 min",
-        description: "Agrega tu startup totalmente gratis en un click. Vuélvete un founder reconocido o mantente anónimo."
-    },
-    {
-        number: "02",
-        title: "Pon tu API key de sólo lectura",
-        duration: "1 min",
-        description: "Para que los datos sean reales, los traeremos directamente de tu pasarela de pago con seguridad."
-    },
-    {
-        number: "03",
-        title: "Presume tu nuevo backlink",
-        duration: "5 min",
-        description: "Eso es todo. Comparte en tus redes sociales que un sitio profesional te está enlazando junto a tus resultados reales."
-    }
-];
+const { t } = useLanguage();
+
+const steps = computed(() => t.value.process.steps.map((step, index) => ({
+    number: `0${index + 1}`,
+    title: step.title,
+    duration: index === 2 ? "5 min" : "1 min",
+    description: step.description
+})));
 </script>
 
 <template>
@@ -39,14 +29,14 @@ const steps = [
             <!-- Header Part -->
             <div class="mb-24">
                 <StatusPill 
-                    text="NUESTRO PROCESO" 
+                    :text="t.process.pill" 
                     :pulse="false" 
                     class="mb-8 !text-gray-300" 
                 />
                 
                 <h2 class="text-white font-serif text-[clamp(2.5rem,8vw,4rem)] leading-[1.1] tracking-[-0.08em]  lg:w-1/2">
-                    De ser ignorado a tener <br>
-                    <span class="text-gray-400">tráfico orgánico</span>
+                    {{ t.process.titleBase }} <br>
+                    <span class="text-gray-400">{{ t.process.titleAccent }}</span>
                 </h2>
             </div>
 
@@ -64,10 +54,10 @@ const steps = [
                 <!-- Vertical Line (Extra Tenue) -->
                 <div class="w-[2px] h-20 bg-gradient-to-b from-white/5 to-transparent mb-12"></div>
                 <h3 class="text-white font-serif text-3xl mb-10 max-w-lg leading-tight">
-                    ¿Listo para explotar tu tráfico?
+                    {{ t.process.ctaTitle }}
                 </h3>
                 <GlassButton href="#contact">
-                    Sé uno de los primeros
+                    {{ t.process.ctaBtn }}
                 </GlassButton>
             </div>
         </div>

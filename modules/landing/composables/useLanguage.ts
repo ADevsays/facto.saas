@@ -1,9 +1,15 @@
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { SPANISH_SPEAKING_COUNTRIES } from '../const/languages';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+
+const language = ref('en');
+const country = ref('');
 
 export function useLanguage() {
-  const language = ref('en');
-  const country = ref('');
+  const t = computed(() => {
+    return language.value === 'es' ? es : en;
+  });
 
   const detectLanguage = async () => {
     try {
@@ -13,7 +19,6 @@ export function useLanguage() {
       if (internalGeo.country) {
         country.value = internalGeo.country;
         language.value = internalGeo.language || 'en';
-        console.log(`[LanguageManager] detected via Vercel: ${country.value}`);
         return;
       }
 
@@ -23,21 +28,18 @@ export function useLanguage() {
       
       country.value = data.country_code;
       language.value = SPANISH_SPEAKING_COUNTRIES.includes(country.value) ? 'es' : 'en';
-
-      console.log(`[LanguageManager] detected via Fallback (API): ${country.value}`);
-      console.log(`[LanguageManager] Default language: ${language.value}`);
       
     } catch (error) {
       console.error('[LanguageManager] Error detecting location:', error);
-      const browserLang = navigator.language.split('-')[0];
+      const browserLang = typeof navigator !== 'undefined' ? navigator.language.split('-')[0] : 'en';
       language.value = browserLang === 'es' ? 'es' : 'en';
-      console.log(`[LanguageManager] Fallback (Browser): ${language.value}`);
     }
   };
 
   return {
     language,
     country,
+    t,
     detectLanguage
   };
 }

@@ -2,10 +2,18 @@
 import FooterCTA from '../components/FooterCTA.vue';
 import FooterContactInfo from '../components/FooterContactInfo.vue';
 import FooterNavigation from '../components/FooterNavigation.vue';
-import { NAV_LINKS, SOCIAL_LINKS } from '../const/navigation';
+import { SOCIAL_LINKS } from '../const/navigation';
+import { useLanguage } from '../composables/useLanguage';
+import { computed } from 'vue';
 
-const navLinks = NAV_LINKS;
+const { t } = useLanguage();
 const socialLinks = SOCIAL_LINKS;
+
+const navLinks = computed(() => [
+    { name: t.value.navbar.solution, href: '#solution' },
+    { name: t.value.navbar.process, href: '#process' },
+    { name: t.value.navbar.faq, href: '#faq' },
+]);
 </script>
 
 <template>
@@ -37,8 +45,8 @@ const socialLinks = SOCIAL_LINKS;
                     © 2026 Adevsays
                 </p>
                 <div class="flex gap-8">
-                    <a href="#" class="text-gray-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors">Privacy Policy</a>
-                    <a href="#" class="text-gray-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors">Terms of Service</a>
+                    <a href="#" class="text-gray-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors">{{ t.footer.privacy }}</a>
+                    <a href="#" class="text-gray-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors">{{ t.footer.terms }}</a>
                 </div>
             </div>
         </div>

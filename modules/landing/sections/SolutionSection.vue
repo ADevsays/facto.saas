@@ -4,24 +4,28 @@ import SolutionCard from '../components/SolutionCard.vue';
 import IconShieldCheck from '../components/icons/IconShieldCheck.vue';
 import IconRocket from '../components/icons/IconRocket.vue';
 import IconLayers from '../components/icons/IconLayers.vue';
+import { useLanguage } from '../composables/useLanguage';
+import { computed } from 'vue';
 
-const cards = [
+const { t } = useLanguage();
+
+const cards = computed(() => [
     {
         icon: IconShieldCheck,
-        title: "Credibilidad Real",
-        description: "Tu MRR será público y verificable. Tendrás un certificado de tus resultados."
+        title: t.value.solution.cards[0].title,
+        description: t.value.solution.cards[0].description
     },
     {
         icon: IconRocket,
-        title: "SEO potenciado",
-        description: "Serás enlazado por una página relevante. ¡SEO mejorado gratis!"
+        title: t.value.solution.cards[1].title,
+        description: t.value.solution.cards[1].description
     },
     {
         icon: IconLayers,
-        title: "Análisis profundo",
-        description: "Tienes una biblioteca de tu competencia al alcance de tu mano, ¡y sus resultados!"
+        title: t.value.solution.cards[2].title,
+        description: t.value.solution.cards[2].description
     }
-];
+]);
 </script>
 
 <template>
@@ -30,14 +34,14 @@ const cards = [
             <!-- Header Part -->
             <div class="mb-24 flex flex-col justify-center items-center ">
                 <StatusPill 
-                    text="LA SOLUCIÓN FACTO" 
+                    :text="t.solution.pill" 
                     :pulse="false" 
                     class="mb-4 font-bold !text-[#00D4FF]" 
                 />
                 
                 <h2 class="uppercase text-center text-white font-serif text-[clamp(2rem,8vw,4.8rem)] leading-[1.2] tracking-tight lg:w-full">
-                    Conviértete en una <br>
-                    <span class="outline-text">startup verificada</span>
+                    {{ t.solution.titleBase }} <br>
+                    <span class="outline-text">{{ t.solution.titleAccent }}</span>
                 </h2>
             </div>
 

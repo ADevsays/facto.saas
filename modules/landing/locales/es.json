@@ -1,0 +1,150 @@
+{
+  "navbar": {
+    "solution": "Solución",
+    "process": "Proceso",
+    "faq": "FAQ",
+    "cta": "Empezar"
+  },
+  "hero": {
+    "title": "Autoridad\npara tu SaaS",
+    "subtitle": "Certifica tus ingresos reales por API\ny gana relevancia SEO gratis",
+    "cta": "Inscribirte ahora"
+  },
+  "pain": {
+    "pill": "¿TE SUENA?",
+    "titleMain": "Tu saas está",
+    "titleAccent": "siendo ignorado",
+    "cards": [
+      {
+        "title": "Desconfianza total",
+        "description": "Presumes tu MRR con capturas de pantalla y nadie te cree."
+      },
+      {
+        "title": "Irrelevancia Extrema",
+        "description": "No apareces en ninguna plataforma referente en español."
+      },
+      {
+        "title": "Sin alternativas",
+        "description": "Allá afuera solo manejan Stripe y no tu pasarela para enseñar tu MRR."
+      }
+    ],
+    "solutionText": "Pero hay una solución..."
+  },
+  "solution": {
+    "pill": "LA SOLUCIÓN FACTO",
+    "titleBase": "Conviértete en una",
+    "titleAccent": "startup verificada",
+    "cards": [
+      {
+        "title": "Credibilidad Real",
+        "description": "Tu MRR será público y verificable. Tendrás un certificado de tus resultados."
+      },
+      {
+        "title": "SEO potenciado",
+        "description": "Serás enlazado por una página relevante. ¡SEO mejorado gratis!"
+      },
+      {
+        "title": "Análisis profundo",
+        "description": "Tienes una biblioteca de tu competencia al alcance de tu mano, ¡y sus resultados!"
+      }
+    ]
+  },
+  "process": {
+    "pill": "NUESTRO PROCESO",
+    "titleBase": "De ser ignorado a tener",
+    "titleAccent": "tráfico orgánico",
+    "steps": [
+      {
+        "title": "Inscribe tu startup",
+        "description": "Agrega tu startup totalmente gratis en un click. Vuélvete un founder reconocido o mantente anónimo."
+      },
+      {
+        "title": "Pon tu API key de sólo lectura",
+        "description": "Para que los datos sean reales, los traeremos directamente de tu pasarela de pago con seguridad."
+      },
+      {
+        "title": "Presume tu nuevo backlink",
+        "description": "Eso es todo. Comparte en tus redes sociales que un sitio profesional te está enlazando junto a tus resultados reales."
+      }
+    ],
+    "ctaTitle": "¿Listo para explotar tu tráfico?",
+    "ctaBtn": "Sé uno de los primeros"
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "questions": [
+      {
+        "question": "¿Tengo que poner la API key de mi pasarela de pago?",
+        "answer": "Sí, para poder verificar los ingresos reales de tu startup se tomaran los datos desde tu pasarela de pago. Esto es totalmente seguro porque será un API de sólo lectura, lo que significa que no se puede hacer nada más que ver esos datos."
+      },
+      {
+        "question": "¿Por qué esto aumentará mi tráfico orgánico?",
+        "answer": "Cuando un sitio web es enlazado externamente por una página relevante, Google lo considera como un indicador de calidad y relevancia. Esto puede aumentar el tráfico orgánico de tu sitio web."
+      },
+      {
+        "question": "¿Qué métricas serán públicas en mi perfil?",
+        "answer": "Puedes decidir si adjuntar tus redes sociales o mantenerte privado. De tu startup se enseñará su ingreso mensual recurrente (MRR) y el tráfico que reciba mensualmente."
+      },
+      {
+        "question": "¿Qué gano al inscribir mi startup aquí?",
+        "answer": "Vas a obtener credibilidad, impresiones totalmente gratuitas desde los usuarios de Facto.saas y relevancia mediática."
+      }
+    ]
+  },
+  "footer": {
+    "ctaBase": "Entra a",
+    "ctaAccent": "Facto",
+    "contact": "Escríbenos",
+    "createdBy": "Creado por",
+    "navigation": "Navegación",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  },
+  "beta": {
+    "header": "Acceso Prioritario · Beta",
+    "nav": {
+      "back": "Atrás",
+      "sending": "Enviando…",
+      "submit": "Solicitar acceso",
+      "continue": "Continuar"
+    },
+    "success": {
+      "title": "Solicitud enviada",
+      "subtitle": "Te contactaremos pronto con los detalles de tu acceso.",
+      "close": "Cerrar"
+    },
+    "step1": {
+      "pill": "Tu startup",
+      "title": "¿Cuál es la URL\nde tu startup?",
+      "placeholder": "https://tu-startup.com"
+    },
+    "step2": {
+      "pill": "Integraciones",
+      "title": "Tu negocio",
+      "gatewayPill": "Pasarela de pago",
+      "motivationPill": "Motivo principal",
+      "other": "Otra",
+      "otherPlaceholder": "¿Cuál?",
+      "motivations": {
+        "reach": "Aumentar alcance",
+        "authority": "Autoridad",
+        "seo": "SEO",
+        "investment": "Inversión"
+      }
+    },
+    "step3": {
+      "pill": "Último paso",
+      "title": "Tu email",
+      "placeholder": "ejemplo@tuempresa.com",
+      "disclaimer": {
+        "start": "Solo aceptaremos ",
+        "highlight": "50 startups",
+        "end": " para la fase de lanzamiento."
+      }
+    },
+    "errors": {
+      "emailTaken": "Este email ya está registrado.",
+      "generic": "Algo salió mal. Intenta de nuevo."
+    }
+  }
+}

@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { useLanguage } from '../composables/useLanguage';
+
 const emit = defineEmits<{ close: [] }>();
+const { t } = useLanguage();
 </script>
 
 <template>
     <div class="flex justify-between items-center px-8 pt-7 pb-4 shrink-0">
         <p class="text-[10px] uppercase tracking-[0.2em] text-cyan-500 font-bold">
-            Acceso Prioritario · Beta
+            {{ t.beta.header }}
         </p>
         <button
             @click="emit('close')"

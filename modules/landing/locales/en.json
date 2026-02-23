@@ -1,0 +1,150 @@
+{
+  "navbar": {
+    "solution": "Solution",
+    "process": "Process",
+    "faq": "FAQ",
+    "cta": "Get Started"
+  },
+  "hero": {
+    "title": "Authority\nfor your SaaS",
+    "subtitle": "Certify your real revenue via API\nand gain free SEO relevance",
+    "cta": "Join now"
+  },
+  "pain": {
+    "pill": "SOUND FAMILIAR?",
+    "titleMain": "Your SaaS is",
+    "titleAccent": "being ignored",
+    "cards": [
+      {
+        "title": "Total Mistrust",
+        "description": "You brag about your MRR with screenshots and nobody believes you."
+      },
+      {
+        "title": "Extreme Irrelevance",
+        "description": "You don't appear on any leading platforms in Spanish."
+      },
+      {
+        "title": "No Alternatives",
+        "description": "Out there they only handle Stripe and not your gateway to show your MRR."
+      }
+    ],
+    "solutionText": "But there is a solution..."
+  },
+  "solution": {
+    "pill": "THE FACTO SOLUTION",
+    "titleBase": "Become a",
+    "titleAccent": "verified startup",
+    "cards": [
+      {
+        "title": "Real Credibility",
+        "description": "Your MRR will be public and verifiable. You will have a certificate of your results."
+      },
+      {
+        "title": "Boosted SEO",
+        "description": "You will be linked by a relevant page. Free improved SEO!"
+      },
+      {
+        "title": "Deep Analysis",
+        "description": "You have a library of your competition at your fingertips, and their results!"
+      }
+    ]
+  },
+  "process": {
+    "pill": "OUR PROCESS",
+    "titleBase": "From being ignored to having",
+    "titleAccent": "organic traffic",
+    "steps": [
+      {
+        "title": "Register your startup",
+        "description": "Add your startup totally free in one click. Become a recognized founder or stay anonymous."
+      },
+      {
+        "title": "Set your read-only API key",
+        "description": "To make the data real, we will bring it directly from your payment gateway securely."
+      },
+      {
+        "title": "Brag about your new backlink",
+        "description": "That's it. Share on your social networks that a professional site is linking to you alongside your real results."
+      }
+    ],
+    "ctaTitle": "Ready to explode your traffic?",
+    "ctaBtn": "Be one of the first"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "questions": [
+      {
+        "question": "Do I have to provide my payment gateway API key?",
+        "answer": "Yes, to verify your startup's real revenue, data will be taken from your payment gateway. This is completely secure because it will be a read-only API, meaning nothing else can be done except viewing that data."
+      },
+      {
+        "question": "Why will this increase my organic traffic?",
+        "answer": "When a website is externally linked by a relevant page, Google considers it an indicator of quality and relevance. This can increase your site's organic traffic."
+      },
+      {
+        "question": "What metrics will be public on my profile?",
+        "answer": "You can decide whether to attach your social networks or stay private. For your startup, its monthly recurring revenue (MRR) and monthly traffic will be shown."
+      },
+      {
+        "question": "What do I gain by registering my startup here?",
+        "answer": "You will gain credibility, completely free impressions from Facto.saas users, and media relevance."
+      }
+    ]
+  },
+  "footer": {
+    "ctaBase": "Join",
+    "ctaAccent": "Facto",
+    "contact": "Write to us",
+    "createdBy": "Created by",
+    "navigation": "Navigation",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  },
+  "beta": {
+    "header": "Priority Access · Beta",
+    "nav": {
+      "back": "Back",
+      "sending": "Sending…",
+      "submit": "Request access",
+      "continue": "Continue"
+    },
+    "success": {
+      "title": "Request sent",
+      "subtitle": "We will contact you soon with your access details.",
+      "close": "Close"
+    },
+    "step1": {
+      "pill": "Your startup",
+      "title": "What's your startup's\nURL?",
+      "placeholder": "https://your-startup.com"
+    },
+    "step2": {
+      "pill": "Integrations",
+      "title": "Your business",
+      "gatewayPill": "Payment Gateway",
+      "motivationPill": "Main Motivation",
+      "other": "Other",
+      "otherPlaceholder": "Which one?",
+      "motivations": {
+        "reach": "Increase reach",
+        "authority": "Authority",
+        "seo": "SEO",
+        "investment": "Investment"
+      }
+    },
+    "step3": {
+      "pill": "Last step",
+      "title": "Your email",
+      "placeholder": "example@yourcompany.com",
+      "disclaimer": {
+        "start": "We will only accept ",
+        "highlight": "50 startups",
+        "end": " for the launch phase."
+      }
+    },
+    "errors": {
+      "emailTaken": "This email is already registered.",
+      "generic": "Something went wrong. Try again."
+    }
+  }
+}

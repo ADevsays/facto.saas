@@ -2,7 +2,8 @@
 import { useHeaderTransform } from '../composables/useHeaderTransform';
 import { useSmoothScroll } from '../composables/useSmoothScroll';
 import { useBetaModal } from '../composables/useBetaModal';
-import { NAV_LINKS } from '../const/navigation';
+import { useLanguage } from '../composables/useLanguage';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 
 const pillRef = ref<HTMLElement | null>(null);
 const headerRef = ref<HTMLElement | null>(null);
@@ -11,6 +12,7 @@ const ctaRef = ref<HTMLElement | null>(null);
 const { initHeaderAnimation, destroyHeaderAnimation } = useHeaderTransform();
 const { scrollToSection } = useSmoothScroll();
 const { open: openBetaModal } = useBetaModal();
+const { t } = useLanguage();
 
 onMounted(() => {
     if (headerRef.value && pillRef.value) {
@@ -26,7 +28,11 @@ onUnmounted(() => {
     destroyHeaderAnimation();
 });
 
-const navLinks = NAV_LINKS;
+const navLinks = computed(() => [
+    { name: t.value.navbar.solution, href: '#solution' },
+    { name: t.value.navbar.process, href: '#process' },
+    { name: t.value.navbar.faq, href: '#faq' },
+]);
 </script>
 
 <template>
@@ -63,7 +69,7 @@ const navLinks = NAV_LINKS;
                     @click="openBetaModal"
                     class="glass-fluid-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest flex items-center shrink-0 transition-colors"
                 >
-                    Empezar
+                    {{ t.navbar.cta }}
                 </button>
             </div>
         </nav>

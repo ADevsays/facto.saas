@@ -1,26 +1,17 @@
 <script setup lang="ts">
 import SectionHeaderAnimated from '../components/SectionHeaderAnimated.vue';
 import FeatureCard from '../components/FeatureCard.vue';
+import { useLanguage } from '../composables/useLanguage';
+import { computed } from 'vue';
 
 const accentColor = 'red';
+const { t } = useLanguage();
 
-const cards = [
-    {
-        icon: "🛑",
-        title: "Desconfianza total",
-        description: "Presumes tu MRR con capturas de pantalla y nadie te cree."
-    },
-    {
-        icon: "🥀",
-        title: "Irrelevancia Extrema",
-        description: "No apareces en ninguna plataforma referente en español."
-    },
-    {
-        icon: "📌",
-        title: "Sin alternativas",
-        description: "Allá afuera solo manejan Stripe y no tu pasarela para enseñar tu MRR."
-    }
-];
+const cards = computed(() => t.value.pain.cards.map((card, index) => ({
+    icon: index === 0 ? "🛑" : index === 1 ? "🥀" : "📌",
+    title: card.title,
+    description: card.description
+})));
 </script>
 
 <template>
@@ -28,9 +19,9 @@ const cards = [
         <div class="max-w-7xl mx-auto">
             <!-- Header Componentized -->
             <SectionHeaderAnimated 
-                pill-text="¿TE SUENA?"
-                title-main="Tu saas está"
-                title-accent="siendo ignorado"
+                :pill-text="t.pain.pill"
+                :title-main="t.pain.titleMain"
+                :title-accent="t.pain.titleAccent"
                 :accent-color="accentColor"
                 :bounce-interval="10000"
             />
@@ -50,7 +41,7 @@ const cards = [
             <!-- Bottom Text -->
             <div class="text-center">
                 <p class="text-white/40 italic text-2xl font-serif">
-                    Pero hay una solución...
+                    {{ t.pain.solutionText }}
                 </p>
             </div>
         </div>

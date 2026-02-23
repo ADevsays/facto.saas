@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useLanguage } from '../composables/useLanguage';
+
 const emit = defineEmits<{ close: [] }>();
+const { t } = useLanguage();
 </script>
 
 <template>
@@ -12,16 +15,16 @@ const emit = defineEmits<{ close: [] }>();
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
         </div>
-        <h3 class="font-serif text-3xl text-white mb-3">Solicitud enviada</h3>
+        <h3 class="font-serif text-3xl text-white mb-3">{{ t.beta.success.title }}</h3>
         <p class="text-gray-500 text-sm max-w-xs mx-auto">
-            Te contactaremos pronto con los detalles de tu acceso.
+            {{ t.beta.success.subtitle }}
         </p>
         <button
             @click="emit('close')"
             class="mt-8 px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest text-white transition-all"
             style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.35);"
         >
-            Cerrar
+            {{ t.beta.success.close }}
         </button>
     </div>
 </template>

@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { useSmoothScroll } from '../composables/useSmoothScroll';
+import { useLanguage } from '../composables/useLanguage';
 
 defineProps<{
     links: { name: string; href: string }[];
 }>();
 
 const { scrollToSection } = useSmoothScroll();
+const { t } = useLanguage();
 </script>
 
 <template>
     <div class="lg:col-start-3">
-        <p class="text-[10px] uppercase tracking-[0.3em] text-[#00D4FF] font-bold mb-6">Navegación</p>
+        <p class="text-[10px] uppercase tracking-[0.3em] text-[#00D4FF] font-bold mb-6">{{ t.footer.navigation }}</p>
         <ul class="flex flex-col gap-4">
             <li v-for="link in links" :key="link.name">
                 <a 
