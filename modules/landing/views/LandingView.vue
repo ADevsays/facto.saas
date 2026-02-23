@@ -6,6 +6,7 @@ import ProcessSection from '../sections/ProcessSection.vue';
 import FaqSection from '../sections/FaqSection.vue';
 import Footer from '../sections/Footer.vue';
 import Navbar from '../components/Navbar.vue';
+import BetaAccessModal from '../sections/BetaAccessModal.vue';
 import { useAppStatus } from '../composables/useAppStatus';
 
 const { isReady } = useAppStatus();
@@ -32,6 +33,7 @@ const { isReady } = useAppStatus();
             <Footer />
         </div>
     </main>
+    <BetaAccessModal />
 </template>
 
 <style>
@@ -54,5 +56,14 @@ const { isReady } = useAppStatus();
 @keyframes shine {
     0% { background-position: -100% 0; }
     100% { background-position: 100% 0; }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Offset para que las secciones no queden tapadas por el navbar fijo */
+#solution, #process, #faq, #contact {
+  scroll-margin-top: 120px;
 }
 </style>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useHeaderTransform } from '../composables/useHeaderTransform';
 import { useSmoothScroll } from '../composables/useSmoothScroll';
+import { useBetaModal } from '../composables/useBetaModal';
 import { NAV_LINKS } from '../const/navigation';
 
 const pillRef = ref<HTMLElement | null>(null);
@@ -9,6 +10,7 @@ const linksRef = ref<HTMLElement | null>(null);
 const ctaRef = ref<HTMLElement | null>(null);
 const { initHeaderAnimation } = useHeaderTransform();
 const { scrollToSection } = useSmoothScroll();
+const { open: openBetaModal } = useBetaModal();
 
 onMounted(() => {
     if (headerRef.value && pillRef.value) {
@@ -52,14 +54,13 @@ const navLinks = NAV_LINKS;
 
             <!-- CTA Section (Right) -->
             <div class="flex justify-end items-center">
-                <a 
+                <button 
                     ref="ctaRef"
-                    href="#contact"
-                    @click="scrollToSection($event, '#contact')"
+                    @click="openBetaModal"
                     class="glass-fluid-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest flex items-center shrink-0 transition-colors"
                 >
                     Empezar
-                </a>
+                </button>
             </div>
         </nav>
     </header>

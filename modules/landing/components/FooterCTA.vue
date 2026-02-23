@@ -1,20 +1,19 @@
 <script setup lang="ts">
-import { useSmoothScroll } from '../composables/useSmoothScroll';
+import { useBetaModal } from '../composables/useBetaModal';
 import IconArrowRight from './icons/IconArrowRight.vue';
 
 defineProps<{
     href: string;
 }>();
 
-const { scrollToSection } = useSmoothScroll();
+const { open } = useBetaModal();
 </script>
 
 <template>
     <div class="mb-32 text-center md:text-left">
-        <a 
-            :href="href" 
-            @click="scrollToSection($event, href)"
-            class="group inline-block relative transition-all duration-700 p-8 -m-8 hover:drop-shadow-[0_0_80px_rgba(180,240,255,0.25)]"
+        <button 
+            @click="open"
+            class="group inline-block relative transition-all duration-700 p-8 -m-8 hover:drop-shadow-[0_0_80px_rgba(180,240,255,0.25)] text-left"
         >
             <h2 class="text-white font-serif text-[15vw] md:text-[12rem] leading-[0.85] tracking-tighter transition-all duration-700 uppercase">
                 Entra a  <br>
@@ -25,7 +24,7 @@ const { scrollToSection } = useSmoothScroll();
                     </span>
                 </span>
             </h2>
-        </a>
+        </button>
     </div>
 </template>
 

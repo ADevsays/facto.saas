@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useSmoothScroll } from '../composables/useSmoothScroll';
+import { useBetaModal } from '../composables/useBetaModal';
 
 const props = defineProps<{
     href?: string;
@@ -7,8 +8,14 @@ const props = defineProps<{
 }>();
 
 const { scrollToSection } = useSmoothScroll();
+const { open } = useBetaModal();
 
 const handleClick = (e: Event) => {
+    if (props.href === '#contact') {
+        e.preventDefault();
+        open();
+        return;
+    }
     if (props.href?.startsWith('#')) {
         scrollToSection(e, props.href);
     }

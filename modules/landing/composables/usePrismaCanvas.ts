@@ -5,12 +5,12 @@ export function usePrismaCanvas() {
     let resizeObserver: ResizeObserver | null = null;
 
     const loadImages = async () => {
-        const imagesGlob = import.meta.glob('@/assets/css/landing/prisma/*.jpg', { eager: true, import: 'default' });
+        const imagesGlob = import.meta.glob('@/assets/landing/prisma/*.jpg', { eager: true, import: 'default' });
 
         const sortedPaths = Object.keys(imagesGlob).sort((a, b) => {
             const numA = parseInt(a.match(/frame-(\d+)/)?.[1] || '0');
             const numB = parseInt(b.match(/frame-(\d+)/)?.[1] || '0');
-            return numA - numB;
+            return numA - numB;           
         });
 
         const promises = sortedPaths.map((path) => {
