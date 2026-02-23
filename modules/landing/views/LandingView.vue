@@ -11,7 +11,17 @@ import { useLanguage } from '../composables/useLanguage';
 import { useAppStatus } from '../composables/useAppStatus';
 
 const { isReady } = useAppStatus();
-const { detectLanguage } = useLanguage();
+const { detectLanguage, t } = useLanguage();
+
+useSeoMeta({
+    title: () => `${t.value.hero.title.replace('\n', ' ')} | Facto`,
+    ogTitle: () => `${t.value.hero.title.replace('\n', ' ')} | Facto`,
+    description: () => t.value.hero.subtitle.replace('\n', ' '),
+    ogDescription: () => t.value.hero.subtitle.replace('\n', ' '),
+    ogImage: '/og-image.png',
+    twitterCard: 'summary_large_image',
+    ogType: 'website',
+});
 
 onMounted(() => {
     detectLanguage();
