@@ -23,7 +23,7 @@ const handleClick = (e: Event) => {
 </script>
 
 <template>
-    <div class="my-6 pointer-events-auto">            
+    <div class=" pointer-events-auto">            
         <a 
             :href="href || '#'"
             @click="handleClick"

@@ -3,17 +3,18 @@
     "solution": "Solución",
     "process": "Proceso",
     "faq": "FAQ",
-    "cta": "Empezar"
+    "cta": "Reservar"
   },
   "hero": {
-    "title": "Autoridad\npara tu SaaS",
-    "subtitle": "Certifica tus ingresos reales por API\ny gana relevancia SEO gratis",
-    "cta": "Inscribirte ahora"
+    "title": "Demuestra que \n tu MRR es real",
+    "subtitle": "Convierte tus ingresos en una prueba que inversores y clientes compren de inmediato.",
+    "cta": "Reservar mi cupo",
+    "share": "46 disponibles"
   },
   "pain": {
     "pill": "¿TE SUENA?",
-    "titleMain": "Tu saas está",
-    "titleAccent": "siendo ignorado",
+    "titleMain": "Nadie confía en",
+    "titleAccent": "tus números",
     "cards": [
       {
         "title": "Desconfianza total",

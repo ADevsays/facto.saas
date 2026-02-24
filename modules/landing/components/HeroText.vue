@@ -28,22 +28,26 @@ defineExpose({
     <div ref="container" class="absolute inset-0 z-10 bg-transparent flex justify-center items-center flex-col pointer-events-none text-center mix-blend-difference">
         <!-- Elements marked with .reveal-item move up and fade in automatically -->
         <h1 
-            class="reveal-item text-white font-serif text-[12vw] md:text-[7rem] leading-[0.85] tracking-tight mb-8 opacity-0 whitespace-pre-line"
+            class="mt-20 reveal-item text-white font-serif text-[12vw] md:text-[7rem] leading-[0.85] tracking-tight opacity-0 whitespace-pre-line"
         >
             {{ t.hero.title }}
         </h1>
 
         <p 
-            class="lg:mb-6 reveal-item font-sans text-gray-300 text-lg leading-tight mt-4 max-w-xl opacity-0 tracking-[0.08em] font-extralight whitespace-pre-line"
+            class="reveal-item font-sans text-gray-300 text-base md:text-xl my-7 md:my-14 leading-tight  max-w-xl opacity-0 tracking-[0.08em] font-extralight whitespace-pre-line"
         >
             {{ t.hero.subtitle }}
         </p>
 
-        <div class="reveal-item opacity-0 pointer-events-auto">
+        <div class="reveal-item opacity-0 pointer-events-auto mb-14">
             <GlassButton href="#contact">
                 {{ t.hero.cta }}
             </GlassButton>
+            <p v-if="t.hero.share" class="mt-4 text-[10px] md:text-xs uppercase tracking-[0.2em] text-white opacity-50">
+                ({{ t.hero.share }})
+            </p>
         </div>
+
     </div>
 </template>
 
