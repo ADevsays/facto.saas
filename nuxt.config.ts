@@ -22,6 +22,9 @@ export default defineNuxtConfig({
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,
     adminSecretKey: process.env.ADMIN_SECRET_KEY,
+    public: {
+      clarityProjectId: process.env.CLARITY_PROJECT_ID || ''
+    }
   },
   app: {
     head: {
