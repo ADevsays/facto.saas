@@ -23,13 +23,22 @@ const motivations = [
 ];
 
 export function useBetaForm() {
+    const isValidUrl = (url: string) => {
+        const pattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
+        return pattern.test(url);
+    };
+
+    const isValidEmail = (email: string) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
+
     const canProceed = computed(() => {
-        if (currentStep.value === 1) return form.startupUrl.trim().length > 0;
+        if (currentStep.value === 1) return isValidUrl(form.startupUrl);
         if (currentStep.value === 2) {
             const gatewayOk = form.gateway.length > 0 && (form.gateway !== 'Otra' || form.gatewayOther.trim().length > 0);
             return gatewayOk && form.motivation.length > 0;
         }
-        if (currentStep.value === 3) return form.email.trim().length > 0 && form.email.includes('@');
+        if (currentStep.value === 3) return isValidEmail(form.email);
         return true;
     });
 
