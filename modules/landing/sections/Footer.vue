@@ -45,8 +45,8 @@ const navLinks = computed(() => [
                     © 2026 Adevsays
                 </p>
                 <div class="flex gap-8">
-                    <a href="#" class="text-gray-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors">{{ t.footer.privacy }}</a>
-                    <a href="#" class="text-gray-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors">{{ t.footer.terms }}</a>
+                    <NuxtLink to="/privacidad" class="text-gray-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors">{{ t.footer.privacy }}</NuxtLink>
+                    <NuxtLink to="/terminos" class="text-gray-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors">{{ t.footer.terms }}</NuxtLink>
                 </div>
             </div>
         </div>

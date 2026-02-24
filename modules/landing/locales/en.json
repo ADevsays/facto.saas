@@ -147,5 +147,51 @@
       "emailTaken": "This email is already registered.",
       "generic": "Something went wrong. Try again."
     }
+  },
+  "legal": {
+    "privacy": {
+      "title": "Privacy Policy",
+      "subtitle": "How Facto.saas protects and manages your data.",
+      "sections": [
+        {
+          "title": "Data we collect",
+          "content": "We only request the minimum data necessary for the operation of the service: your startup URL, contact email, and read-only access to your payment gateway to verify MRR."
+        },
+        {
+          "title": "Data usage",
+          "content": "Your data is used exclusively to validate the legitimacy of your revenue and generate your startup's public profile. We do not sell your data to third parties."
+        },
+        {
+          "title": "Analytics",
+          "content": "We use Microsoft Clarity to understand user behavior on our site and improve the browsing experience."
+        },
+        {
+          "title": "Security",
+          "content": "We apply security and encryption standards to protect your information against unauthorized access, regardless of jurisdiction."
+        }
+      ]
+    },
+    "terms": {
+      "title": "Terms and Conditions",
+      "subtitle": "Rules of use for Facto.saas.",
+      "sections": [
+        {
+          "title": "Acceptance",
+          "content": "By using Facto.saas, you accept these terms in their entirety."
+        },
+        {
+          "title": "Verification Service",
+          "content": "Facto.saas provides a verification badge based on real data. The user is responsible for providing valid and legal access to their payment gateway."
+        },
+        {
+          "title": "Responsibility",
+          "content": "Facto.saas is not responsible for third-party decisions based on published data. We are not an official auditing or financial entity."
+        },
+        {
+          "title": "Modifications",
+          "content": "We reserve the right to modify these terms at any time without prior notice."
+        }
+      ]
+    }
   }
 }

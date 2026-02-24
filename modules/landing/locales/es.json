@@ -147,5 +147,51 @@
       "emailTaken": "Este email ya está registrado.",
       "generic": "Algo salió mal. Intenta de nuevo."
     }
+  },
+  "legal": {
+    "privacy": {
+      "title": "Política de Privacidad",
+      "subtitle": "Cómo Facto.saas protege y gestiona tus datos.",
+      "sections": [
+        {
+          "title": "Datos que recolectamos",
+          "content": "Solo solicitamos los datos mínimos necesarios para el funcionamiento del servicio: URL de tu startup, correo electrónico de contacto y acceso de solo lectura a tu pasarela de pago para verificar el MRR."
+        },
+        {
+          "title": "Uso de los datos",
+          "content": "Tus datos se utilizan exclusivamente para validar la legitimidad de tus ingresos y generar el perfil público de tu startup. No vendemos tus datos a terceros."
+        },
+        {
+          "title": "Analíticas",
+          "content": "Utilizamos Microsoft Clarity para entender el comportamiento de los usuarios en nuestro sitio y mejorar la experiencia de navegación."
+        },
+        {
+          "title": "Seguridad",
+          "content": "Aplicamos estándares de seguridad y cifrado para proteger tu información contra acceso no autorizado, independientemente de la jurisdicción."
+        }
+      ]
+    },
+    "terms": {
+      "title": "Términos y Condiciones",
+      "subtitle": "Reglas de uso para Facto.saas.",
+      "sections": [
+        {
+          "title": "Aceptación",
+          "content": "Al usar Facto.saas, aceptas estos términos en su totalidad."
+        },
+        {
+          "title": "Servicio de Verificación",
+          "content": "Facto.saas proporciona un sello de verificación basado en datos reales. El usuario es responsable de proporcionar acceso válido y legal a su pasarela de pago."
+        },
+        {
+          "title": "Responsabilidad",
+          "content": "Facto.saas no se hace responsable de las decisiones de terceros basadas en los datos publicados. No somos una entidad auditora oficial ni financiera."
+        },
+        {
+          "title": "Modificaciones",
+          "content": "Nos reservamos el derecho de modificar estos términos en cualquier momento sin previo aviso."
+        }
+      ]
+    }
   }
 }
