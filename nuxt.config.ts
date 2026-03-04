@@ -9,11 +9,11 @@ const moduleServerDirs = readdirSync(modulesDir)
     .filter(p => { try { return statSync(p).isDirectory() } catch { return false } })
 
 export default defineNuxtConfig({
-  compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss'],
   experimental: {
     emitRouteChunkError: 'automatic',
+    payloadExtraction: false
   },
   nitro: {
     scanDirs: moduleServerDirs,

@@ -29,27 +29,29 @@ onMounted(() => {
 </script>
 
 <template>
-    <main class="bg-[#030305] min-h-screen">
-        <Navbar />
-        
-        <!-- Content wrapper that waits for Prisma -->
-        <div 
-            class="transition-opacity duration-1000"
-            :class="isReady ? 'opacity-100' : 'opacity-0 pointer-events-none'"
-        >
-            <Hero />
+    <NuxtLayout>
+        <main class="bg-[#030305] min-h-screen">
+            <Navbar />
             
-            <!-- Pulling up the next section to eliminate dead space -->
-            <div class="relative z-20">
-                <PainSection />
+            <!-- Content wrapper that waits for Prisma -->
+            <div 
+                class="transition-opacity duration-1000"
+                :class="isReady ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+            >
+                <Hero />
+                
+                <!-- Pulling up the next section to eliminate dead space -->
+                <div class="relative z-20">
+                    <PainSection />
+                </div>
+                <SolutionSection />
+                <ProcessSection />
+                <FaqSection />
+                <Footer />
             </div>
-            <SolutionSection />
-            <ProcessSection />
-            <FaqSection />
-            <Footer />
-        </div>
-    </main>
-    <BetaAccessModal />
+        </main>
+        <BetaAccessModal />
+    </NuxtLayout>
 </template>
 
 <style>

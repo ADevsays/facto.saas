@@ -23,170 +23,93 @@ Cada feature tiene su propia carpeta con estructura completa:
 ```
 modules/<feature-name>/
 ├── components/      # Componentes específicos del feature
-├── composables/     # Lógica reutilizable del feature
-├── server/          # Funciones server-side
+├── composables/     # Lógica reutilizable del feature (Frontend)
+├── server/          # Lógica de servidor específica del módulo
+│   ├── api/         # Endpoints locales (opcional)
+│   ├── services/    # Lógica de negocio específica
+│   ├── const/       # Constantes específicas
+│   └── utils/       # Helpers específicos
 ├── views/           # Vistas/páginas del feature
 ├── sections/        # Secciones de páginas (opcional)
 ├── store/           # Estado Pinia (opcional)
-└── test/            # Tests del feature (opcional)
+└── types/           # Tipos específicos del módulo
 ```
 
-**Ejemplo:** `modules/articles/`, `modules/badges/`, `modules/bank/`
+**Ejemplo:** `modules/articles/`, `modules/badges/`
+
+### Servidor Global (`server/`)
+
+Para lógica que trasciende a un solo módulo o es core del sistema:
+
+- **`server/api/`**: Endpoints globales o compartidos por varios módulos (ej: `/leads`).
+- **`server/services/`**: Lógica de negocio core (ej: base de datos, auth compartido).
+- **`server/lib/`**: Inicialización de librerías externas (ej: Supabase, Prisma).
+- **`server/const/`**: Constantes globales (ej: roles de usuario, códigos de error).
+- **`server/utils/`**: Utilidades de servidor globales.
 
 ### Componentes Globales (`components/`)
 
 ```
 components/
-└── UI/             # Componentes reutilizables globalmente
+└── UI/             # Componentes reutilizables globalmente (Layout, Buttons, Inputs)
     ├── BackButton.vue
-    ├── Coin.vue
     ├── Header.vue
     └── ...
 ```
 
-- **Naming:** PascalCase descriptivo
-- **Auto-imported** en toda la app por Nuxt
+- **Naming:** PascalCase descriptivo.
+- **Auto-imported** por Nuxt.
 
 ### Composables
 
 **Globales** (`composables/`):
-- Lógica compartida entre features
-- Ejemplo: `useFetch.ts`
+- Lógica compartida entre features (ej: `useAuth.ts`, `useFetch.ts`).
 
 **Por módulo** (`modules/<feature>/composables/`):
-- Lógica específica del feature
-- Ejemplo: `useCheckCoins.ts`
+- Lógica específica del feature (ej: `useCalculator.ts`).
 
 **Convenciones:**
-- Naming: `use<Functionality>.ts` (camelCase)
-- Export: `export function use<Name>()`
+- Naming: `use<Functionality>.ts` (camelCase).
 
 ### Utils (`utils/`)
 
 Funciones helper puras sin estado:
-- Naming: camelCase descriptivo
-- Export: default o named exports
-- Ejemplos: `insertYTVideo.ts`, `getThumbnailYT.ts`, `turnidAvatar.ts`
+- **Globales**: `/utils/<name>.ts`
+- **De Módulo**: `modules/<feature>/utils/` o `modules/<feature>/server/utils/`
+
+---
 
 ### Constantes (`const/`)
 
-Valores constantes compartidos:
-- Naming: camelCase para archivos
-- Exportan objetos con naming semántico
-- Ejemplos: `coins.ts` (prices, types), `navigation.ts`, `authErrors.ts`
+Valores constantes y contenido declarativo:
+- **Directorio**: Siempre `const/` (singular).
+- **Regla**: Si solo se usa en un módulo, debe ir dentro de él (`modules/<feature>/const/` o `modules/<feature>/server/const/`).
 
-### Pages (`pages/`)
-
-File-based routing de Nuxt:
-- Dynamic routes: `[param].vue`
-- Nested folders para rutas anidadas
-- Naming: kebab-case o camelCase
-- Ejemplos: `noticias/[newName].vue`, `certificados/[id].vue`
-
-## Patrones de Código
-
-### Componentes Vue
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{
-    title: string;
-    description: string;
-}>();
-
-// Composables
-const { data } = useSomeComposable();
-</script>
-
-<template>
-    <div class="...">
-        {{ props.title }}
-    </div>
-</template>
-```
-
-**Características:**
-- `<script setup lang="ts">` con TypeScript
-- Props con `defineProps<{ ... }>()`
-- TailwindCSS para estilos
-- Composables en setup
-
-### Composables
-
-```typescript
-export function useFeatureName() {
-    const state = ref();
-    
-    const doSomething = async () => {
-        // lógica
-    };
-    
-    return {
-        state,
-        doSomething
-    };
-}
-```
-
-**Características:**
-- Export named function
-- Retorna objeto con estado y métodos
-- Usa Composition API
-
-### Server Functions
-
-```typescript
-export default async function actionName(
-    url: string,
-    params: any,
-    fetchWithAuth: Function
-) {
-    const response = await fetchWithAuth(`${url}/api/endpoint`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params)
-    });
-    
-    return response;
-}
-```
-
-**Características:**
-- Async functions
-- Reciben: url, params, fetchWithAuth
-- Retornan data o result
+---
 
 ## Árbol de Decisión
 
 ¿Qué estoy creando?
 
-**Componente Vue:**
+**Lógica de Servidor (Services/Utils):**
+1. **¿Se usa en más de un módulo?** → `server/services/` o `server/utils/`
+2. **¿Es exclusiva de un feature?** → `modules/<feature>/server/services/` o `modules/<feature>/server/utils/`
+
+**Endpoints (API):**
+- **¿Consumido por múltiples módulos?** (ej: leads de landing y calculadora) → `server/api/`
+- **¿Consumido sólo por el propio módulo?** → `modules/<feature>/server/api/`
+
+**Componentes Vue:**
 - ¿Específico de un feature? → `modules/<feature>/components/<Name>.vue`
 - ¿Reutilizable globalmente? → `components/UI/<Name>.vue`
 
-**Lógica reutilizable (composable):**
-- ¿Específico de un feature? → `modules/<feature>/composables/use<Name>.ts`
-- ¿Global? → `composables/use<Name>.ts`
-
-**Función helper pura:** → `utils/<functionName>.ts`
-
-**Valores constantes:** → `const/<category>.ts`
-
-**Página/Ruta:** → `pages/<route-path>.vue`
-
-**Función server-side:** → `modules/<feature>/server/<action>.ts`
-
-**Nuevo feature completo:** → `modules/<feature-name>/` (crear estructura completa)
-
-## Ejemplos
-
-Para ejemplos concretos de código, consulta [references/examples.md](references/examples.md)
+**Valores constantes:**
+- ¿Globales? → `server/const/`
+- ¿De un módulo? → `modules/<feature>/[server/]const/`
 
 ## Mejores Prácticas
 
-1. **Organización por feature:** Mantén todo lo relacionado a un feature junto
-2. **Componentes específicos vs globales:** Solo UI reutilizable va en `components/UI/`
-3. **Composables específicos:** Si solo se usa en un feature, va en el módulo
-4. **Naming consistente:** PascalCase componentes, camelCase archivos TS
-5. **TypeScript:** Usa tipos para props y datos
-6. **Server functions:** Siempre usan autenticación cuando necesario
+1. **Modularización Estricta**: Si una lógica (service, const, util) solo sirve a un módulo, **debe** vivir dentro de ese módulo.
+2. **Core vs Feature**: El directorio `/server` raíz es solo para el núcleo compartido (database, leads generales, auth).
+3. **Naming Singulares**: Usar `const/` en lugar de `constants/` o `consts/`.
+4. **Organización por feature**: Mantén todo lo relacionado a un feature junto.

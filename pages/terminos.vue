@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TermsView from '~/modules/legal/views/TermsView.vue';
+import TermsView from '~/modules/landing/views/TermsView.vue';
 
 useHead({
   title: 'Términos y Condiciones | Facto.saas',

@@ -4,6 +4,6 @@ import { Analytics } from '@vercel/analytics/nuxt'
 </script>
 
 <template>
-  <Analytics />
   <LandingView />
+  <Analytics />
 </template>

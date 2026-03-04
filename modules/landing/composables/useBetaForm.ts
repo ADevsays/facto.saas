@@ -55,13 +55,14 @@ export function useBetaForm() {
             isLoading.value = true;
             submitError.value = null;
             try {
-                await $fetch('/api/beta/submit', {
+                await $fetch('/api/leads', {
                         method: 'POST',
                         body: {
                             email: form.email,
                             startupUrl: form.startupUrl,
                             gateway: form.gateway === 'Otra' ? form.gatewayOther : form.gateway,
                             motivation: form.motivation,
+                            source: 'beta'
                         },
                     });
                 isSubmitted.value = true;

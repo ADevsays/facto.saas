@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PrivacyView from '~/modules/legal/views/PrivacyView.vue';
+import PrivacyView from '~/modules/landing/views/PrivacyView.vue';
 
 useHead({
   title: 'Política de Privacidad | Facto.saas',

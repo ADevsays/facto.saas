@@ -6,9 +6,11 @@ const { t } = useLanguage();
 </script>
 
 <template>
-    <LegalContent 
-        :title="t.legal.privacy.title"
-        :subtitle="t.legal.privacy.subtitle"
-        :sections="t.legal.privacy.sections"
-    />
+    <NuxtLayout>
+        <LegalContent 
+            :title="t.legal.terms.title"
+            :subtitle="t.legal.terms.subtitle"
+            :sections="t.legal.terms.sections"
+        />
+    </NuxtLayout>
 </template>

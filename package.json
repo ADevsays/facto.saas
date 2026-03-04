@@ -9,18 +9,21 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
+    "@getbrevo/brevo": "^4.0.1",
     "@microsoft/clarity": "^1.0.2",
     "@supabase/supabase-js": "^2.97.0",
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^1.3.1",
     "chart.js": "^4.5.1",
     "gsap": "^3.14.2",
+    "nodemailer": "^8.0.1",
     "nuxt": "^3.15.2",
     "vue": "^3.5.13",
     "vue-chartjs": "^5.3.3"
   },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.14.0",
-    "@types/node": "^25.3.0"
+    "@types/node": "^25.3.0",
+    "@types/nodemailer": "^7.0.11"
   }
 }
