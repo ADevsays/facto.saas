@@ -17,7 +17,8 @@ export default defineEventHandler(async (event) => {
         churnRate,
         marginPercent,
         marketLabel,
-        adjustedMultiple
+        adjustedMultiple,
+        language = 'es'
     } = body
 
     if (!email || !startupUrl) {
@@ -57,6 +58,10 @@ export default defineEventHandler(async (event) => {
             ranking = await calculateRanking(valuation)
             chartUrl = getRankingChartUrl(ranking)
 
+            const subject = language === 'en' 
+                ? `Your SaaS Valuation Report: Top ${ranking}%`
+                : `Tu Reporte de Valoración SaaS: Top ${ranking}%`
+
             // 3. Generar Reporte Completo (Infografía HTML)
             const reportHtml = generateFoundersReport({
                 email,
@@ -66,13 +71,14 @@ export default defineEventHandler(async (event) => {
                 churnRate,
                 growthRate,
                 marginPercent,
-                arr
+                arr,
+                language
             })
             
-            // 4. Enviar email con Resend (No bloqueante para la respuesta del API)
+            // 4. Enviar email con Brevo (No bloqueante para la respuesta del API)
             sendFoundersReport({
                 to: email,
-                subject: `Tu Reporte de Valoración SaaS: Top ${ranking}%`,
+                subject,
                 html: reportHtml
             }).catch(e => console.error('[Report Email Error]:', e))
 

@@ -1,25 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import FaqItem from '../components/FaqItem.vue';
-import { useLanguage } from '../composables/useLanguage';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
 
-const { t } = useLanguage();
+const { t } = useLanguage({ es, en });
 const faqs = computed(() => t.value.faq.questions);
 
 const openIndex = ref<number | null>(null);
-
-const toggle = (index: number) => {
-    if (openIndex.value !== null && openIndex.value !== index) {
-        // Primero cerramos el que está abierto
-        openIndex.value = null;
-        // Esperamos a que la animación de cierre esté avanzada para abrir el siguiente
-        setTimeout(() => {
-            openIndex.value = index;
-        }, 350);
-    } else {
-        openIndex.value = openIndex.value === index ? null : index;
-    }
-};
 </script>
 
 <template>
@@ -38,8 +27,8 @@ const toggle = (index: number) => {
                     :key="index"
                     :question="faq.question"
                     :answer="faq.answer"
-                    :is-open="openIndex === index"
-                    @toggle="toggle(index)"
+                    :isOpen="openIndex === Number(index)"
+                    @toggle="openIndex = openIndex === Number(index) ? null : Number(index)"
                 />
             </div>
         </div>

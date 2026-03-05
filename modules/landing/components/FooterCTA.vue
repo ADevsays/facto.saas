@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { useBetaModal } from '../composables/useBetaModal';
 import IconArrowRight from './icons/IconArrowRight.vue';
-import { useLanguage } from '../composables/useLanguage';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
 
 defineProps<{
     href: string;
 }>();
 
 const { open } = useBetaModal();
-const { t } = useLanguage();
+const { t } = useLanguage({ es, en });
 </script>
 
 <template>

@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import SectionHeaderAnimated from '../components/SectionHeaderAnimated.vue';
 import FeatureCard from '../components/FeatureCard.vue';
-import { useLanguage } from '../composables/useLanguage';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
 import { computed } from 'vue';
 
 const accentColor = 'red';
-const { t } = useLanguage();
+const { t } = useLanguage({ es, en });
 
-const cards = computed(() => t.value.pain.cards.map((card, index) => ({
+const cards = computed(() => t.value.pain.cards.map((card: any, index: number) => ({
     icon: index === 0 ? "🛑" : index === 1 ? "🥀" : "📌",
     title: card.title,
     description: card.description

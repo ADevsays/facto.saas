@@ -8,6 +8,11 @@ import CalcHealthCard from '../components/CalcHealthCard.vue';
 import CalcInsightsCard from '../components/CalcInsightsCard.vue';
 import CalcRankTeaser from '../components/CalcRankTeaser.vue';
 import BetaAccessModal from '@/modules/landing/sections/BetaAccessModal.vue';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
+
+const { t } = useLanguage({ es, en });
 
 const {
     valuation,
@@ -53,8 +58,13 @@ const metricValue = computed(() =>
 );
 
 const metricLabel = computed(() =>
-    marketSegment.value.metric === 'profit' ? 'Ganancias anuales' : 'Ingresos anuales (ARR)'
+    marketSegment.value.metric === 'profit' ? t.value.calculator.results.metricProfit : t.value.calculator.results.metricArr
 );
+
+const translatedSegment = computed(() => {
+    const id = marketSegment.value.id;
+    return t.value.calculator.results.segments[id];
+});
 </script>
 
 <template>
@@ -75,8 +85,8 @@ const metricLabel = computed(() =>
                 <!-- Columna Derecha: Resultados -->
                 <div class="flex flex-col gap-6">
                     <CalcValuationCard
-                        :market-label="marketSegment.label"
-                        :buyer-profile="marketSegment.buyerProfile"
+                        :market-label="translatedSegment.label"
+                        :buyer-profile="translatedSegment.buyer"
                         :display-valuation="displayValuation"
                         :display-multiplier="displayMultiplier"
                         :metric-label="metricLabel"

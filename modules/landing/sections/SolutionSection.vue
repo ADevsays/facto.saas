@@ -4,10 +4,12 @@ import SolutionCard from '../components/SolutionCard.vue';
 import IconShieldCheck from '../components/icons/IconShieldCheck.vue';
 import IconRocket from '../components/icons/IconRocket.vue';
 import IconLayers from '../components/icons/IconLayers.vue';
-import { useLanguage } from '../composables/useLanguage';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
 import { computed } from 'vue';
 
-const { t } = useLanguage();
+const { t } = useLanguage({ es, en });
 
 const cards = computed(() => [
     {

@@ -1,4 +1,10 @@
 <script setup lang="ts">
+defineI18nRoute({
+  paths: {
+    en: '/terms',
+    es: '/terminos'
+  }
+})
 import TermsView from '~/modules/landing/views/TermsView.vue';
 
 useHead({

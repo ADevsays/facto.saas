@@ -17,6 +17,7 @@ export function useRankSubmit() {
         marginPercent: number;
         marketLabel: string;
         adjustedMultiple: number;
+        language: string;
     }) => {
         isLoading.value = true;
         error.value = null;

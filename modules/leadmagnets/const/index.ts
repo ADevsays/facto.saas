@@ -2,28 +2,32 @@ import type { MarketSegment } from '../types';
 
 export const MARKET_SEGMENTS: MarketSegment[] = [
     { 
+        id: 'micro',
         label: 'MicroSaaS', 
         buyerProfile: 'Compradores individuales y marketplaces ', 
         metric: 'profit', 
-        baseMultiple: 1.5 // Bajado a 1.5x profit (realista para micro-saas)
+        baseMultiple: 1.5 
     },
     { 
+        id: 'small',
         label: 'SaaS Pequeño', 
         buyerProfile: 'Fondos de inversión pequeños y operadores', 
         metric: 'profit', 
-        baseMultiple: 2.2 // Bajado a 2.2x profit
+        baseMultiple: 2.2 
     },
     { 
+        id: 'medium',
         label: 'SaaS Mediano', 
         buyerProfile: 'M&A privado y fondos middle-market', 
         metric: 'arr', 
-        baseMultiple: 2.5 // Bajado a 2.5x ARR
+        baseMultiple: 2.5 
     },
     { 
+        id: 'established',
         label: 'SaaS Establecido', 
         buyerProfile: 'Compradores institucionales y estratégicos', 
         metric: 'arr', 
-        baseMultiple: 3.5 // Bajado a 3.5x ARR (realista 2025/2026)
+        baseMultiple: 3.5 
     }
 ];
 

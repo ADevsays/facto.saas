@@ -1,0 +1,87 @@
+{
+  "seo": {
+    "title": "¿Cuánto vale tu SaaS? | Calculadora de Valuación | Facto",
+    "ogTitle": "¿Cuánto vale tu SaaS? Calculadora gratuita de valuación",
+    "description": "Calcula el valor de mercado de tu SaaS con los múltiplos reales que usan inversores y compradores. Gratis, instantáneo, sin registro."
+  },
+  "calculator": {
+    "header": {
+      "pill": "Calculadora de Valuación",
+      "title": "¿Cuánto vale",
+      "titleAccent": "tu SaaS?",
+      "subtitle": "Ingresa tus métricas actuales. Obtendrás una estimación de mercado realista basada en los múltiplos usados por inversores y compradores en 2025–2026."
+    },
+    "inputs": {
+      "revenueType": "¿Cómo mides tus ingresos?",
+      "monthly": "Por mes",
+      "annual": "Por año",
+      "revenue": {
+        "mrrLabel": "Ingresos recurrentes al mes",
+        "arrLabel": "Ingresos recurrentes al año",
+        "mrrHint": "Solo suscripciones y contratos — sin cobros únicos",
+        "arrHint": "Total de contratos y suscripciones del año"
+      },
+      "growth": {
+        "label": "¿Cuánto creces cada mes?",
+        "hint": "Promedio de los últimos 3 meses. Si no has crecido, pon 0"
+      },
+      "churn": {
+        "label": "¿Cuántos clientes pierdes al mes?",
+        "hint": "De cada 100 clientes, ¿cuántos se van? Ej: si pierdes 5 → pon 5"
+      },
+      "margin": {
+        "label": "¿Qué porcentaje de lo que cobras te queda?",
+        "hint": "Después de pagar servidores, APIs y soporte. No cuentes tu sueldo"
+      }
+    },
+    "results": {
+      "range": "Rango estimado:",
+      "metricProfit": "Ganancias anuales",
+      "metricArr": "Ingresos anuales (ARR)",
+      "multiplier": "Múltiplo aplicado",
+      "segments": {
+        "micro": { "label": "MicroSaaS", "buyer": "Compradores individuales y marketplaces" },
+        "small": { "label": "SaaS Pequeño", "buyer": "Fondos de inversión pequeños y operadores" },
+        "medium": { "label": "SaaS Mediano", "buyer": "M&A privado y fondos middle-market" },
+        "established": { "label": "SaaS Establecido", "buyer": "Compradores institucionales y estratégicos" }
+      }
+    },
+    "health": {
+      "title": "Salud del negocio",
+      "growth": "Crecimiento",
+      "retention": "Retención",
+      "margin": "Margen"
+    },
+    "insights": {
+      "ctaTitle": "¿Quieres presumir estas métricas?",
+      "ctaDescription": "Facto te ayudará a certificar los ingresos de tu SaaS para que inversores y compradores vean exactamente lo que tienes.",
+      "ctaButton": "Ver cómo funciona Facto"
+    },
+    "ranking": {
+      "title": "Tu Posición",
+      "unlocked": "Desbloqueado",
+      "locked": "Bloqueado",
+      "hint": "Respecto a otros SaaS calculados",
+      "top": "Top",
+      "description": "Recibe tu posición en el ranking de todos los que han calculado su SaaS + 3 tips para mejorar tu valoración respecto a tus métricas.",
+      "unlockedTitle": "Tu Posición Actual",
+      "reportSent": "Reporte detallado enviado",
+      "reportHint": "Te hemos enviado tu gráfica de mercado completa y 3 tips accionables para subir tu posición a ",
+      "form": {
+        "urlPlaceholder": "URL de tu SaaS",
+        "emailPlaceholder": "Email",
+        "gatewayLabel": "Tu pasarela de pago",
+        "gateways": {
+          "stripe": "Stripe",
+          "mercadoPago": "Mercado Pago",
+          "paddle": "Paddle",
+          "other": "Otra"
+        },
+        "otherPlaceholder": "¿Cuál?",
+        "btnSending": "Enviando...",
+        "btnSelectGateway": "Selecciona tu pasarela",
+        "btnSubmit": "Recibir mi posición"
+      }
+    }
+  }
+}

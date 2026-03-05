@@ -1,4 +1,10 @@
 <script setup lang="ts">
+defineI18nRoute({
+  paths: {
+    en: '/privacy',
+    es: '/privacidad'
+  }
+})
 import PrivacyView from '~/modules/landing/views/PrivacyView.vue';
 
 useHead({

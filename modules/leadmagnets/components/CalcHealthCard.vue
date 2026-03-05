@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import MetricBar from './MetricBar.vue';
 import { useSaasCalculator } from '../composables/useSaasCalculator';
+import { computed } from 'vue';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
 
 const { inputs } = useSaasCalculator();
+const { t } = useLanguage({ es, en });
 
 const healthColor = (score: number) => {
     if (score >= 75) return '#34D399';
@@ -27,7 +32,7 @@ const healthScore = computed(() => {
 <template>
     <div class="flex flex-col gap-4 p-6 bg-[#0A0A0C] border border-white/5 rounded-2xl">
         <div class="flex justify-between items-center">
-            <span class="font-sans text-[11px] font-medium tracking-[0.15em] uppercase text-white/40">Salud del negocio</span>
+            <span class="font-sans text-[11px] font-medium tracking-[0.15em] uppercase text-white/40">{{ t?.calculator.health.title }}</span>
             <span class="font-sans text-[13px] font-semibold transition-colors duration-300" :style="{ color: healthColor(healthScore) }">
                 {{ healthScore }}/100
             </span>
@@ -37,15 +42,15 @@ const healthScore = computed(() => {
 
         <div class="flex flex-col gap-3 pt-4 border-t border-white/[0.04]">
             <div class="flex items-center gap-3">
-                <span class="font-sans text-[11px] text-white/30 min-w-[68px]">Crecimiento</span>
+                <span class="font-sans text-[11px] text-white/30 min-w-[68px]">{{ t?.calculator.health.growth }}</span>
                 <MetricBar :value="growthScore" :max="40" color="#00D4FF" :label="`${inputs.growthRate}%`" />
             </div>
             <div class="flex items-center gap-3">
-                <span class="font-sans text-[11px] text-white/30 min-w-[68px]">Retención</span>
+                <span class="font-sans text-[11px] text-white/30 min-w-[68px]">{{ t?.calculator.health.retention }}</span>
                 <MetricBar :value="retentionScore" :max="40" color="#34D399" :label="`${(100 - inputs.churnRate).toFixed(0)}%`" />
             </div>
             <div class="flex items-center gap-3">
-                <span class="font-sans text-[11px] text-white/30 min-w-[68px]">Margen</span>
+                <span class="font-sans text-[11px] text-white/30 min-w-[68px]">{{ t?.calculator.health.margin }}</span>
                 <MetricBar :value="marginScore" :max="20" color="#A78BFA" :label="`${inputs.marginPercent}%`" />
             </div>
         </div>

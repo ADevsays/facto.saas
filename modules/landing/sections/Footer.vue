@@ -2,11 +2,13 @@
 import FooterCTA from '../components/FooterCTA.vue';
 import FooterContactInfo from '../components/FooterContactInfo.vue';
 import FooterNavigation from '../components/FooterNavigation.vue';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
 import { SOCIAL_LINKS } from '../const/navigation';
-import { useLanguage } from '../composables/useLanguage';
+import { useLanguage } from '@/composables/useLanguage';
 import { computed } from 'vue';
 
-const { t } = useLanguage();
+const { t } = useLanguage({ es, en });
 const socialLinks = SOCIAL_LINKS;
 
 const navLinks = computed(() => [

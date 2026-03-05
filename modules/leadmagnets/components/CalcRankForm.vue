@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
+
+const { t } = useLanguage({ es, en });
 
 const props = defineProps<{
     modelValue: { startupUrl: string; email: string; gateway: string; gatewayOther: string };
@@ -11,7 +16,12 @@ const emit = defineEmits<{
     submit: [];
 }>();
 
-const gateways = ['Stripe', 'Mercado Pago', 'Paddle', 'Otra'];
+const gateways = [
+    { id: 'Stripe', label: () => t.value.calculator.ranking.form.gateways.stripe },
+    { id: 'Mercado Pago', label: () => t.value.calculator.ranking.form.gateways.mercadoPago },
+    { id: 'Paddle', label: () => t.value.calculator.ranking.form.gateways.paddle },
+    { id: 'Otra', label: () => t.value.calculator.ranking.form.gateways.other }
+];
 
 const isGatewaySelected = computed(() => {
     if (!props.modelValue.gateway) return false;
@@ -47,7 +57,7 @@ const handleGatewayClick = (gw: string) => {
             <input
                 :value="modelValue.startupUrl"
                 type="text"
-                placeholder="URL de tu SaaS"
+                :placeholder="t.calculator.ranking.form.urlPlaceholder"
                 required
                 class="flex-1 min-w-0 bg-white/[0.04] border border-white/[0.07] rounded-xl px-3.5 py-2.5 text-white font-sans text-sm font-light placeholder-white/20 outline-none transition-all focus:border-[#00D4FF]/30"
                 @input="updateField('startupUrl', ($event.target as HTMLInputElement).value)"
@@ -55,7 +65,7 @@ const handleGatewayClick = (gw: string) => {
             <input
                 :value="modelValue.email"
                 type="email"
-                placeholder="Email"
+                :placeholder="t.calculator.ranking.form.emailPlaceholder"
                 required
                 class="flex-1 min-w-0 bg-white/[0.04] border border-white/[0.07] rounded-xl px-3.5 py-2.5 text-white font-sans text-sm font-light placeholder-white/20 outline-none transition-all focus:border-[#00D4FF]/30"
                 @input="updateField('email', ($event.target as HTMLInputElement).value)"
@@ -64,22 +74,22 @@ const handleGatewayClick = (gw: string) => {
 
         <!-- Gateway Selector -->
         <div class="flex flex-col gap-2">
-            <span class="font-sans text-[10px] text-white/30 uppercase tracking-widest pl-1">Tu pasarela de pago</span>
+            <span class="font-sans text-[10px] text-white/30 uppercase tracking-widest pl-1">{{ t.calculator.ranking.form.gatewayLabel }}</span>
             <div class="flex flex-wrap gap-1.5 items-center">
-                <template v-for="gw in gateways" :key="gw">
+                <template v-for="gw in gateways" :key="gw.id">
                     <button
-                        v-if="!(gw === 'Otra' && modelValue.gateway === 'Otra')"
+                        v-if="!(gw.id === 'Otra' && modelValue.gateway === 'Otra')"
                         type="button"
                         class="px-2.5 py-1.5 rounded-lg border font-sans text-[11px] transition-all duration-200 cursor-pointer"
-                        :class="modelValue.gateway === gw 
+                        :class="modelValue.gateway === gw.id 
                             ? 'bg-[#00D4FF]/10 border-[#00D4FF]/50 text-[#00D4FF]' 
                             : 'bg-transparent border-white/5 text-white/30 hover:border-white/15'"
-                        @click="handleGatewayClick(gw)"
+                        @click="handleGatewayClick(gw.id)"
                     >
-                        {{ gw }}
+                        {{ gw.label() }}
                     </button>
                     
-                    <div v-if="gw === 'Otra' && modelValue.gateway === 'Otra'" class="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
+                    <div v-if="gw.id === 'Otra' && modelValue.gateway === 'Otra'" class="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
                         <div 
                             class="w-1.5 h-1.5 rounded-full bg-[#00D4FF] shadow-[0_0_8px_rgba(0,212,255,0.5)] cursor-pointer" 
                             @click="handleGatewayClick('')"
@@ -87,7 +97,7 @@ const handleGatewayClick = (gw: string) => {
                         <input
                             :value="modelValue.gatewayOther"
                             type="text"
-                            placeholder="¿Cuál?"
+                            :placeholder="t.calculator.ranking.form.otherPlaceholder"
                             required
                             autofocus
                             class="bg-transparent border-b border-[#00D4FF]/30 py-0.5 text-white font-sans text-[11px] outline-none placeholder-white/20 w-32 transition-all focus:border-[#00D4FF]"
@@ -107,7 +117,7 @@ const handleGatewayClick = (gw: string) => {
                 ? 'bg-transparent text-white/20 border-white/[0.04] '
                 : 'bg-white/[0.04] text-white/70 border-white/[0.07] hover:bg-white/[0.08] hover:text-white hover:border-white/15 cursor-pointer'"
         >
-            {{ isLoading ? 'Enviando...' : !isGatewaySelected ? 'Selecciona tu pasarela' : 'Recibir mi posición' }}
+            {{ isLoading ? t.calculator.ranking.form.btnSending : !isGatewaySelected ? t.calculator.ranking.form.btnSelectGateway : t.calculator.ranking.form.btnSubmit }}
         </button>
     </form>
 </template>

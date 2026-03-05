@@ -1,0 +1,88 @@
+{
+  "seo": {
+    "title": "How much is your SaaS worth? | Valuation Calculator | Facto",
+    "ogTitle": "How much is your SaaS worth? Free valuation calculator",
+    "description": "Calculate the market value of your SaaS with real multiples used by investors and buyers. Free, instant, no registration."
+  },
+  "calculator": {
+    "header": {
+      "pill": "Valuation Calculator",
+      "title": "How much is",
+      "titleAccent": "your SaaS worth?",
+      "subtitle": "Enter your current metrics. You will get a realistic market estimate based on multiples used by investors and buyers in 2025–2026."
+    },
+    "inputs": {
+      "revenueType": "How do you measure your revenue?",
+      "monthly": "Monthly",
+      "annual": "Annually",
+      "revenue": {
+        "mrrLabel": "Monthly recurring revenue",
+        "arrLabel": "Annual recurring revenue",
+        "mrrHint": "Subscriptions and contracts only — no one-time fees",
+        "arrHint": "Total annual contracts and subscriptions"
+      },
+      "growth": {
+        "label": "How much do you grow each month?",
+        "hint": "Average of the last 3 months. If you haven't grown, put 0"
+      },
+      "churn": {
+        "label": "How many customers do you lose per month?",
+        "hint": "Out of every 100 customers, how many leave? E.g.: if you lose 5 → put 5"
+      },
+      "margin": {
+        "label": "What percentage of what you charge do you keep?",
+        "keep": "How much of what you charge do you keep?",
+        "hint": "After paying for servers, APIs, and support. Don't count your salary"
+      }
+    },
+    "results": {
+      "range": "Estimated range:",
+      "metricProfit": "Annual profit",
+      "metricArr": "Annual revenue (ARR)",
+      "multiplier": "Applied multiple",
+      "segments": {
+        "micro": { "label": "MicroSaaS", "buyer": "Individual buyers and marketplaces" },
+        "small": { "label": "Small SaaS", "buyer": "Small investment funds and operators" },
+        "medium": { "label": "Medium SaaS", "buyer": "Private M&A and middle-market funds" },
+        "established": { "label": "Established SaaS", "buyer": "Institutional and strategic buyers" }
+      }
+    },
+    "health": {
+      "title": "Business health",
+      "growth": "Growth",
+      "retention": "Retention",
+      "margin": "Margin"
+    },
+    "insights": {
+      "ctaTitle": "Want to show off these metrics?",
+      "ctaDescription": "Facto will help you certify your SaaS income so that investors and buyers see exactly what you have.",
+      "ctaButton": "See how Facto works"
+    },
+    "ranking": {
+      "title": "Your Position",
+      "unlocked": "Unlocked",
+      "locked": "Locked",
+      "hint": "In relation to other calculated SaaS",
+      "top": "Top",
+      "description": "Receive your position in the ranking of all those who have calculated their SaaS + 3 tips to improve your valuation based on your metrics.",
+      "unlockedTitle": "Your Current Position",
+      "reportSent": "Detailed report sent",
+      "reportHint": "We have sent you your full market chart and 3 actionable tips to improve your position to ",
+      "form": {
+        "urlPlaceholder": "SaaS URL",
+        "emailPlaceholder": "Email",
+        "gatewayLabel": "Your payment gateway",
+        "gateways": {
+          "stripe": "Stripe",
+          "mercadoPago": "Mercado Pago",
+          "paddle": "Paddle",
+          "other": "Other"
+        },
+        "otherPlaceholder": "Which one?",
+        "btnSending": "Sending...",
+        "btnSelectGateway": "Select your gateway",
+        "btnSubmit": "Receive my position"
+      }
+    }
+  }
+}

@@ -1,12 +1,24 @@
 <script setup lang="ts">
 import SaasCalculator from '../sections/SaasCalculator.vue';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
+import { onMounted } from 'vue';
+
+const { t, detectLanguage } = useLanguage({ es, en });
+
+onMounted(() => {
+    detectLanguage();
+});
 
 useSeoMeta({
-    title: '¿Cuánto vale tu SaaS? | Calculadora de Valuación | Facto',
-    ogTitle: '¿Cuánto vale tu SaaS? Calculadora gratuita de valuación',
-    description: 'Calcula el valor de mercado de tu SaaS con los múltiplos reales que usan inversores y compradores. Gratis, instantáneo, sin registro.',
-    ogDescription: 'Calcula el valor de mercado de tu SaaS con los múltiplos reales que usan inversores y compradores. Gratis, instantáneo, sin registro.',
+    title: () => t.value?.seo.title || '',
+    ogTitle: () => t.value?.seo.ogTitle || '',
+    description: () => t.value?.seo.description || '',
+    ogDescription: () => t.value?.seo.ogDescription || '',
+    ogImage: '/og-valuation.png',
     ogType: 'website',
+    twitterCard: 'summary_large_image',
 });
 </script>
 

@@ -1,4 +1,4 @@
-import { SPANISH_SPEAKING_COUNTRIES } from '~/modules/landing/const/languages';
+import { SPANISH_SPEAKING_COUNTRIES } from '~/utils/languages';
 
 export default defineEventHandler((event) => {
   // En producción (Vercel), el país viene en este header

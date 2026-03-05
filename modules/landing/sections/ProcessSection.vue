@@ -2,12 +2,14 @@
 import StatusPill from '../components/StatusPill.vue';
 import GlassButton from '../components/GlassButton.vue';
 import ProcessStepCard from '../components/ProcessStepCard.vue';
-import { useLanguage } from '../composables/useLanguage';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
 import { computed } from 'vue';
 
-const { t } = useLanguage();
+const { t } = useLanguage({ es, en });
 
-const steps = computed(() => t.value.process.steps.map((step, index) => ({
+const steps = computed(() => t.value.process.steps.map((step: any, index: number) => ({
     number: `0${index + 1}`,
     title: step.title,
     duration: index === 2 ? "5 min" : "1 min",

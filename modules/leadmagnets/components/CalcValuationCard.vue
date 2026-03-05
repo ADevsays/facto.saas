@@ -12,6 +12,11 @@ defineProps<{
     formatCurrency: (v: number) => string;
     formatMultiplier: (v: number) => string;
 }>();
+import { computed } from 'vue';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
+const { t } = useLanguage({ es, en });
 </script>
 
 <template>
@@ -27,7 +32,7 @@ defineProps<{
             {{ formatCurrency(displayValuation) }}
         </div>
         <p class="font-sans text-xs text-white/30 m-0 mb-5">
-            Rango estimado:
+            {{ t?.calculator.results.range }}
             <span class="text-white/50">{{ formatCurrency(lowRange) }} – {{ formatCurrency(highRange) }}</span>
         </p>
 
@@ -43,7 +48,7 @@ defineProps<{
                 <span class="font-sans text-xl font-semibold text-[#00D4FF]">
                     {{ formatMultiplier(displayMultiplier) }}
                 </span>
-                <span class="font-sans text-[10px] tracking-[0.12em] uppercase text-white/30">Múltiplo aplicado</span>
+                <span class="font-sans text-[10px] tracking-[0.12em] uppercase text-white/30">{{ t?.calculator.results.multiplier }}</span>
             </div>
         </div>
     </div>

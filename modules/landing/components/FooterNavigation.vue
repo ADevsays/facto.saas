@@ -1,13 +1,17 @@
+```
 <script setup lang="ts">
 import { useSmoothScroll } from '../composables/useSmoothScroll';
-import { useLanguage } from '../composables/useLanguage';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
+import { computed } from 'vue';
 
 defineProps<{
     links: { name: string; href: string }[];
 }>();
 
 const { scrollToSection } = useSmoothScroll();
-const { t } = useLanguage();
+const { t } = useLanguage({ es, en });
 </script>
 
 <template>

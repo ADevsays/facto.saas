@@ -7,11 +7,14 @@ import FaqSection from '../sections/FaqSection.vue';
 import Footer from '../sections/Footer.vue';
 import Navbar from '../components/Navbar.vue';
 import BetaAccessModal from '../sections/BetaAccessModal.vue';
-import { useLanguage } from '../composables/useLanguage';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
 import { useAppStatus } from '../composables/useAppStatus';
+import { onMounted } from 'vue';
 
 const { isReady } = useAppStatus();
-const { detectLanguage, t } = useLanguage();
+const { detectLanguage, t } = useLanguage({ es, en });
 
 useSeoMeta({
     title: () => `${t.value.hero.title.replace('\n', ' ')} | Facto`,

@@ -2,7 +2,9 @@
 import { useHeaderTransform } from '../composables/useHeaderTransform';
 import { useSmoothScroll } from '../composables/useSmoothScroll';
 import { useBetaModal } from '../composables/useBetaModal';
-import { useLanguage } from '../composables/useLanguage';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 
 const pillRef = ref<HTMLElement | null>(null);
@@ -12,7 +14,7 @@ const ctaRef = ref<HTMLElement | null>(null);
 const { initHeaderAnimation, destroyHeaderAnimation } = useHeaderTransform();
 const { scrollToSection } = useSmoothScroll();
 const { open: openBetaModal } = useBetaModal();
-const { t } = useLanguage();
+const { t } = useLanguage({ es, en });
 
 onMounted(() => {
     if (headerRef.value && pillRef.value) {

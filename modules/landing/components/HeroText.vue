@@ -3,11 +3,13 @@ import { ref, watch, nextTick } from 'vue';
 import { useAppStatus } from '../composables/useAppStatus';
 import { useStaggeredEntrance } from '../composables/useEntranceAnimation';
 import GlassButton from './GlassButton.vue';
-import { useLanguage } from '../composables/useLanguage';
+import es from '../locales/es.json';
+import en from '../locales/en.json';
+import { useLanguage } from '@/composables/useLanguage';
 
 const container = ref<HTMLElement | null>(null);
 const { isReady } = useAppStatus();
-const { t } = useLanguage();
+const { t } = useLanguage({ es, en });
 
 // Setup the animation logic - Automatically maps elements with .reveal-item
 const { animate } = useStaggeredEntrance(container, '.reveal-item', 0.8);

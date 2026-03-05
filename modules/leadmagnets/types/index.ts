@@ -9,6 +9,7 @@ export interface CalculatorInputs {
 }
 
 export interface MarketSegment {
+    id: string;
     label: string;
     buyerProfile: string;
     metric: 'profit' | 'arr';
