@@ -9,6 +9,7 @@ const moduleServerDirs = readdirSync(modulesDir)
     .filter(p => { try { return statSync(p).isDirectory() } catch { return false } })
 
 export default defineNuxtConfig({
+  compatibilityDate: '2026-03-05',
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss', '@nuxtjs/i18n'],
   i18n: {

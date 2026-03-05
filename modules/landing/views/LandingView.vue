@@ -15,14 +15,19 @@ import { onMounted } from 'vue';
 
 const { isReady } = useAppStatus();
 const { detectLanguage, t } = useLanguage({ es, en });
+const url = useRequestURL();
 
 useSeoMeta({
     title: () => `${t.value.hero.title.replace('\n', ' ')} | Facto`,
     ogTitle: () => `${t.value.hero.title.replace('\n', ' ')} | Facto`,
     description: () => t.value.hero.subtitle.replace('\n', ' '),
     ogDescription: () => t.value.hero.subtitle.replace('\n', ' '),
-    ogImage: '/og-image.png',
+    ogImage: () => `${url.origin}/og-image.png`,
+    ogUrl: () => url.href,
     twitterCard: 'summary_large_image',
+    twitterTitle: () => `${t.value.hero.title.replace('\n', ' ')} | Facto`,
+    twitterDescription: () => t.value.hero.subtitle.replace('\n', ' '),
+    twitterImage: () => `${url.origin}/og-image.png`,
     ogType: 'website',
 });
 
