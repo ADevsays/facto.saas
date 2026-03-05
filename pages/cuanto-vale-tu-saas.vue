@@ -7,9 +7,9 @@ defineI18nRoute({
     es: '/cuanto-vale-tu-saas'
   }
 })
+
 </script>
 
 <template>
     <SaasValuationView />
 </template>
-

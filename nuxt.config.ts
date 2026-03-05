@@ -16,8 +16,8 @@ export default defineNuxtConfig({
       { code: 'en', name: 'English' },
       { code: 'es', name: 'Español' }
     ],
-    defaultLocale: 'en',
-    strategy: 'prefix',
+    defaultLocale: 'es',
+    strategy: 'prefix_except_default',
     detectBrowserLanguage: false
   },
   experimental: {
