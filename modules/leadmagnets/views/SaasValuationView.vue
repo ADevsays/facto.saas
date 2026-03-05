@@ -6,24 +6,15 @@ import { useLanguage } from '@/composables/useLanguage';
 import { onMounted } from 'vue';
 
 const { t, detectLanguage } = useLanguage({ es, en });
-const url = useRequestURL();
 
 onMounted(() => {
     detectLanguage();
 });
 
-useSeoMeta({
+useAppSeo({
     title: () => t.value?.seo.title || '',
-    ogTitle: () => t.value?.seo.ogTitle || '',
     description: () => t.value?.seo.description || '',
-    ogDescription: () => t.value?.seo.ogDescription || '',
-    ogImage: () => `${url.origin}/og-valuation.png`,
-    ogType: 'website',
-    ogUrl: () => url.href,
-    twitterCard: 'summary_large_image',
-    twitterTitle: () => t.value?.seo.ogTitle || t.value?.seo.title || '',
-    twitterDescription: () => t.value?.seo.ogDescription || t.value?.seo.description || '',
-    twitterImage: () => `${url.origin}/og-valuation.png`,
+    imagePath: '/og-valuation.png',
 });
 </script>
 
