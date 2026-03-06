@@ -1,4 +1,7 @@
 import { supabase } from '~/server/lib/supabase'
+import { saveCalculatorResult, calculateRanking, getRankingChartUrl } from '~/modules/leadmagnets/server/services/calculator'
+import { generateFoundersReport } from '~/modules/leadmagnets/server/services/report'
+import { sendFoundersReport } from '~/modules/leadmagnets/server/services/email'
 
 export interface LeadData {
     email: string
@@ -30,4 +33,60 @@ export const saveLead = async (data: LeadData) => {
     }
 
     return lead
+}
+
+export const processCalculatorLead = async (data: any) => {
+    const { 
+        email, 
+        valuation, 
+        arr, 
+        growthRate, 
+        churnRate, 
+        marginPercent, 
+        marketLabel, 
+        adjustedMultiple, 
+        language = 'es' 
+    } = data
+
+    // 1. Guardar resultados técnicos
+    await saveCalculatorResult({
+        email,
+        valuation,
+        arr,
+        growthRate,
+        churnRate,
+        marginPercent,
+        marketLabel,
+        adjustedMultiple
+    })
+
+    // 2. Cálculo de ranking
+    const ranking = await calculateRanking(valuation)
+    const chartUrl = getRankingChartUrl(ranking)
+
+    const subject = language === 'en' 
+        ? `Your SaaS Valuation Report: Top ${ranking}%`
+        : `Tu Reporte de Valoración SaaS: Top ${ranking}%`
+
+    // 3. Generar reporte
+    const reportHtml = generateFoundersReport({
+        email,
+        valuation,
+        ranking,
+        chartUrl,
+        churnRate,
+        growthRate,
+        marginPercent,
+        arr,
+        language
+    })
+    
+    // 4. Envío asíncrono
+    sendFoundersReport({
+        to: email,
+        subject,
+        html: reportHtml
+    }).catch(e => console.error('[Report Email Error]:', e))
+
+    return { ranking, chartUrl }
 }

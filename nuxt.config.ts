@@ -40,6 +40,16 @@ export default defineNuxtConfig({
   },
   nitro: {
     scanDirs: moduleServerDirs,
+    prerender: {
+      routes: ['/', '/en'],
+      crawlLinks: true
+    }
+  },
+  routeRules: {
+    '/': { prerender: true },
+    '/en': { prerender: true },
+    '/api/geoip': { swr: true },
+    '/_nuxt/**': { cache: { maxAge: 60 * 60 * 24 * 365 } }
   },
   runtimeConfig: {
     supabaseUrl: process.env.SUPABASE_URL,

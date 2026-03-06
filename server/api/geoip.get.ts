@@ -2,7 +2,6 @@ import { SPANISH_SPEAKING_COUNTRIES } from '~/utils/languages';
 
 export default defineEventHandler((event) => {
   // En producción (Vercel), el país viene en este header
-  // En desarrollo local, este header no existe (usamos un fallback o detectamos IP)
   const countryCode = getHeader(event, 'x-vercel-ip-country');
   
   if (countryCode) {
@@ -14,7 +13,16 @@ export default defineEventHandler((event) => {
     };
   }
 
-  // Fallback para local o si no estamos en Vercel
+  // Mock para desarrollo local (localhost)
+  if (process.dev) {
+    return {
+      country: 'ES',
+      language: 'es',
+      source: 'local-mock'
+    };
+  }
+
+  // Fallback para otros entornos
   return {
     country: null,
     language: null,

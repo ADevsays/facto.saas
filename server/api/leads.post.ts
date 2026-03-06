@@ -1,7 +1,4 @@
-import { saveLead } from '~/server/services/leads'
-import { saveCalculatorResult, calculateRanking, getRankingChartUrl } from '~/modules/leadmagnets/server/services/calculator'
-import { generateFoundersReport } from '~/modules/leadmagnets/server/services/report'
-import { sendFoundersReport } from '~/modules/leadmagnets/server/services/email'
+import { saveLead, processCalculatorLead } from '~/server/services/leads'
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event)
@@ -11,13 +8,6 @@ export default defineEventHandler(async (event) => {
         gateway, 
         motivation, 
         source,
-        valuation,
-        arr,
-        growthRate,
-        churnRate,
-        marginPercent,
-        marketLabel,
-        adjustedMultiple,
         language = 'es'
     } = body
 
@@ -30,7 +20,7 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        // 1. Guardar Lead (Servicio de Leads)
+        // 1. Siempre guardar el Lead como interesada en la beta
         await saveLead({
             email,
             startupUrl,
@@ -39,55 +29,16 @@ export default defineEventHandler(async (event) => {
             source
         })
 
-        let ranking = null
-        let chartUrl = null
+        let extras: { ranking: number | null, chartUrl: string | null } = { ranking: null, chartUrl: null }
 
-        // 2. Si es de la calculadora, guardar resultados y calcular ranking (Servicio de Calculadora)
-        if (source === 'calculator' && valuation !== undefined) {
-            await saveCalculatorResult({
-                email,
-                valuation,
-                arr,
-                growthRate,
-                churnRate,
-                marginPercent,
-                marketLabel,
-                adjustedMultiple
-            })
-
-            ranking = await calculateRanking(valuation)
-            chartUrl = getRankingChartUrl(ranking)
-
-            const subject = language === 'en' 
-                ? `Your SaaS Valuation Report: Top ${ranking}%`
-                : `Tu Reporte de Valoración SaaS: Top ${ranking}%`
-
-            // 3. Generar Reporte Completo (Infografía HTML)
-            const reportHtml = generateFoundersReport({
-                email,
-                valuation,
-                ranking,
-                chartUrl,
-                churnRate,
-                growthRate,
-                marginPercent,
-                arr,
-                language
-            })
-            
-            // 4. Enviar email con Brevo (No bloqueante para la respuesta del API)
-            sendFoundersReport({
-                to: email,
-                subject,
-                html: reportHtml
-            }).catch(e => console.error('[Report Email Error]:', e))
-
+        // 2. Si el lead viene de la calculadora, procesamos el reporte y ranking
+        if (source === 'calculator' && body.valuation !== undefined) {
+            extras = await processCalculatorLead({ ...body, language })
         }
     
         return { 
             success: true,
-            ranking,
-            chartUrl
+            ...extras
         }
 
     } catch (err: any) {
