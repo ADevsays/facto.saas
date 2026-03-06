@@ -74,16 +74,16 @@ const translatedSegment = computed(() => {
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
-                <!-- Columna Izquierda: Inputs + Relleno Visual -->
-                 <div class="flex flex-col gap-6">
-                    <CalcInputsPanel />
+                <!-- Grupo 1: Se queda en la izquierda en desktop, pero se intercala en mobile -->
+                <div class="contents lg:flex lg:flex-col gap-6">
+                    <CalcInputsPanel class="order-1" />
+                    <CalcInsightsCard class="order-5" />
+                </div>
 
-                    <CalcInsightsCard />
-                 </div>
-
-                <!-- Columna Derecha: Resultados -->
-                <div class="flex flex-col gap-6">
+                <!-- Grupo 2: Se queda en la derecha en desktop, pero se intercala en mobile -->
+                <div class="contents lg:flex lg:flex-col gap-6">
                     <CalcValuationCard
+                        class="order-2"
                         :market-label="translatedSegment.label"
                         :buyer-profile="translatedSegment.buyer"
                         :display-valuation="displayValuation"
@@ -96,11 +96,10 @@ const translatedSegment = computed(() => {
                         :format-multiplier="formatMultiplier"
                     />
                     
-                    <CalcHealthCard />
-
-                    <CalcRankTeaser />
-                    
+                    <CalcHealthCard class="order-3" />
+                    <CalcRankTeaser class="order-4" />
                 </div>
+
             </div>
 
         </div>
