@@ -7,7 +7,6 @@ import CalcValuationCard from '../components/CalcValuationCard.vue';
 import CalcHealthCard from '../components/CalcHealthCard.vue';
 import CalcInsightsCard from '../components/CalcInsightsCard.vue';
 import CalcRankTeaser from '../components/CalcRankTeaser.vue';
-import BetaAccessModal from '@/modules/landing/sections/BetaAccessModal.vue';
 import es from '../locales/es.json';
 import en from '../locales/en.json';
 import { useLanguage } from '@/composables/useLanguage';
@@ -106,7 +105,5 @@ const translatedSegment = computed(() => {
 
         </div>
 
-        <!-- El Modal se maneja globalmente por su composable, pero lo dejamos aquí para Teleport -->
-        <BetaAccessModal />
     </section>
 </template>

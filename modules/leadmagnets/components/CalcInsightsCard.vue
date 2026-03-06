@@ -2,7 +2,10 @@
 import es from '../locales/es.json';
 import en from '../locales/en.json';
 import { useLanguage } from '@/composables/useLanguage';
+import { useBetaModal } from '@/modules/landing/composables/useBetaModal';
+
 const { t } = useLanguage({ es, en });
+const { open: openBetaModal } = useBetaModal();
 </script>
 
 <template>
@@ -10,21 +13,21 @@ const { t } = useLanguage({ es, en });
 
         <!-- CTA -->
         <div class="flex flex-col gap-3 p-7 bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/[0.08] rounded-2xl">
-            <p class="font-serif text-xl font-semibold text-white m-0 leading-snug">
+            <p class="font-serif text-lg font-semibold text-white m-0 leading-snug">
                 {{ t?.calculator.insights.ctaTitle }}
             </p>
-            <p class="font-sans text-sm font-light text-white/40 m-0 leading-relaxed">
+            <p class="font-sans text-[13px] font-light text-white/45 py-2 m-0 leading-relaxed">
                 {{ t?.calculator.insights.ctaDescription }}
             </p>
-            <NuxtLink
-                to="/"
-                class="group inline-flex items-center gap-2 self-start mt-2 px-6 py-3.5 bg-white text-[#030305] rounded-full font-sans text-[12px] font-bold tracking-[0.12em] uppercase no-underline transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_20px_rgba(255,255,255,0.3),0_0_40px_rgba(0,212,255,0.15)]"
+            <button
+                @click="openBetaModal"
+                class="glass-fluid-btn opacity-85 group px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] inline-flex items-center gap-2 self-start mt-2 transition-all duration-300 cursor-pointer"
             >
                 {{ t?.calculator.insights.ctaButton }}
                 <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-            </NuxtLink>
+            </button>
         </div>
 
     </div>

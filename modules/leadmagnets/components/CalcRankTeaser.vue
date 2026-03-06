@@ -27,12 +27,6 @@ const handleSubmit = async () => {
         adjustedMultiple: adjustedMultiple.value,
         language: language.value
     });
-    
-    if (chartUrl.value) {
-        console.log('--- REPORTE GENERADO ---');
-        console.log('Chart URL:', chartUrl.value);
-        console.log('------------------------');
-    }
 };
 </script>
 
@@ -55,7 +49,7 @@ const handleSubmit = async () => {
                 <!-- Blurred rank bar -->
                 <div class="select-none" aria-hidden="true">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="font-sans text-[11px] text-white/25">{{ t?.calculator.ranking.hint }}</span>
+                        <span class="font-sans text-[11px] text-white/35">{{ t?.calculator.ranking.hint }}</span>
                         <span class="font-mono text-sm font-semibold text-white blur-[6px]">{{ t?.calculator.ranking.top }} 23%</span>
                     </div>
                     <div class="relative h-1.5 rounded-full bg-white/5 overflow-hidden">
@@ -65,7 +59,7 @@ const handleSubmit = async () => {
 
                 <div class="h-px bg-white/[0.04]" />
 
-                <p class="font-sans text-xs text-white/30 leading-relaxed m-0">
+                <p class="font-sans text-[13px] text-white/45 leading-relaxed m-0">
                     {{ t?.calculator.ranking.description }}
                 </p>
 

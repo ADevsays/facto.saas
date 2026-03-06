@@ -83,29 +83,4 @@ const navLinks = computed(() => [
 nav {
     will-change: width, background-color, backdrop-filter, border-color, max-width;
 }
-
-.glass-fluid-btn {
-    color: #fff;
-    background: linear-gradient(
-        120deg, 
-        rgba(255, 255, 255, 0) 30%, 
-        rgba(255, 255, 255, 0.15) 50%, 
-        rgba(255, 255, 255, 0) 70%
-    );
-    background-size: 200% auto;
-    border: 1px solid transparent;
-    animation: shine 12s ease-in-out infinite;
-    transition: color 0.4s ease, border-color 0.4s ease;
-}
-
-.glass-fluid-btn:hover {
-    border-color: rgba(0, 212, 255, 0.5);
-    background-color: rgba(0, 212, 255, 0.1);
-    transform: translateY(-1px);
-}
-
-@keyframes shine {
-    0% { background-position: -100% 0; }
-    100% { background-position: 100% 0; }
-}
 </style>

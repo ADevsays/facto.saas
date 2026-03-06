@@ -15,7 +15,7 @@ const { t } = useLanguage({ es, en });
             {{ t?.calculator.header.title }}<br>
             <span class="outline-text">{{ t?.calculator.header.titleAccent }}</span>
         </h1>
-        <p class="font-sans text-[15px] font-light text-white/40 max-w-[520px] mx-auto leading-[1.7] tracking-[0.01em]">
+        <p class="font-sans text-[15px] font-light text-white/50 max-w-[520px] mx-auto leading-[1.7] tracking-[0.01em]">
             {{ t?.calculator.header.subtitle }}
         </p>
     </div>

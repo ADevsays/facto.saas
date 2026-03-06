@@ -18,7 +18,7 @@ defineProps<{
                 }"
             ></div>
         </div>
-        <span v-if="label" class="font-sans text-[11px] text-white/30 whitespace-nowrap min-w-[40px] text-right">
+        <span v-if="label" class="font-sans text-[11px] text-white/45 whitespace-nowrap min-w-[40px] text-right">
             {{ label }}
         </span>
     </div>

@@ -51,7 +51,7 @@ const handleGatewayClick = (gw: string) => {
 </script>
 
 <template>
-    <form class="flex flex-col gap-3" @submit.prevent="emit('submit')">
+    <form class="flex flex-col gap-3 mt-2" @submit.prevent="emit('submit')">
         <!-- URL & Email -->
         <div class="flex gap-2">
             <input
@@ -74,7 +74,7 @@ const handleGatewayClick = (gw: string) => {
 
         <!-- Gateway Selector -->
         <div class="flex flex-col gap-2">
-            <span class="font-sans text-[10px] text-white/30 uppercase tracking-widest pl-1">{{ t.calculator.ranking.form.gatewayLabel }}</span>
+            <span class="font-sans text-[10px] text-white/40 uppercase tracking-widest pl-1">{{ t.calculator.ranking.form.gatewayLabel }}</span>
             <div class="flex flex-wrap gap-1.5 items-center">
                 <template v-for="gw in gateways" :key="gw.id">
                     <button
@@ -83,7 +83,7 @@ const handleGatewayClick = (gw: string) => {
                         class="px-2.5 py-1.5 rounded-lg border font-sans text-[11px] transition-all duration-200 cursor-pointer"
                         :class="modelValue.gateway === gw.id 
                             ? 'bg-[#00D4FF]/10 border-[#00D4FF]/50 text-[#00D4FF]' 
-                            : 'bg-transparent border-white/5 text-white/30 hover:border-white/15'"
+                            : 'bg-transparent border-white/5 text-white/35 hover:border-white/15'"
                         @click="handleGatewayClick(gw.id)"
                     >
                         {{ gw.label() }}

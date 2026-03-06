@@ -43,11 +43,11 @@ defineEmits<{
             />
             <span
                 v-if="suffix"
-                class="absolute right-3.5 font-sans text-sm text-white/30 pointer-events-none select-none"
+                class="absolute right-3.5 font-sans text-sm text-white/50 pointer-events-none select-none"
             >
                 {{ suffix }}
             </span>
         </div>
-        <p v-if="hint" class="font-sans text-[11px] text-white/25 m-0">{{ hint }}</p>
+        <p v-if="hint" class="font-sans text-[11px] text-white/35 m-0">{{ hint }}</p>
     </div>
 </template>
