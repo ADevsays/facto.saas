@@ -11,10 +11,17 @@ import es from '../locales/es.json';
 import en from '../locales/en.json';
 import { useLanguage } from '@/composables/useLanguage';
 import { useAppStatus } from '../composables/useAppStatus';
+import { useAppSchema } from '@/composables/useAppSchema';
 import { onMounted } from 'vue';
 
 const { isReady } = useAppStatus();
 const { detectLanguage, t } = useLanguage({ es, en });
+const { defineWebSite } = useAppSchema();
+
+defineWebSite({
+    name: 'Facto',
+    description: t.value.hero.subtitle.replace('\n', ' ')
+});
 
 useAppSeo({
     title: () => `${t.value.hero.title.replace('\n', ' ')} | Facto`,

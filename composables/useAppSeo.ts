@@ -6,8 +6,30 @@ interface SeoConfig {
 
 export function useAppSeo(config: SeoConfig) {
   const url = useRequestURL();
+  const i18nHead = useLocaleHead({
+    addSeoAttributes: true,
+    identifierAttribute: 'id',
+    addDirAttribute: true
+  });
   
   const getVal = (val: string | (() => string)) => typeof val === 'function' ? val() : val;
+
+  useHead({
+    htmlAttrs: {
+      lang: i18nHead.value.htmlAttrs?.lang,
+      dir: i18nHead.value.htmlAttrs?.dir,
+    },
+    link: [
+      ...(i18nHead.value.link || []),
+      {
+        rel: 'canonical',
+        href: () => url.href,
+      },
+    ],
+    meta: [
+      ...(i18nHead.value.meta || []),
+    ],
+  });
 
   useSeoMeta({
     title: config.title,
@@ -16,7 +38,6 @@ export function useAppSeo(config: SeoConfig) {
     ogDescription: config.description,
     ogImage: () => {
       const path = getVal(config.imagePath);
-      // Aseguramos que el path no tenga leading slash duplicado si ya viene con él
       const cleanPath = path.startsWith('/') ? path : `/${path}`;
       return `${url.origin}${cleanPath}?v=2`;
     },

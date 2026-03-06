@@ -11,7 +11,20 @@ const moduleServerDirs = readdirSync(modulesDir)
 export default defineNuxtConfig({
   compatibilityDate: '2026-03-05',
   devtools: { enabled: true },
-  modules: ['@nuxtjs/tailwindcss', '@nuxtjs/i18n'],
+  modules: [
+    '@nuxtjs/tailwindcss',
+    '@nuxtjs/i18n',
+    '@nuxtjs/seo'
+  ],
+  site: {
+    url: 'https://factosaas.com',
+    name: 'Facto | Valuación de SaaS',
+    description: 'Calcula cuánto vale tu SaaS en segundos con datos reales del mercado.',
+    defaultLocale: 'es',
+  },
+  robots: {
+    disallow: ['/admin'],
+  },
   i18n: {
     locales: [
       { code: 'en', name: 'English' },

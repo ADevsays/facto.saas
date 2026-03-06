@@ -3,9 +3,16 @@ import SaasCalculator from '../sections/SaasCalculator.vue';
 import es from '../locales/es.json';
 import en from '../locales/en.json';
 import { useLanguage } from '@/composables/useLanguage';
+import { useAppSchema } from '@/composables/useAppSchema';
 import { onMounted } from 'vue';
 
 const { t, detectLanguage } = useLanguage({ es, en });
+const { defineSoftwareApp } = useAppSchema();
+
+defineSoftwareApp({
+    name: t.value?.seo.title || 'Calculadora de Valuación SaaS',
+    description: t.value?.seo.description || 'Calcula cuánto vale tu SaaS en segundos.'
+});
 
 onMounted(() => {
     detectLanguage();
