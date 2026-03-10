@@ -48,7 +48,6 @@ export default defineNuxtConfig({
   routeRules: {
     '/': { prerender: true },
     '/en': { prerender: true },
-    '/api/geoip': { swr: true },
     '/_nuxt/**': { cache: { maxAge: 60 * 60 * 24 * 365 } }
   },
   runtimeConfig: {

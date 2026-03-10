@@ -34,7 +34,7 @@
   "solution": {
     "pill": "THE FACTO SOLUTION",
     "titleBase": "Become a",
-    "titleAccent": "verified startup",
+    "titleAccent": "verified micro SaaS",
     "cards": [
       {
         "title": "Real Credibility",
@@ -56,8 +56,8 @@
     "titleAccent": "organic traffic",
     "steps": [
       {
-        "title": "Register your startup",
-        "description": "Add your startup totally free in one click. Become a recognized founder or stay anonymous."
+        "title": "Register your micro SaaS",
+        "description": "Add your micro SaaS totally free in one click. Become a recognized founder or stay anonymous."
       },
       {
         "title": "Set your read-only API key",
@@ -76,7 +76,7 @@
     "questions": [
       {
         "question": "Do I have to provide my payment gateway API key?",
-        "answer": "Yes, to verify your startup's real revenue, data will be taken from your payment gateway. This is completely secure because it will be a read-only API, meaning nothing else can be done except viewing that data."
+        "answer": "Yes, to verify your micro SaaS's real revenue, data will be taken from your payment gateway. This is completely secure because it will be a read-only API, meaning nothing else can be done except viewing that data."
       },
       {
         "question": "Why will this increase my organic traffic?",
@@ -84,10 +84,10 @@
       },
       {
         "question": "What metrics will be public on my profile?",
-        "answer": "You can decide whether to attach your social networks or stay private. For your startup, its monthly recurring revenue (MRR) and monthly traffic will be shown."
+        "answer": "You can decide whether to attach your social networks or stay private. For your micro SaaS, its monthly recurring revenue (MRR) and monthly traffic will be shown."
       },
       {
-        "question": "What do I gain by registering my startup here?",
+        "question": "What do I gain by registering my micro SaaS here?",
         "answer": "You will gain credibility, completely free impressions from Facto.saas users, and media relevance."
       }
     ]
@@ -114,9 +114,9 @@
       "subtitle": "We will contact you soon with your access details.",
       "close": "Close"
     },
-    "step1": {
-      "pill": "Your startup",
-      "title": "What's your startup's\nURL?",
+    "step1": {  
+      "pill": "Your micro SaaS",
+      "title": "What's your micro SaaS's\nURL?",
       "placeholder": "https://your-startup.com"
     },
     "step2": {
@@ -139,7 +139,7 @@
       "placeholder": "example@yourcompany.com",
       "disclaimer": {
         "start": "We will only accept ",
-        "highlight": "50 startups",
+        "highlight": "50 micro SaaS",
         "end": " for the launch phase."
       }
     },
@@ -155,11 +155,11 @@
       "sections": [
         {
           "title": "Data we collect",
-          "content": "We only request the minimum data necessary for the operation of the service: your startup URL, contact email, and read-only access to your payment gateway to verify MRR."
+          "content": "We only request the minimum data necessary for the operation of the service: your micro SaaS URL, contact email, and read-only access to your payment gateway to verify MRR."
         },
         {
           "title": "Data usage",
-          "content": "Your data is used exclusively to validate the legitimacy of your revenue and generate your startup's public profile. We do not sell your data to third parties."
+          "content": "Your data is used exclusively to validate the legitimacy of your revenue and generate your micro SaaS's public profile. We do not sell your data to third parties."
         },
         {
           "title": "Analytics",

@@ -29,8 +29,8 @@ useAppSeo({
     imagePath: '/og-image.png',
 });
 
-onMounted(() => {
-    detectLanguage();
+onMounted(async () => {
+    await detectLanguage();
 });
 </script>
 

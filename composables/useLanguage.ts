@@ -21,51 +21,53 @@ export function useLanguage(locales?: { es: any, en: any }) {
     return language.value === 'es' ? locales.es : locales.en;
   });
 
+  const applyLocale = async (detected: string) => {
+    const lang = (detected === 'es' ? 'es' : 'en') as 'es' | 'en';
+    console.log(`[Lang] applyLocale → detected="${detected}" | resolved="${lang}" | current="${locale.value}" | will change=${lang !== locale.value}`);
+    if (lang !== locale.value) {
+      await setLocale(lang);
+      console.log(`[Lang] setLocale("${lang}") done → locale is now "${locale.value}"`);
+    }
+  };
+
   const detectLanguage = async () => {
-    // 1. Intentar obtener el país de la cookie primero (Caché Cliente)
-    const countryCookie = useCookie('app-user-country', { maxAge: 60 * 60 * 24 * 7 }); // 7 días
-    
+    console.log(`[Lang] detectLanguage start → current locale="${locale.value}"`);
+    const countryCookie = useCookie('app-user-country', { maxAge: 60 * 60 * 24 * 7 });
+
     if (countryCookie.value) {
       country.value = countryCookie.value;
+      const lang = SPANISH_SPEAKING_COUNTRIES.includes(countryCookie.value) ? 'es' : 'en';
+      console.log(`[Lang] source=cookie | country="${countryCookie.value}" | lang="${lang}"`);
+      await applyLocale(lang);
       return;
     }
 
-    // Si ya estamos en una ruta con prefijo, el módulo i18n ya detectó el idioma
-    // Solo ejecutamos detección extra si estamos en la raíz o necesitamos el país
-    
+    console.log('[Lang] no cookie, calling /api/geoip…');
     try {
-      // 2. Intentar con nuestra API interna (Vercel GeoIP)
-      const internalGeo = await $fetch<any>('/api/geoip');
-      
+      const internalGeo = await $fetch<{ country: string | null; language: string | null }>('/api/geoip');
+      console.log('[Lang] /api/geoip response:', internalGeo);
+
       if (internalGeo.country) {
         country.value = internalGeo.country;
-        countryCookie.value = internalGeo.country; // Guardar en cookie
-
-        if (!locale.value || locale.value === 'en') { // Solo cambiar si es el default y detectamos algo más específico
-             const detected = internalGeo.language || 'es';
-             if (detected !== locale.value) {
-                 await setLocale(detected);
-             }
-        }
+        countryCookie.value = internalGeo.country;
+        await applyLocale(internalGeo.language ?? 'en');
         return;
       }
 
-      // 3. Fallback externo (solo si lo anterior falla y no hay cookie)
+      console.log('[Lang] geoip returned no country, falling back to ipapi.co…');
       const response = await fetch('https://ipapi.co/json/');
       const data = await response.json();
-      
+      console.log('[Lang] ipapi.co response:', data);
+
       if (data.country_code) {
         country.value = data.country_code;
-        countryCookie.value = data.country_code; // Guardar en cookie
-        
-        const detectedLang = SPANISH_SPEAKING_COUNTRIES.includes(country.value) ? 'es' : 'en';
-        if (detectedLang !== locale.value) {
-            await setLocale(detectedLang);
-        }
+        countryCookie.value = data.country_code;
+        const lang = SPANISH_SPEAKING_COUNTRIES.includes(data.country_code) ? 'es' : 'en';
+        await applyLocale(lang);
       }
-      
+
     } catch (error) {
-      console.error('[LanguageManager] Error detecting location:', error);
+      console.error('[Lang] Error detecting location:', error);
     }
   };
 

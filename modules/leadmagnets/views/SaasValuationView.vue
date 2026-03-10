@@ -14,8 +14,8 @@ defineSoftwareApp({
     description: t.value?.seo.description || 'Calcula cuánto vale tu SaaS en segundos.'
 });
 
-onMounted(() => {
-    detectLanguage();
+onMounted(async () => {
+    await detectLanguage();
 });
 
 useAppSeo({
