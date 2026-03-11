@@ -47,10 +47,15 @@ export default defineNuxtConfig({
   },
   experimental: {
     emitRouteChunkError: 'automatic',
-    payloadExtraction: false
+    payloadExtraction: false,
+    inlineSSRStyles: true
   },
   nitro: {
     scanDirs: moduleServerDirs,
+    compressPublicAssets: {
+      brotli: true,
+      gzip: true
+    },
     prerender: {
       routes: ['/', '/en'],
       crawlLinks: true
