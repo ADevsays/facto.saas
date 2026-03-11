@@ -39,9 +39,9 @@ onMounted(async () => {
         <main class="bg-[#030305] min-h-screen">
             <Navbar />
             
-            <!-- Content wrapper that waits for Prisma -->
+            <!-- Content visible immediately; pointer-events disabled until canvas is ready -->
             <div 
-                class="transition-opacity duration-1000"
+                class="transition-opacity duration-300"
                 :class="isReady ? 'opacity-100' : 'opacity-0 pointer-events-none'"
             >
                 <Hero />

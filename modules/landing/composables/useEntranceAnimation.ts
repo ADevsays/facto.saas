@@ -1,17 +1,17 @@
-import { gsap } from 'gsap';
-
 export function useStaggeredEntrance(container: any, selector: string = '.reveal-item', delay: number = 0.5) {
-    const animate = () => {
+    const animate = async () => {
         const root = container.value?.$el || container.value;
         if (!root) return;
 
         const targets = root.querySelectorAll(selector);
         if (targets.length === 0) return;
-        
-        gsap.fromTo(targets, 
-            { 
+
+        const { gsap } = await import('gsap');
+
+        gsap.fromTo(targets,
+            {
                 y: 40,
-                opacity: 0 
+                opacity: 0
             },
             {
                 y: 0,

@@ -14,8 +14,18 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxtjs/i18n',
-    '@nuxtjs/seo'
+    '@nuxtjs/seo',
+    '@nuxtjs/google-fonts'
   ],
+  googleFonts: {
+    families: {
+      'Playfair+Display': { wght: '400..900', ital: '400..900' },
+      Inter: [300, 400, 700]
+    },
+    display: 'swap',
+    preload: true,
+    download: false
+  },
   site: {
     url: 'https://factosaas.com',
     name: 'Facto | Valuación de SaaS',
@@ -71,7 +81,8 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;700&display=swap' }
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }
       ]
     }
   }

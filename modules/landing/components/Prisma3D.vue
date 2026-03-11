@@ -16,6 +16,8 @@ const glowRef = ref<HTMLElement | null>(null);
 onMounted(async () => {
     if (!canvasRef.value) return;
 
+    setReady(true);
+
     initCanvas(() => {
         render(0, 1);
         reinit();
@@ -23,8 +25,6 @@ onMounted(async () => {
 
     await loadImages();
     render(0, 1);
-    
-    setReady(true);
 
     const trigger = props.scrollTrigger || canvasRef.value.parentElement;
     if (!trigger) return;
