@@ -27,12 +27,13 @@ export default defineNuxtConfig({
   },
   i18n: {
     locales: [
-      { code: 'en', name: 'English' },
-      { code: 'es', name: 'Español' }
+      { code: 'en', name: 'English', language: 'en-US' },
+      { code: 'es', name: 'Español', language: 'es-ES' }
     ],
     defaultLocale: 'es',
     strategy: 'prefix_except_default',
-    detectBrowserLanguage: false
+    detectBrowserLanguage: false,
+    baseUrl: 'https://factosaas.com'
   },
   experimental: {
     emitRouteChunkError: 'automatic',

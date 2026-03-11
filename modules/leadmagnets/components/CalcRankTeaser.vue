@@ -59,7 +59,7 @@ const handleSubmit = async () => {
 
                 <div class="h-px bg-white/[0.04]" />
 
-                <p class="font-sans text-[13px] text-white/45 leading-relaxed m-0">
+                <p class="font-sans text-[13px] font-light text-white/45 leading-relaxed m-0">
                     {{ t?.calculator.ranking.description }}
                 </p>
 
