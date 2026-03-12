@@ -39,9 +39,10 @@ defineEmits<{
                 pointerEvents: isOpen ? 'auto' : 'none'
             }"
         >
-            <p class="pb-8 text-gray-500 font-sans leading-relaxed text-sm md:text-base max-w-2xl">
-                {{ answer }}
-            </p>
+            <p 
+                class="pb-8 text-gray-500 font-sans leading-relaxed text-sm md:text-base max-w-2xl"
+                v-html="answer"
+            ></p>
         </div>
     </div>
 </template>

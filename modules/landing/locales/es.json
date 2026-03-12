@@ -3,13 +3,14 @@
     "solution": "Solución",
     "process": "Proceso",
     "faq": "FAQ",
+    "calculator": "¿Cuánto vale tu SaaS?",
     "cta": "Reservar"
   },
   "hero": {
     "title": "Demuestra que \n tu MRR es real",
     "subtitle": "Convierte tus ingresos en una prueba que inversores y clientes compren de inmediato.",
     "cta": "Reservar mi cupo",
-    "share": "27 disponibles"
+    "share": "19 disponibles"
   },
   "pain": {
     "pill": "¿TE SUENA?",
@@ -77,6 +78,10 @@
       {
         "question": "¿Tengo que poner la API key de mi pasarela de pago?",
         "answer": "Sí, para poder verificar los ingresos reales de tu micro SaaS se tomaran los datos desde tu pasarela de pago. Esto es totalmente seguro porque será un API de sólo lectura, lo que significa que no se puede hacer nada más que ver esos datos."
+      },
+      {
+        "question": "¿Puedo calcular la valoración de mi SaaS si lo quiero vender?",
+        "answer": "Sí. Utilizamos múltiplos de mercado actuales basados en ingresos y crecimiento. Puedes probar nuestra <a href='/cuanto-vale-tu-saas' class='text-[#00D4FF] hover:underline'>Calculadora de Valuación de SaaS</a> para obtener un rango estimado en segundos."
       },
       {
         "question": "¿Por qué esto aumentará mi tráfico orgánico?",

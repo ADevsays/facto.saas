@@ -14,6 +14,7 @@ const socialLinks = SOCIAL_LINKS;
 const navLinks = computed(() => [
     { name: t.value.navbar.solution, href: '#solution' },
     { name: t.value.navbar.process, href: '#process' },
+    { name: t.value.navbar.calculator, href: '/cuanto-vale-tu-saas' },
     { name: t.value.navbar.faq, href: '#faq' },
 ]);
 </script>

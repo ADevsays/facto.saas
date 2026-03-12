@@ -3,13 +3,14 @@
     "solution": "Solution",
     "process": "Process",
     "faq": "FAQ",
+    "calculator": "How much is your SaaS worth?",
     "cta": "Get Started"
   },
   "hero": {
     "title": "Prove that \n your MRR is real",
     "subtitle": "Turn your revenue into proof that investors and clients buy immediately.",
     "cta": "Reserve my spot",
-    "share": "27 available"
+    "share": "19 available"
   },
   "pain": {
     "pill": "SOUND FAMILIAR?",
@@ -89,6 +90,10 @@
       {
         "question": "What do I gain by registering my micro SaaS here?",
         "answer": "You will gain credibility, completely free impressions from Facto.saas users, and media relevance."
+      },
+      {
+        "question": "How is my SaaS valuation calculated?",
+        "answer": "We use current market multiples based on revenue and growth. You can try our <a href='/en/how-much-is-your-saas-worth' class='text-[#00D4FF] hover:underline'>SaaS Valuation Calculator</a> to get an estimated range in seconds."
       }
     ]
   },

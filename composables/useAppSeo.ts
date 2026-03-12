@@ -7,6 +7,8 @@ interface SeoConfig {
 export function useAppSeo(config: SeoConfig) {
   const url = useRequestURL();
   const i18nHead = useLocaleHead({ lang: true, dir: true, seo: true });
+  const siteUrl = 'https://factosaas.com';
+  const canonicalHref = () => `${siteUrl}${url.pathname}`;
 
   useHead({
     htmlAttrs: {
@@ -15,14 +17,14 @@ export function useAppSeo(config: SeoConfig) {
     },
     link: () => [
       ...(i18nHead.value.link ?? []),
-      { rel: 'canonical', href: url.href },
+      { rel: 'canonical', href: canonicalHref },
     ],
     meta: () => i18nHead.value.meta ?? [],
   });
 
   const imageUrl = () => {
     const cleanPath = config.imagePath.startsWith('/') ? config.imagePath : `/${config.imagePath}`;
-    return `${url.origin}${cleanPath}?v=2`;
+    return `${siteUrl}${cleanPath}?v=2`;
   };
 
   useSeoMeta({
@@ -34,7 +36,7 @@ export function useAppSeo(config: SeoConfig) {
     ogImageWidth: 1200,
     ogImageHeight: 630,
     ogType: 'website',
-    ogUrl: () => url.href,
+    ogUrl: canonicalHref,
     twitterCard: 'summary_large_image',
     twitterSite: '@Adevsays569',
     twitterCreator: '@Adevsays569',

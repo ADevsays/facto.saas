@@ -30,7 +30,6 @@ export default defineNuxtConfig({
     url: 'https://factosaas.com',
     name: 'Facto | Valuación de SaaS',
     description: 'Calcula cuánto vale tu SaaS en segundos con datos reales del mercado.',
-    defaultLocale: 'es',
   },
   robots: {
     disallow: ['/admin'],
@@ -45,10 +44,12 @@ export default defineNuxtConfig({
     detectBrowserLanguage: false,
     baseUrl: 'https://factosaas.com'
   },
+  features: {
+    inlineStyles: true
+  },
   experimental: {
     emitRouteChunkError: 'automatic',
     payloadExtraction: false,
-    inlineSSRStyles: true
   },
   nitro: {
     scanDirs: moduleServerDirs,
@@ -87,7 +88,7 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' }
       ]
     }
   }
