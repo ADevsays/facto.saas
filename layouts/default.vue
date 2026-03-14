@@ -1,8 +1,13 @@
 <template>
   <div class="min-h-screen bg-[#030305] text-white font-sans selection:bg-cyan-500/30">
     <slot />
+    <Analytics />
   </div>
 </template>
+
+<script setup lang="ts">
+import { Analytics } from '@vercel/analytics/nuxt'
+</script>
 
 <style>
 /* Reset global y transiciones base */
