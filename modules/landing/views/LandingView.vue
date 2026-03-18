@@ -3,7 +3,7 @@ import Hero from '../sections/Hero.vue';
 import PainSection from '../sections/PainSection.vue';
 import SolutionSection from '../sections/SolutionSection.vue';
 import ProcessSection from '../sections/ProcessSection.vue';
-import FaqSection from '../sections/FaqSection.vue';
+import FaqSection from '~/ui/sections/FaqSection.vue';
 import Footer from '../sections/Footer.vue';
 import Navbar from '../components/Navbar.vue';
 import BetaAccessModal from '../sections/BetaAccessModal.vue';
@@ -52,7 +52,7 @@ onMounted(async () => {
                 </div>
                 <SolutionSection />
                 <ProcessSection />
-                <FaqSection />
+                <FaqSection :title="t.faq.title" :faqs="t.faq.questions" />
                 <Footer />
             </div>
         </main>

@@ -14,7 +14,7 @@ const { t } = useLanguage({ es, en });
             <p class="font-serif text-lg font-semibold text-white m-0 leading-snug">
                 {{ t?.calculator.insights.ctaTitle }} 
             </p>
-            <p class="font-sans text-[13px] font-light text-white/45 py-2 m-0 leading-relaxed">
+            <p class="font-sans text-[13px] font-light text-white/65 py-2 m-0 leading-relaxed">
                 {{ t?.calculator.insights.ctaDescription }}
             </p>
             <NuxtLink

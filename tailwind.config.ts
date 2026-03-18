@@ -19,6 +19,7 @@ export default <Partial<Config>>{
     './layouts/**/*.vue',
     './pages/**/*.vue',
     './plugins/**/*.{js,ts}',
+    './ui/**/*.vue',
     './app.vue',
   ]
 }

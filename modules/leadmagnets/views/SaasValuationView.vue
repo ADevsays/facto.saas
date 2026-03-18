@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SaasCalculator from '../sections/SaasCalculator.vue';
+import SaasSeoContent from '../sections/SaasSeoContent.vue';
 import es from '../locales/es.json';
 import en from '../locales/en.json';
 import { useLanguage } from '@/composables/useLanguage';
@@ -23,12 +24,40 @@ useAppSeo({
     description: () => t.value?.seo.description || '',
     imagePath: '/og-valuation.png',
 });
+
+// JSON-LD Schema for FAQPage
+useHead(() => {
+    if (!t.value?.seoContent?.faq?.items) return {};
+    
+    const faqItems = t.value.seoContent.faq.items.map((item: any) => ({
+        "@type": "Question",
+        "name": item.question,
+        "acceptedAnswer": {
+            "@type": "Answer",
+            "text": item.answer
+        }
+    }));
+
+    return {
+        script: [
+            {
+                type: 'application/ld+json',
+                innerHTML: JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "FAQPage",
+                    "mainEntity": faqItems
+                })
+            }
+        ]
+    };
+});
 </script>
 
 <template>
     <NuxtLayout>
         <main>
             <SaasCalculator />
+            <SaasSeoContent />
         </main>
     </NuxtLayout>
 </template>

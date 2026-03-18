@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import FaqItem from '../components/FaqItem.vue';
-import es from '../locales/es.json';
-import en from '../locales/en.json';
-import { useLanguage } from '@/composables/useLanguage';
 
-const { t } = useLanguage({ es, en });
-const faqs = computed(() => t.value.faq.questions);
+defineProps<{
+    title: string;
+    faqs: Array<{ question: string; answer: string }>;
+}>();
 
 const openIndex = ref<number | null>(null);
 </script>
@@ -16,7 +15,7 @@ const openIndex = ref<number | null>(null);
         <div class="max-w-3xl mx-auto">
             <div class="text-center mb-16">
                 <h2 class="text-white font-serif text-[clamp(2rem,5vw,3.5rem)] tracking-tight mb-4 italic">
-                    {{ t.faq.title }}
+                    {{ title }}
                 </h2>
                 <div class="w-12 h-[1px] bg-[#00D4FF] mx-auto opacity-50"></div>
             </div>

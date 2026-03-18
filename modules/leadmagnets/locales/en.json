@@ -1,8 +1,61 @@
 {
   "seo": {
-    "title": "How much is your SaaS worth? | Valuation Calculator | Facto",
+    "title": "SaaS Valuation Calculator: How much is my SaaS worth and for how much can I sell it?",
     "ogTitle": "How much is your SaaS worth? Free valuation calculator",
-    "description": "Calculate the market value of your SaaS with real multiples used by investors and buyers. Free, instant, no registration."
+    "description": "Discover exactly how much your SaaS is worth and the market price you can sell it for. Use our free calculator with real metrics and investor multiples in 2025."
+  },
+  "seoContent": {
+    "sections": {
+      "howToCalculate": {
+        "title": "How do we calculate the value of a SaaS?",
+        "content": "To accurately determine how much a SaaS is worth, investors and buyers look at multiple indicators, the most critical being **ARR (Annual Recurring Revenue)**, **CMGR (Compound Monthly Growth Rate)**, **Net Profit Margin**, and the **Churn Rate**. \n\nNot all software companies are worth the same under an investor's microscope: a SaaS with high retention, low operational costs, and predictable, consistent growth will always receive a significantly higher valuation multiple than its competitors. Our calculator uses standardized market formulas and current real multiples to give you a highly precise estimate. And to turn that estimate into a real offer, **Factosaas allows you to certify all your metrics**, connecting straight to platforms like Stripe or Paddle to present any buyer with an unbreakable financial track record."
+      },
+      "howMuchToSell": {
+        "title": "For how much can I sell my SaaS?",
+        "content": "The final price you'll negotiate to sell a SaaS varies dramatically depending on the scale of your business, your target market, and your historical metrics. Market values (multiples) today conservatively range between **2x and 7x your ARR or annual profit**, heavily depending on the size of the operation:\n\n*   **MicroSaaS:** These businesses are often valued using a multiple on net profits or SDE (Seller's Discretionary Earnings), standing as the ideal target for individual buyers and serial entrepreneurs. Investors in this bracket value high efficiency and low operational overlap.\n*   **Medium/Enterprise SaaS:** These are valued directly on their ARR due to their massive long-term scalability potential, and are usually acquired by corporate investment funds or Private Equity firms. Regardless of your SaaS scale, linking your billing accounts to **Factosaas will generate an immutable report that instantly validates your operation size and justifies the highest possible multiple** during negotiations."
+      },
+      "whatBuyersWant": {
+        "title": "What do SaaS buyers and investors look for?",
+        "content": "When evaluating and ultimately acquiring a SaaS, a sophisticated investor primarily looks for **predictability** and **frictionless scalability**. The factors that truly move the needle to close a successful sale in your favor include:\n\n*   **Retention (Low Churn):** A SaaS that retains customers indefinitely is the golden metric. It proves your product solves a critical problem.\n*   **Consistent monthly growth:** Proving you have true Product-Market Fit is essential for driving the multiple higher.\n*   **Truly healthy margins:** An efficient and highly profitable business always attracts better offers and more competitors to the bidding process.\n*   **Transparent and verifiable data:** Nobody buys a car without checking the engine. With **Factosaas**, you instantly eliminate investor mistrust by providing a public dashboard with read-only access to your verified revenue performance, shortening Due Diligence to days rather than months."
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions (FAQ)",
+      "items": [
+        {
+          "question": "Is it better to sell a SaaS based on revenue or profit?",
+          "answer": "It depends on the stage of your company. MicroSaaS (small revenues) are usually sold based on a multiple of their net profits or SDE (Seller's Discretionary Earnings), typically between 2.5x and 4x. Mature SaaS in high-growth stages are valued by a multiple of their ARR, as investors bet on future expansion."
+        },
+        {
+          "question": "How can I convincingly prove my SaaS revenue to a buyer?",
+          "answer": "Transparency is key to preventing a buyer from lowering their offer due to mistrust. Instead of sending Stripe screenshots or Excel sheets that can be forged, you can use Factosaas to generate a public, certified link of your revenue. This proves real traction instantly."
+        },
+        {
+          "question": "My SaaS relies on multiple payment gateways, how do I calculate its combined valuation?",
+          "answer": "Many founders use Stripe, PayPal, and Mercado Pago simultaneously. Factosaas connects and consolidates all these sources into a single dashboard, giving you a unified ARR that allows you to get a global and accurate valuation of your entire business model."
+        },
+        {
+          "question": "Where can I sell my SaaS once I know its value?",
+          "answer": "There are several specialized platforms and marketplaces for selling SaaS, such as Acquire.com, MicroAcquire, or Flippa for smaller projects. By presenting your startup backed by the real-time financial report offered by Factosaas, you will attract more qualified investors quickly."
+        },
+        {
+          "question": "What metrics should I improve to increase my pre-sale valuation?",
+          "answer": "You should focus on reducing your Churn rate (retention) and increasing the LTV (Life Time Value). With Factosaas, you not only calculate your revenue, but you also maintain a monitor of your company's financial health that will let you know exactly in which months your retention improves."
+        },
+        {
+          "question": "Can a buyer audit my metrics during the Due Diligence process?",
+          "answer": "Yes, the Due Diligence process is mandatory before closing the sale. Factosaas drastically reduces the legal and accounting time of this process, as it provides a verified and irrevocable financial history directly from your payment gateways."
+        },
+        {
+          "question": "How much time should I prepare my SaaS before putting it up for sale?",
+          "answer": "Experts recommend preparing at least 6 to 12 months in advance. During this period, you must ensure your numbers have a clean growth history. Integrating Factosaas early in this cycle guarantees that you have the entire verified history when you decide to go to market."
+        },
+        {
+          "question": "Why is it risky to sell my SaaS without proper verification of my daily revenue?",
+          "answer": "If you don't show verified metrics, the buyer may consider the business risky and will demand a much lower multiple (buying it very cheap). With Factosaas you protect your valuation and make sure not to leave money on the table when negotiating the final sale."
+        }
+      ]
+    }
   },
   "calculator": {
     "header": {

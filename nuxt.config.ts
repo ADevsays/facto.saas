@@ -58,7 +58,12 @@ export default defineNuxtConfig({
       gzip: true
     },
     prerender: {
-      routes: ['/', '/en'],
+      routes: [
+        '/',
+        '/en',
+        '/cuanto-vale-tu-saas',
+        '/en/how-much-is-your-saas-worth'
+      ],
       crawlLinks: true
     }
   },

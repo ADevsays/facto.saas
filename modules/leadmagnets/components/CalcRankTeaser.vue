@@ -34,7 +34,7 @@ const handleSubmit = async () => {
     <div class="flex flex-col gap-4 p-6 bg-[#0A0A0C] border border-white/5 rounded-2xl">
 
         <div class="flex justify-between items-center">
-            <span class="font-sans text-[11px] font-medium tracking-[0.15em] uppercase text-white/40">{{ t?.calculator.ranking.title }}</span>
+            <span class="font-sans text-[11px] font-bold tracking-[0.15em] uppercase text-white">{{ t?.calculator.ranking.title }}</span>
             <span 
                 class="font-sans text-[11px] font-medium tracking-[0.1em] uppercase transition-colors"
                 :class="isSubmitted ? 'text-cyan-400' : 'text-[#00D4FF]/60'"
@@ -49,7 +49,7 @@ const handleSubmit = async () => {
                 <!-- Blurred rank bar -->
                 <div class="select-none" aria-hidden="true">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="font-sans text-[11px] text-white/35">{{ t?.calculator.ranking.hint }}</span>
+                        <span class="font-sans text-[11px] text-white/70">{{ t?.calculator.ranking.hint }}</span>
                         <span class="font-mono text-sm font-semibold text-white blur-[6px]">{{ t?.calculator.ranking.top }} 23%</span>
                     </div>
                     <div class="relative h-1.5 rounded-full bg-white/5 overflow-hidden">
@@ -59,7 +59,7 @@ const handleSubmit = async () => {
 
                 <div class="h-px bg-white/[0.04]" />
 
-                <p class="font-sans text-[13px] font-light text-white/45 leading-relaxed m-0">
+                <p class="font-sans text-[13px] font-light text-white/65 leading-relaxed m-0">
                     {{ t?.calculator.ranking.description }}
                 </p>
 
@@ -75,7 +75,7 @@ const handleSubmit = async () => {
             <div v-else key="done" class="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
                 <div class="flex flex-col gap-3">
                     <div class="flex items-center justify-between bg-cyan-400/5 border border-cyan-400/10 rounded-xl p-4">
-                        <span class="font-sans text-[11px] text-white/40 uppercase tracking-widest">{{ t?.calculator.ranking.unlockedTitle }}</span>
+                        <span class="font-sans text-[11px] text-white/60 uppercase tracking-widest">{{ t?.calculator.ranking.unlockedTitle }}</span>
                         <span class="font-serif text-2xl font-bold text-cyan-400">{{ t?.calculator.ranking.top }} {{ userRank }}%</span>
                     </div>
                 </div>

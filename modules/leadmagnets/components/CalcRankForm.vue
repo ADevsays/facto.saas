@@ -74,7 +74,7 @@ const handleGatewayClick = (gw: string) => {
 
         <!-- Gateway Selector -->
         <div class="flex flex-col gap-2">
-            <span class="font-sans text-[10px] text-white/40 uppercase tracking-widest pl-1">{{ t.calculator.ranking.form.gatewayLabel }}</span>
+            <span class="font-sans text-[10px] text-white/60 uppercase tracking-widest pl-1">{{ t.calculator.ranking.form.gatewayLabel }}</span>
             <div class="flex flex-wrap gap-1.5 items-center">
                 <template v-for="gw in gateways" :key="gw.id">
                     <button

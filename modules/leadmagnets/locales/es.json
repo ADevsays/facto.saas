@@ -1,8 +1,61 @@
 {
   "seo": {
-    "title": "¿Cuánto vale tu SaaS? | Calculadora de Valuación | Facto",
+    "title": "Calculadora de Valoración SaaS: ¿Cuánto vale y por cuánto puedo vender mi SaaS?",
     "ogTitle": "¿Cuánto vale tu SaaS? Calculadora gratuita de valuación",
-    "description": "Calcula el valor de mercado de tu SaaS con los múltiplos reales que usan inversores y compradores. Gratis, instantáneo, sin registro."
+    "description": "Descubre exactamente cuánto vale tu SaaS y a qué precio de mercado puedes venderlo. Usa nuestra calculadora gratuita con métricas y múltiplos reales de inversores en 2025."
+  },
+  "seoContent": {
+    "sections": {
+      "howToCalculate": {
+        "title": "¿Cómo calculamos el valor de un SaaS?",
+        "content": "Para determinar cuánto vale un SaaS, los inversores y compradores se fijan en múltiples indicadores, siendo los más importantes el **ARR (Ingresos Anuales Recurrentes)**, la **tasa de crecimiento intermensual (CMGR)**, el **margen de ganancias netas** y el **Churn rate (tasa de cancelación o abandono)**. \n\nNo todas las empresas de software valen lo mismo bajo el microscopio de los inversionistas: un SaaS con alta retención, bajos costos operativos y crecimiento predecible y consistente siempre recibirá un múltiplo de valoración significativamente mayor que sus competidores. Nuestra calculadora utiliza fórmulas estandarizadas y múltiplos reales del mercado actual para darte una estimación muy precisa. Y para que esa estimación se traduzca en una oferta real, **Factosaas te permite certificar todas tus métricas**, conectándose directamente con plataformas como Stripe o Mercado Pago para presentarle a cualquier comprador un historial financiero inquebrantable."
+      },
+      "howMuchToSell": {
+        "title": "¿Por cuánto puedo vender mi SaaS?",
+        "content": "El precio final al que llegarás para vender un SaaS varía dramáticamente según la escala del negocio, su mercado objetivo y su histórico de métricas. Los valores de mercado (múltiplos) en la actualidad suelen oscilar de manera conservadora entre **2x y 7x tu ARR o tu profit anual**, dependiendo fuertemente del tamaño de la operación:\n\n*   **MicroSaaS:** Estos negocios suelen valorarse usando un múltiplo sobre las ganancias netas (profit) o SDE (Seller's Discretionary Earnings), y son el objetivo ideal para compradores individuales o emprendedores seriales. Los inversores de este segmento valoran la eficiencia y el bajo solapamiento operativo.\n*   **SaaS Mediano/Enterprise:** Se valoran directamente sobre el ARR debido a su gran potencial de escalabilidad a largo plazo, y suelen ser adquiridos por fondos de inversión corporativos o firmas de Private Equity. Sea cual sea tu tamaño de SaaS, conectar tus cuentas de cobro a **Factosaas generará un reporte inmutable que validará al instante el tamaño de tu operación y justificará el múltiplo más alto posible** durante tu negociación."
+      },
+      "whatBuyersWant": {
+        "title": "¿Qué buscan los compradores e inversores de SaaS?",
+        "content": "Al evaluar y finalmente comprar un SaaS, un inversor sofisticado busca, sobre todo, **previsibilidad** y **escalabilidad sin fricción**. Los factores que de verdad mueven la aguja para cerrar una venta exitosa en tu favor son:\n\n*   **Retención (Churn bajo):** Un SaaS que retiene a sus clientes indefinidamente es la métrica de oro. Demuestra que tu producto soluciona un problema crítico.\n*   **Crecimiento mensual constante:** Probar que tienes un verdadero encaje producto-mercado (Product-Market Fit) es esencial para aumentar el múltiplo.\n*   **Márgenes verdaderamente saludables:** Un negocio eficiente y rentable atrae siempre mejores ofertas y más competidores al proceso de compra.\n*   **Datos transparentes y verificables:** Nadie compra un coche sin revisar el motor. Con **Factosaas**, eliminas inmediatamente la desconfianza del inversor proporcionándole un dashboard público con acceso de solo lectura al rendimiento verificado de tus ingresos, acortando el proceso de Due Diligence a días en lugar de meses."
+      }
+    },
+    "faq": {
+      "title": "Preguntas Frecuentes (FAQ)",
+      "items": [
+        {
+          "question": "¿Es mejor vender un SaaS por ingresos o por ganancias (profit)?",
+          "answer": "Depende de la etapa de tu empresa. Los MicroSaaS (ingresos pequeños) suelen venderse basados en un múltiplo de sus ganancias netas o SDE (Seller's Discretionary Earnings), típicamente entre 2.5x y 4x. Los SaaS maduros en etapa de alto crecimiento se valoran por un múltiplo de su ARR, ya que los inversores apuestan por la expansión futura."
+        },
+        {
+          "question": "¿Cómo puedo demostrar de forma contundente los ingresos de mi SaaS a un comprador?",
+          "answer": "La transparencia es clave para evitar que el comprador reduzca su oferta por desconfianza. En lugar de enviar capturas de pantalla de Stripe o Excel que pueden ser falsificados, puedes usar Factosaas para generar un enlace público y certificado de tus ingresos. Esto demuestra tracción real al instante."
+        },
+        {
+          "question": "Mi SaaS depende de múltiples plataformas de pago, ¿cómo calculo su evaluación combinada?",
+          "answer": "Muchos fundadores usan Stripe, PayPal y Mercado Pago al mismo tiempo. Factosaas se conecta y consolida todas estas fuentes en un único dashboard, brindándote un ARR unificado que te permitirá obtener una valoración global y precisa de todo tu modelo de negocio."
+        },
+        {
+          "question": "¿Dónde puedo vender mi SaaS una vez sepa su valor?",
+          "answer": "Existen varias plataformas y marketplaces especializados para vender SaaS, como Acquire.com, MicroAcquire, o Flippa para proyectos más pequeños. Si presentas tu startup respaldada por el reporte financiero en tiempo real que ofrece Factosaas, atraerás inversores más cualificados rápidamente."
+        },
+        {
+          "question": "¿Qué métricas debo mejorar para aumentar la valoración pre-venta?",
+          "answer": "Debes enfocarte en reducir tu Churn rate (retención) y aumentar el LTV (Life Time Value). Con Factosaas, no solo calculas tus ingresos, sino que mantienes un monitoreo de la salud financiera de tu empresa que te permitirá saber exactamente en qué meses tu retención mejora."
+        },
+        {
+          "question": "¿Puede un comprador auditar mis métricas durante el proceso de Due Diligence?",
+          "answer": "Sí, el proceso de Due Diligence es obligatorio antes de cerrar la venta. Factosaas reduce drásticamente los tiempos legales y contables de este proceso, ya que proporciona un historial financiero verificado e irrevocable directamente desde tus pasarelas de pago."
+        },
+        {
+          "question": "¿Cuánto tiempo debo preparar mi SaaS antes de ponerlo en venta?",
+          "answer": "Los expertos recomiendan prepararse al menos de 6 a 12 meses antes. Durante este periodo debes asegurar de que tus números tengan un historial de crecimiento limpio. Integrar Factosaas temprano en este ciclo te garantiza tener todo el historial verificado cuando decidas salir al mercado."
+        },
+        {
+          "question": "¿Por qué es riesgoso vender mi SaaS sin la verificación adecuada de mis ingresos diarios?",
+          "answer": "Si no muestras métricas verificadas, el comprador puede considerar el negocio como riesgoso y exigirá un múltiplo mucho más bajo (comprarlo muy barato). Con Factosaas proteges tu valoración y te aseguras de no dejar dinero en la mesa al negociar la venta final."
+        }
+      ]
+    }
   },
   "calculator": {
     "header": {
