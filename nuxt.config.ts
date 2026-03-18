@@ -27,7 +27,7 @@ export default defineNuxtConfig({
     download: false
   },
   site: {
-    url: 'https://factosaas.com',
+    url: 'https://www.factosaas.com',
     name: 'Facto | Valuación de SaaS',
     description: 'Calcula cuánto vale tu SaaS en segundos con datos reales del mercado.',
   },
@@ -42,7 +42,7 @@ export default defineNuxtConfig({
     defaultLocale: 'es',
     strategy: 'prefix_except_default',
     detectBrowserLanguage: false,
-    baseUrl: 'https://factosaas.com'
+    baseUrl: 'https://www.factosaas.com'
   },
   features: {
     inlineStyles: true
