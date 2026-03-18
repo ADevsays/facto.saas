@@ -31,7 +31,7 @@ const formattedContent = computed(() => {
       v-html="formattedTitle"
     ></h2>
     <div class="space-y-4">
-      <p class="font-sans text-[15px] font-light text-white/50 leading-[1.7] tracking-[0.01em] whitespace-pre-wrap">{{ formattedContent }}</p>
+      <p class="font-sans text-[15px] font-light text-white/70 leading-[1.7] tracking-[0.01em] whitespace-pre-wrap">{{ formattedContent }}</p>
     </div>
   </div>
 </template>
