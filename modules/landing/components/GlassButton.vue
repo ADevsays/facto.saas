@@ -24,7 +24,7 @@ const handleClick = (e: Event) => {
 
 <template>
     <div class=" pointer-events-auto">            
-        <a 
+        <NuxtLink 
             :href="href || '#'"
             @click="handleClick"
             class="group bg-white text-black relative inline-flex items-center justify-center px-6 py-3  md:px-10 md:py-4 font-bold uppercase tracking-widest text-xs md:text-sm rounded-full transition-all duration-700 hover:scale-[1.03]"
@@ -35,7 +35,7 @@ const handleClick = (e: Event) => {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
             </span>
-        </a>
+        </NuxtLink>
     </div>
 </template>
 

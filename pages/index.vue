@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import LandingView from '@/modules/landing/views/LandingView.vue';
+import VisualsView from '../modules/visuals/views/VisualsView.vue'
 </script>
 
 <template>
-  <LandingView />
+  <VisualsView />
 </template>

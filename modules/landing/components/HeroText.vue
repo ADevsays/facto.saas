@@ -9,6 +9,7 @@ import { useLanguage } from '@/composables/useLanguage';
 const container = ref<HTMLElement | null>(null);
 const { isReady } = useAppStatus();
 const { t } = useLanguage({ es, en });
+const localePath = useLocalePath();
 
 onMounted(async () => {
     const root = container.value;
@@ -62,14 +63,14 @@ defineExpose({ container });
             {{ t.hero.subtitle }}
         </p>
 
-        <div class="reveal-item pointer-events-auto mb-14">
-            <GlassButton href="#contact">
-                {{ t.hero.cta }}
-            </GlassButton>
-            <p v-if="t.hero.share" class="mt-4 text-[10px] md:text-xs uppercase tracking-[0.2em] text-white opacity-50">
-                ({{ t.hero.share }})
-            </p>
-        </div>
+    <div class="reveal-item pointer-events-auto mb-14">
+        <GlassButton :href="localePath('/')">
+            {{ t.hero.cta }}
+        </GlassButton>
+        <p v-if="t.hero.share" class="mt-4 text-[10px] md:text-xs uppercase tracking-[0.2em] text-white opacity-50">
+            ({{ t.hero.share }})
+        </p>
+    </div>
 
     </div>
 </template>

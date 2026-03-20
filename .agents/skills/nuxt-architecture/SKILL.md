@@ -47,18 +47,21 @@ Para lógica que trasciende a un solo módulo o es core del sistema:
 - **`server/const/`**: Constantes globales (ej: roles de usuario, códigos de error).
 - **`server/utils/`**: Utilidades de servidor globales.
 
-### Componentes Globales (`components/`)
+### UI Global (`ui/`)
 
-```
-components/
-└── UI/             # Componentes reutilizables globalmente (Layout, Buttons, Inputs)
-    ├── BackButton.vue
-    ├── Header.vue
-    └── ...
+Para componentes visuales y secciones reutilizables en todo el proyecto que no pertenecen a un feature específico. Deben ser totalmente **agnósticos** (recibir datos vía `props` en lugar de amarrarse a `locales/` o data estática de algún módulo).
+
+```text
+ui/
+├── components/     # Piezas reutilizables menores (Layout, Buttons, Inputs, Items)
+│   ├── BackButton.vue
+│   └── FaqItem.vue
+└── sections/       # Bloques completos reutilizables (Headers, Footers, FAQ blocks)
+    └── FaqSection.vue
 ```
 
 - **Naming:** PascalCase descriptivo.
-- **Auto-imported** por Nuxt.
+- **Ruta de Tailwind:** Debe estar incluida explícitamente en el arreglo `content` de `tailwind.config.ts` (ej: `'./ui/**/*.vue'`).
 
 ### Composables
 
@@ -99,9 +102,11 @@ Valores constantes y contenido declarativo:
 - **¿Consumido por múltiples módulos?** (ej: leads de landing y calculadora) → `server/api/`
 - **¿Consumido sólo por el propio módulo?** → `modules/<feature>/server/api/`
 
-**Componentes Vue:**
-- ¿Específico de un feature? → `modules/<feature>/components/<Name>.vue`
-- ¿Reutilizable globalmente? → `components/UI/<Name>.vue`
+**Componentes Vue / Interfaz Gráfica:**
+- ¿Pieza específica de un feature? → `modules/<feature>/components/<Name>.vue`
+- ¿Sección completa de un feature? → `modules/<feature>/sections/<Name>.vue`
+- ¿Pieza reutilizable globalmente? → `ui/components/<Name>.vue`
+- ¿Sección completa reutilizable globalmente? → `ui/sections/<Name>.vue`
 
 **Valores constantes:**
 - ¿Globales? → `server/const/`
