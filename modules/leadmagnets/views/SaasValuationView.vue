@@ -54,12 +54,8 @@ useHead(() => {
 </script>
 
 <template>
-    <NuxtLayout>
-        <main>
-            <SaasCalculator />
-            <SaasSeoContent />
-        </main>
-    </NuxtLayout>
+    <SaasCalculator />
+    <SaasSeoContent />
 </template>
 
 <style>

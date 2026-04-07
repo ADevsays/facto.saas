@@ -76,6 +76,9 @@ export default defineNuxtConfig({
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,
     adminSecretKey: process.env.ADMIN_SECRET_KEY,
+    mpClientId: process.env.MP_CLIENT_ID,
+    mpClientSecret: process.env.MP_CLIENT_SECRET,
+    mpRedirectUri: process.env.MP_REDIRECT_URI || 'http://localhost:3000/api/auth/mercadopago/callback',
     public: {
       clarityProjectId: process.env.CLARITY_PROJECT_ID || ''
     }
@@ -95,6 +98,11 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' }
       ]
+    }
+  },
+  vite: {
+    server: {
+      allowedHosts: true
     }
   }
 })

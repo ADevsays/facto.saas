@@ -3,5 +3,7 @@ import MrrInputSection from '../sections/MrrInputSection.vue'
 </script>
 
 <template>
-  <MrrInputSection />
+  <div class="my-16 flex justify-center items-center">
+    <MrrInputSection />
+  </div>
 </template>

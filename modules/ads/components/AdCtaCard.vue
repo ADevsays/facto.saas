@@ -6,7 +6,7 @@
     <span class="ad-cta__icon text-xl leading-none transition-all duration-500">✦</span>
     <div class="flex flex-col gap-0.5">
       <p class="ad-cta__title text-sm font-sans font-medium whitespace-nowrap transition-all duration-500">Anúnciate aquí</p>
-      <p class="ad-cta__sub text-xs font-sans font-extralight tracking-[0.08em] whitespace-nowrap transition-all duration-500">2/20 espacios libres</p>
+      <p class="ad-cta__sub text-xs font-sans font-extralight tracking-[0.08em] whitespace-nowrap transition-all duration-500">2/20 cupos libres</p>
     </div>
   </NuxtLink>
 </template>

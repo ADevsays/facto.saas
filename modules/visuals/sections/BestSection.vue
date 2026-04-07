@@ -12,7 +12,7 @@ const items = [
 </script>
 
 <template>
-  <section class="w-full py-8">
+  <section class="w-full ">
     <p class="text-[10px] font-sans font-extralight tracking-[0.15em] text-neutral-300 mb-4 uppercase">Best SaaS</p>
     <div class="flex gap-4 overflow-x-auto no-scrollbar pb-4">
       <SaasCard
