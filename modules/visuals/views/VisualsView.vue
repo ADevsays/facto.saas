@@ -16,10 +16,10 @@ const widthLayout = "max-w-5xl w-full"
     <div class="flex flex-col">
       <div :class="[widthLayout, 'flex-1 flex flex-col mx-auto px-6']">
         <HomeHeaderSection />
+        <div :class="[widthLayout, 'mx-auto px-6']">
+          <InputMrrView />
+        </div>
         <RecentlySection />
-      </div>
-      <div :class="[widthLayout, 'mx-auto px-6']">
-        <InputMrrView />
       </div>
     </div>
 

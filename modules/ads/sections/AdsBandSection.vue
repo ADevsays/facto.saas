@@ -12,7 +12,15 @@ type AdItem = { name: string; tagline: string; emoji: string; color: string }
 type CtaItem = { isCta: true }
 type TrackItem = AdItem | CtaItem
 
-const ads: AdItem[] = [
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+const adsBase: AdItem[] = [
   { name: 'Acme Corp',    tagline: 'Scale your SaaS faster',  emoji: '🚀', color: randomColor() },
   { name: 'DevFlow',      tagline: 'Ship code, not bugs',      emoji: '⚡', color: randomColor() },
   { name: 'CloudBase',    tagline: 'Infra for modern teams',   emoji: '☁️', color: randomColor() },
@@ -23,8 +31,9 @@ const ads: AdItem[] = [
   { name: 'Lemonsqueezy', tagline: 'Payments made simple',     emoji: '🍋', color: randomColor() },
 ]
 
-const set: TrackItem[] = [...ads, { isCta: true }]
-const track = computed<TrackItem[]>(() => [...set, ...set, ...set])
+const ads = ref<AdItem[]>(adsBase)
+const set = computed<TrackItem[]>(() => [...ads.value, { isCta: true }])
+const track = computed<TrackItem[]>(() => [...set.value, ...set.value, ...set.value])
 
 const sectionRef = ref<HTMLElement | null>(null)
 const trackRef  = ref<HTMLElement | null>(null)
@@ -32,6 +41,7 @@ const isHovered = ref(false)
 
 let rafId: number
 let position = 0
+let positionInitialized = false
 let userScrollTimeout: ReturnType<typeof setTimeout>
 let isUserScrolling = false
 const SPEED = 0.1
@@ -48,8 +58,13 @@ function wrap(pos: number, limit: number) {
 }
 
 function tick() {
+  const limit = getOneThird()
+  if (!positionInitialized && limit > 0) {
+    position = Math.random() * limit
+    positionInitialized = true
+  }
   if (!isHovered.value && !isUserScrolling) {
-    position = wrap(position + SPEED, getOneThird())
+    position = wrap(position + SPEED, limit)
   }
   if (trackRef.value) {
     trackRef.value.style.transform = `translateX(${-position}px)`
@@ -66,6 +81,7 @@ function onWheel(e: WheelEvent) {
 }
 
 onMounted(() => {
+  ads.value = shuffle(adsBase)
   sectionRef.value?.addEventListener('wheel', onWheel, { passive: false })
   rafId = requestAnimationFrame(tick)
 })

@@ -4,7 +4,7 @@ import HomeCategoryLinks from '../components/HomeCategoryLinks.vue'
 </script>
 
 <template>
-  <section class="w-full flex flex-col gap-4 py-4">
+  <section class="w-full flex flex-col gap-6 py-4">
     <FactoLogo />
     <HomeCategoryLinks />
   </section>

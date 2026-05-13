@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center justify-center gap-4">
+  <div class="mt-4 flex flex-col items-center justify-center gap-4">
     <div class="flex items-center justify-center gap-3">
       <img src="/favicon.svg" alt="Facto" class="w-7 h-7 opacity-90 mt-2" />
       <span class="facto-logo font-serif text-2xl md:text-3xl tracking-tight leading-none select-none">

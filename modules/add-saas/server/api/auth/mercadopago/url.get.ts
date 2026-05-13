@@ -14,7 +14,6 @@ export default defineEventHandler((event) => {
   const params = new URLSearchParams({
     client_id: config.mpClientId,
     response_type: 'code',
-    platform_id: 'mp',
     scope: 'read',
     redirect_uri: config.mpRedirectUri
   })

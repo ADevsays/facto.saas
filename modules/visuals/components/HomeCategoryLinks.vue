@@ -4,7 +4,7 @@ const active = ref('All')
 </script>
 
 <template>
-  <nav class="flex gap-5 overflow-x-auto no-scrollbar pb-1 w-full justify-center">
+  <nav class="flex gap-8 overflow-x-auto no-scrollbar pb-1 w-full justify-center">
     <button
       v-for="cat in categories"
       :key="cat"

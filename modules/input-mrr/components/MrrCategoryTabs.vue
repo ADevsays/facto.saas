@@ -12,13 +12,17 @@ defineProps<{
       :key="cat"
       @click="active = cat"
       :class="[
-        'shrink-0 text-xs font-sans font-extralight tracking-[0.1em] transition-all duration-300 pb-0.5',
+        'shrink-0 text-xs font-sans font-extralight tracking-[0.1em] transition-all duration-300 pb-1 relative',
         active === cat
-          ? 'text-white border-b border-white/40'
+          ? 'text-white font-normal'
           : 'text-neutral-500 hover:text-neutral-300'
       ]"
     >
       {{ cat }}
+      <div
+        v-if="active === cat"
+        class="absolute bottom-0 left-0 w-full h-[2px] bg-[#00D4FF] shadow-[0_0_8px_#00D4FF]"
+      ></div>
     </button>
   </nav>
 </template>

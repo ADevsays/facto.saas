@@ -31,7 +31,7 @@ function onInput(e: Event) {
     <div class="flex flex-col sm:flex-row gap-3 w-full">
       <div class="relative flex-1">
         <svg
-          class="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none"
+          class="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none transition-colors duration-300 group-focus-within:text-[#00D4FF]"
           width="14" height="14" viewBox="0 0 24 24" fill="none"
         >
           <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
@@ -41,8 +41,8 @@ function onInput(e: Event) {
           :value="query"
           @input="onInput"
           type="text"
-          placeholder="Busca lo que sea..."
-          class="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-5 py-3.5 text-white text-sm font-sans tracking-wide placeholder:text-neutral-600 focus:outline-none focus:border-[#00D4FF]/50 focus:bg-white/8 transition-all duration-300"
+          placeholder="Busca cualquier SaaS: salud, 10kMRR, etc..."
+          class="w-full bg-white/10 border border-white/20 rounded-xl pl-10 pr-5 py-3.5 text-white text-sm font-sans tracking-wide placeholder:text-neutral-500 focus:outline-none focus:border-[#00D4FF] focus:bg-white/15 focus:ring-4 focus:ring-[#00D4FF]/10 transition-all duration-300 shadow-sm"
         />
       </div>
       <button @click="openAddModal" class="add-btn group flex items-center justify-center gap-2 bg-white text-black font-bold uppercase tracking-widest text-xs rounded-xl px-5 py-3.5 transition-all duration-700 hover:scale-[1.03] w-full sm:w-auto shrink-0">
@@ -61,7 +61,10 @@ function onInput(e: Event) {
 </template>
 
 <style scoped>
+.add-btn {
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
 .add-btn:hover {
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 30px rgba(0, 212, 255, 0.3), 0 0 45px rgba(0, 212, 255, 0.1);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 0 40px rgba(0, 212, 255, 0.4), 0 0 60px rgba(0, 212, 255, 0.2);
 }
 </style>
