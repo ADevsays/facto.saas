@@ -4,7 +4,8 @@
     "process": "Proceso",
     "faq": "FAQ",
     "calculator": "¿Cuánto vale tu SaaS?",
-    "cta": "Reservar"
+    "categories": "Categorías",
+    "cta": "Empezar"
   },
   "hero": {
     "title": "Demuestra que \n tu MRR es real",
@@ -81,7 +82,7 @@
       },
       {
         "question": "¿Puedo calcular la valoración de mi SaaS si lo quiero vender?",
-        "answer": "Sí. Utilizamos múltiplos de mercado actuales basados en ingresos y crecimiento. Puedes probar nuestra <a href='/cuanto-vale-tu-saas' class='text-[#00D4FF] hover:underline'>Calculadora de Valuación de SaaS</a> para obtener un rango estimado en segundos."
+        "answer": "Sí. Utilizamos múltiplos de mercado actuales basados en ingresos y crecimiento. Puedes probar nuestra <a href='/herramientas/cuanto-vale-tu-saas' class='text-[#00D4FF] hover:underline'>Calculadora de Valuación de SaaS</a> para obtener un rango estimado en segundos."
       },
       {
         "question": "¿Por qué esto aumentará mi tráfico orgánico?",

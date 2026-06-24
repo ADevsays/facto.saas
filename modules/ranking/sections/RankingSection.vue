@@ -2,11 +2,10 @@
 import RankingRow from '../components/RankingRow.vue'
 
 const { rankingItems, loading, error, fetchAll } = useSaasList()
-const { query, setQuery, filterItems } = useStartupSearch()
 
 onMounted(fetchAll)
 
-const filteredItems = computed(() => filterItems(rankingItems.value))
+const filteredItems = computed(() => rankingItems.value)
 </script>
 
 <template>
@@ -28,10 +27,10 @@ const filteredItems = computed(() => filterItems(rankingItems.value))
     </div>
 
     <div v-else class="rounded-2xl border border-white/10 overflow-hidden">
-      <div class="grid grid-cols-[1rem_1fr_1fr_auto] sm:grid-cols-[2rem_1fr_1fr_auto] items-center py-2.5 px-3 sm:px-5 border-b border-white/10 bg-white/[0.03] gap-2 sm:gap-3">
+      <div class="grid grid-cols-[1.2rem_1fr_1fr_80px] sm:grid-cols-[2rem_1fr_1fr_100px] items-center py-2.5 px-3 sm:px-5 border-b border-white/10 bg-white/[0.03] gap-2 sm:gap-3">
         <span class="text-[10px] text-neutral-600 uppercase tracking-widest text-center">#</span>
         <span class="text-[10px] text-neutral-600 uppercase tracking-widest font-sans font-extralight">Startup</span>
-        <span class="text-[10px] text-neutral-600 uppercase tracking-widest font-sans font-extralight">Founder</span>
+        <span class="text-[10px] text-neutral-600 uppercase tracking-widest font-sans font-extralight w-[80px] text-center block">Founder</span>
         <span class="text-[10px] text-neutral-600 uppercase tracking-widest font-sans font-extralight text-right">MRR</span>
       </div>
 

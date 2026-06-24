@@ -1,4 +1,4 @@
-export type PaymentProvider = 'stripe' | 'mercadopago'
+export type PaymentProvider = 'stripe' | 'mercadopago' | 'whop'
 
 export interface ProviderValidationResult {
   valid: boolean
@@ -10,15 +10,18 @@ export interface ProviderValidationResult {
 export interface PaymentProviderService {
   validate(apiKey: string): Promise<ProviderValidationResult>
   getMrr(apiKey: string): Promise<ProviderValidationResult>
+  getHistory?(apiKey: string): Promise<any>
 }
 
 export interface SaasSubmission {
+  id?: string
   name: string
   logoUrl?: string
   websiteUrl?: string
   founderName?: string
+  founderEmail?: string
   startupType?: string
-  categorySlug: string
+  categorySlugs: string[]
   providerSlug?: PaymentProvider
   providerKey?: string
   isIncognito: boolean
@@ -32,6 +35,7 @@ export interface SaasPublicProfile {
   founderName: string | null
   startupType: string | null
   category: string
+  categories: { name: string; slug: string }[]
   provider: PaymentProvider | null
   isIncognito: boolean
   mrr: number | null

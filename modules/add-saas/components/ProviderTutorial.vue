@@ -1,17 +1,18 @@
 <script setup lang="ts">
 const props = defineProps<{
-  provider: 'stripe' | 'mercadopago' | 'none' | null
+  provider: 'stripe' | 'mercadopago' | 'whop' | 'none' | null
 }>()
 
 const tutorials = {
   stripe: {
     title: 'Stripe (Recomendado: Solo Lectura)',
     steps: [
-      'Ve a Developers > API Keys',
-      'Crea una "Restricted Key"',
-      'Permiso: "Subscriptions: Read"'
+      'Haz clic en "Ir al Dashboard" para abrir la creación de clave preconfigurada.',
+      'Crea tu clave restringida de Stripe con los permisos preseleccionados.',
+      'Copia la clave resultante y pégala abajo.'
     ],
-    link: 'https://dashboard.stripe.com/apikeys'
+    linkText: 'Ir al Dashboard',
+    link: 'https://dashboard.stripe.com/apikeys/create?name=Facto.saas&permissions%5B%5D=rak_charge_read&permissions%5B%5D=rak_subscription_read&permissions%5B%5D=rak_plan_read&permissions%5B%5D=rak_product_read'
   },
   mercadopago: {
     title: 'Mercado Pago (Conexión Segura)',
@@ -21,7 +22,19 @@ const tutorials = {
       'Verifica permisos de "Solo Lectura"',
       'El MRR se detectará automáticamente'
     ],
+    linkText: null,
     link: null
+  },
+  whop: {
+    title: 'Whop (Conexión Segura)',
+    steps: [
+      'Crea una nueva "Company API Key".',
+      'Configura "Inherit permissions from role" en "Admin".',
+      'Tu Company ID empieza con biz_ y aparece en la URL de tu dashboard de Whop.',
+      'Copia la clave generada y pega ambos valores abajo.'
+    ],
+    linkText: 'Abrir Dashboard de Developer',
+    link: 'https://whop.com/dashboard/developer'
   },
   none: {
     title: 'Verificación Posterior',
@@ -30,6 +43,7 @@ const tutorials = {
       'Usa tu email privado para validar después',
       'Las startups verificadas tienen prioridad'
     ],
+    linkText: null,
     link: null
   }
 }
@@ -54,7 +68,7 @@ const current = computed(() => props.provider ? tutorials[props.provider] : null
           target="_blank" 
           class="text-[10px] font-sans font-bold uppercase text-white/40 hover:text-[#00D4FF] transition-colors flex items-center gap-1"
         >
-          Ir al Dashboard
+          {{ current.linkText }}
           <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
           </svg>

@@ -67,7 +67,7 @@ const translatedSegment = computed(() => {
 </script>
 
 <template>
-    <section class="min-h-dvh bg-[#030305] px-6 py-20 pb-32 flex items-start justify-center">
+    <section class="min-h-dvh bg-transparent px-6 pt-8 pb-32 flex items-start justify-center">
         <div class="w-full max-w-[1100px] mx-auto">
 
             <CalcHeader />

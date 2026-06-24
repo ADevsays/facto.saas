@@ -15,10 +15,7 @@ export function useAppSeo(config: SeoConfig) {
       lang: () => i18nHead.value.htmlAttrs?.lang ?? 'es',
       dir: () => (i18nHead.value.htmlAttrs?.dir as 'ltr' | 'rtl' | 'auto') ?? 'ltr',
     },
-    link: () => [
-      ...(i18nHead.value.link ?? []),
-      { rel: 'canonical', href: canonicalHref },
-    ],
+    link: () => i18nHead.value.link ?? [],
     meta: () => i18nHead.value.meta ?? [],
   });
 

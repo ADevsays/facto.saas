@@ -16,6 +16,12 @@ const providers = [
     description: 'Access Token de producción',
     color: '#00B1EA',
   },
+  {
+    slug: 'whop' as PaymentProvider,
+    name: 'Whop',
+    description: 'API key de tu Whop Dashboard',
+    color: '#FF5A1F',
+  },
 ]
 </script>
 

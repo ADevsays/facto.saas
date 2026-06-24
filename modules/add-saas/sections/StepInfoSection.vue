@@ -10,10 +10,10 @@ const form = reactive({
   founderName: '',
   websiteUrl: '',
   startupType: '',
-  categorySlug: '',
+  categorySlugs: [] as string[],
 })
 
-const canContinue = computed(() => form.name.trim().length > 0 && form.categorySlug.length > 0)
+const canContinue = computed(() => form.name.trim().length > 0 && form.categorySlugs.length > 0)
 
 function next() {
   if (!canContinue.value) return
@@ -23,7 +23,7 @@ function next() {
     founderName: form.founderName.trim() || undefined,
     websiteUrl: form.websiteUrl.trim() || undefined,
     startupType: form.startupType.trim() || undefined,
-    categorySlug: form.categorySlug,
+    categorySlugs: form.categorySlugs,
     isIncognito: false,
   })
 }
@@ -53,7 +53,7 @@ function next() {
 
       <div class="flex flex-col gap-2">
         <label class="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-neutral-300">Categoría *</label>
-        <CategorySelect v-model="form.categorySlug" />
+        <CategorySelect v-model="form.categorySlugs" />
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">

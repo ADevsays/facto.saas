@@ -1,4 +1,3 @@
-```
 <script setup lang="ts">
 import { useSmoothScroll } from '../composables/useSmoothScroll';
 import es from '../locales/es.json';

@@ -1,6 +1,6 @@
 <template>
-  <NuxtLink
-    to="/anunciarse"
+  <div
+    role="button"
     class="ad-cta shrink-0 flex items-center gap-3 rounded-xl px-4 py-3 cursor-pointer select-none transition-all duration-500"
   >
     <span class="ad-cta__icon text-xl leading-none transition-all duration-500">✦</span>
@@ -8,7 +8,7 @@
       <p class="ad-cta__title text-sm font-sans font-medium whitespace-nowrap transition-all duration-500">Anúnciate aquí</p>
       <p class="ad-cta__sub text-xs font-sans font-extralight tracking-[0.08em] whitespace-nowrap transition-all duration-500">2/20 cupos libres</p>
     </div>
-  </NuxtLink>
+  </div>
 </template>
 
 <style scoped>

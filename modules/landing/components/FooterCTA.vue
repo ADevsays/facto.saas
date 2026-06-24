@@ -15,8 +15,8 @@ const { t } = useLanguage({ es, en });
 
 <template>
     <div class="mb-32 text-center md:text-left">
-        <button 
-            @click="open"
+        <NuxtLink 
+            to="/"
             class="group inline-block relative transition-all duration-700 p-8 -m-8 hover:drop-shadow-[0_0_80px_rgba(180,240,255,0.25)] text-left"
         >
             <h2 class="text-white font-serif text-[15vw] md:text-[12rem] leading-[0.85] tracking-tighter transition-all duration-700 uppercase">
@@ -28,7 +28,7 @@ const { t } = useLanguage({ es, en });
                     </span>
                 </span>
             </h2>
-        </button>
+        </NuxtLink>
     </div>
 </template>
 

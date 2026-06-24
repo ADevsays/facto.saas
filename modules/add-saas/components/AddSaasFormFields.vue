@@ -4,10 +4,13 @@ import AddSaasInput from './AddSaasInput.vue'
 
 const props = defineProps<{
   form: {
+    id?: string
     name: string
     websiteUrl: string
     founderEmail: string
-    categorySlug: string
+    categorySlugs: string[]
+    logoUrl?: string
+    startupType?: string
   }
 }>()
 </script>
@@ -29,9 +32,24 @@ const props = defineProps<{
       />
     </div>
 
+    <!-- Update Mode Fields -->
+    <div v-if="form.id" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <AddSaasInput
+        v-model="form.logoUrl"
+        label="Logo URL"
+        type="url"
+        placeholder="https://..."
+      />
+      <AddSaasInput
+        v-model="form.startupType"
+        label="Descripción Corta"
+        placeholder="Plataforma de IA para..."
+      />
+    </div>
+
     <div class="flex flex-col gap-2">
-      <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">Categoría *</label>
-      <CategorySelect v-model="form.categorySlug" />
+      <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">Categorías *</label>
+      <CategorySelect v-model="form.categorySlugs" />
     </div>
 
     <AddSaasInput

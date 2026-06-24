@@ -1,16 +1,31 @@
 <script setup lang="ts">
 import { Analytics } from '@vercel/analytics/nuxt'
 import AdsBandSection from '~/modules/ads/sections/AdsBandSection.vue'
+import AddSaasModal from '~/modules/add-saas/components/AddSaasModal.vue'
+import AddAdModal from '~/modules/ads/components/AddAdModal.vue'
+import GlobalFooter from '~/ui/sections/GlobalFooter.vue'
+import { useAddAdModal } from '~/composables/useAddAdModal'
 
 const route = useRoute()
 const isInfoPage = computed(() => route.path === '/info')
+
+const { openForSetup } = useAddAdModal()
+
+onMounted(() => {
+  if (route.query.ad_setup === 'true') {
+    openForSetup()
+  }
+})
 </script>
 
 <template>
   <div class="min-h-screen bg-[#030305] text-white font-sans selection:bg-cyan-500/30">
-    <AdsBandSection v-if="!isInfoPage" />
+    <!-- <AdsBandSection v-if="!isInfoPage" />  -->
     <slot />
     <Analytics />
+    <AddSaasModal />
+    <AddAdModal />
+    <GlobalFooter v-if="!isInfoPage" />
   </div>
 </template>
 

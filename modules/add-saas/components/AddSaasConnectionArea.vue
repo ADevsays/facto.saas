@@ -3,13 +3,40 @@ import ProviderTutorial from './ProviderTutorial.vue'
 import AddSaasInput from './AddSaasInput.vue'
 
 const props = defineProps<{
-  provider: 'stripe' | 'mercadopago' | 'none' | null
+  provider: 'stripe' | 'mercadopago' | 'whop' | 'none' | null
   detectedMrr: number | null
   isMpConnecting: boolean
   openMpAuth: () => void
 }>()
 
 const apiKey = defineModel<string>('apiKey', { default: '' })
+
+const rawApiKey = ref('')
+const companyId = ref('')
+
+watch([rawApiKey, companyId], ([newRaw, newComp]) => {
+  if (props.provider === 'whop' && newComp.trim()) {
+    apiKey.value = `${newComp.trim()}:${newRaw.trim()}`
+  } else {
+    apiKey.value = newRaw.trim()
+  }
+})
+
+// Initialize local refs if apiKey already has a value
+watch(apiKey, (newVal) => {
+  if (!newVal) {
+    rawApiKey.value = ''
+    companyId.value = ''
+    return
+  }
+  if (props.provider === 'whop' && newVal.includes(':') && newVal.startsWith('biz_')) {
+    const parts = newVal.split(':')
+    companyId.value = parts[0]
+    rawApiKey.value = parts.slice(1).join(':')
+  } else if (rawApiKey.value !== newVal) {
+    rawApiKey.value = newVal
+  }
+}, { immediate: true })
 </script>
 
 <template>
@@ -22,6 +49,21 @@ const apiKey = defineModel<string>('apiKey', { default: '' })
         label="2. Stripe Restricted Key"
         type="password"
         placeholder="sk_live_..."
+      />
+    </div>
+
+    <div v-else-if="provider === 'whop'" class="flex flex-col gap-2">
+      <AddSaasInput
+        v-model="companyId"
+        label="2. Company ID (biz_...)"
+        type="text"
+        placeholder="biz_..."
+      />
+      <AddSaasInput
+        v-model="rawApiKey"
+        label="3. Whop API Key"
+        type="password"
+        placeholder="whop_..."
       />
     </div>
 

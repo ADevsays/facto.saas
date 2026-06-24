@@ -2,10 +2,6 @@ import { supabase } from '~/server/lib/supabase'
 import type { PaymentProvider } from '~/modules/add-saas/types'
 import { getProvider } from '../../services/provider.factory'
 
-function decrypt(encoded: string): string {
-  return Buffer.from(encoded, 'base64').toString('utf-8')
-}
-
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
 
@@ -23,7 +19,7 @@ export default defineEventHandler(async (event) => {
     return { id: entry.id, mrr: entry.mrr, currency: entry.currency, status: 'no_provider' }
   }
 
-  const apiKey = decrypt(entry.provider_key_encrypted)
+  const apiKey = decryptProviderKey(entry.provider_key_encrypted)
   const service = getProvider(providerSlug)
   const result = await service.getMrr(apiKey)
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   label: string
-  modelValue: string
+  modelValue?: string | null
   type?: string
   placeholder?: string
   required?: boolean

@@ -2,12 +2,21 @@
 import ProviderSelector from '../components/ProviderSelector.vue'
 import MrrStatusBadge from '../components/MrrStatusBadge.vue'
 import type { PaymentProvider, SaasSubmission, ProviderValidationResult } from '~/modules/add-saas/types'
+import { AlertCircle } from 'lucide-vue-next'
 
 const props = defineProps<{ saasData: Partial<SaasSubmission> }>()
 const emit = defineEmits<{ publish: [data: SaasSubmission]; skip: [] }>()
 
 const provider = ref<PaymentProvider | undefined>()
-const apiKey = ref('')
+const rawApiKey = ref('')
+const companyId = ref('')
+
+const apiKey = computed(() => {
+  if (provider.value === 'whop' && companyId.value.trim().length > 0) {
+    return `${companyId.value.trim()}:${rawApiKey.value.trim()}`
+  }
+  return rawApiKey.value.trim()
+})
 const validating = ref(false)
 const publishing = ref(false)
 const validationResult = ref<ProviderValidationResult | null>(null)
@@ -20,7 +29,12 @@ const mrrStatus = computed(() => {
   return 'connected' as const
 })
 
-const canValidate = computed(() => !!provider.value && apiKey.value.trim().length > 0)
+const canValidate = computed(() => {
+  if (provider.value === 'whop') {
+    return companyId.value.trim().length > 0 && rawApiKey.value.trim().length > 0
+  }
+  return !!provider.value && rawApiKey.value.trim().length > 0
+})
 
 async function validateKey() {
   if (!canValidate.value) return
@@ -75,10 +89,22 @@ function publishWithoutKey() {
       </div>
 
       <div v-if="provider" class="flex flex-col gap-3">
-        <label class="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-neutral-300">API Key</label>
+        <label class="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-neutral-300">
+          {{ provider === 'whop' ? 'Company ID (biz_...)' : 'API Key' }}
+        </label>
+        
+        <input
+          v-if="provider === 'whop'"
+          v-model="companyId"
+          type="text"
+          placeholder="biz_..."
+          class="bg-white/[0.07] border border-white/20 rounded-xl px-4 py-3 text-white text-sm font-sans font-light placeholder:text-neutral-500 focus:outline-none focus:border-[#00D4FF]/70 focus:bg-white/[0.1] transition-all duration-300 mb-2"
+        />
+
+        <label v-if="provider === 'whop'" class="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-neutral-300">API Key</label>
         <div class="flex gap-2">
           <input
-            v-model="apiKey"
+            v-model="rawApiKey"
             type="password"
             placeholder="sk_live_... (solo lectura)"
             class="flex-1 bg-white/[0.07] border border-white/20 rounded-xl px-4 py-4 text-white text-sm font-sans font-light placeholder:text-neutral-500 focus:outline-none focus:border-[#00D4FF]/70 focus:bg-white/[0.1] transition-all duration-300"
@@ -118,13 +144,19 @@ function publishWithoutKey() {
         </svg>
       </button>
 
-      <button
-        @click="publishWithoutKey"
-        :disabled="publishing"
-        class="text-xs font-sans font-medium text-neutral-400 hover:text-[#00D4FF] transition-colors duration-300 tracking-[0.08em] uppercase disabled:opacity-50"
-      >
-        Publicar sin MRR <span class="ml-1 opacity-50">→</span>
-      </button>
+      <div class="flex flex-col gap-2">
+        <p class="text-[10px] font-sans font-light text-amber-400/80 tracking-wide leading-relaxed bg-amber-400/[0.06] border border-amber-400/15 rounded-xl px-4 py-3">
+          <AlertCircle class="inline w-3.5 h-3.5 mr-1 -mt-0.5" />
+          Al publicar sin proveedor de pagos, tu startup pasará una <strong class="text-amber-300">revisión humana</strong> antes de ser visible. Puede ser rechazada si la información es incompleta.
+        </p>
+        <button
+          @click="publishWithoutKey"
+          :disabled="publishing"
+          class="text-xs font-sans font-medium text-neutral-400 hover:text-[#00D4FF] transition-colors duration-300 tracking-[0.08em] uppercase disabled:opacity-50 self-start"
+        >
+          Enviar a revisión <span class="ml-1 opacity-50">→</span>
+        </button>
+      </div>
     </div>
   </div>
 </template>

@@ -8,11 +8,11 @@ const { t } = useLanguage({ es, en });
 </script>
 
 <template>
-    <NuxtLayout>
+    <div>
         <LegalContent 
             :title="t.legal.privacy.title"
             :subtitle="t.legal.privacy.subtitle"
             :sections="t.legal.privacy.sections"
         />
-    </NuxtLayout>
+    </div>
 </template>

@@ -6,6 +6,7 @@ import en from '../locales/en.json';
 import { useLanguage } from '@/composables/useLanguage';
 import { useAppSchema } from '@/composables/useAppSchema';
 import { onMounted } from 'vue';
+import GlobalBreadcrumb from '~/ui/components/GlobalBreadcrumb.vue';
 
 const { t, detectLanguage } = useLanguage({ es, en });
 const { defineSoftwareApp } = useAppSchema();
@@ -25,37 +26,49 @@ useAppSeo({
     imagePath: '/og-valuation.png',
 });
 
-// JSON-LD Schema for FAQPage
+
 useHead(() => {
     if (!t.value?.seoContent?.faq?.items) return {};
-    
-    const faqItems = t.value.seoContent.faq.items.map((item: any) => ({
-        "@type": "Question",
-        "name": item.question,
-        "acceptedAnswer": {
-            "@type": "Answer",
-            "text": item.answer
-        }
-    }));
 
     return {
         script: [
             {
                 type: 'application/ld+json',
+                key: 'faq-schema',
                 innerHTML: JSON.stringify({
-                    "@context": "https://schema.org",
-                    "@type": "FAQPage",
-                    "mainEntity": faqItems
-                })
-            }
-        ]
+                    '@context': 'https://schema.org',
+                    '@type': 'FAQPage',
+                    mainEntity: t.value.seoContent.faq.items.map((item: any) => ({
+                        '@type': 'Question',
+                        name: item.question,
+                        acceptedAnswer: {
+                            '@type': 'Answer',
+                            text: item.answer,
+                        },
+                    })),
+                }),
+            },
+        ],
     };
 });
 </script>
 
 <template>
-    <SaasCalculator />
-    <SaasSeoContent />
+    <div class="min-h-screen bg-[#030305] text-white flex flex-col items-center pt-14 relative isolate overflow-x-clip">
+        <!-- Premium Glows -->
+        <div class="absolute inset-0 pointer-events-none -z-10 flex justify-center">
+            <div class="absolute top-[-10%] w-[1000px] h-[600px] bg-[#00D4FF]/[0.03] blur-[150px] rounded-full"></div>
+        </div>
+
+        <div class="w-full max-w-[1100px] px-6 z-10 relative">
+            <GlobalBreadcrumb :items="[{ label: 'herramientas' }, { label: 'cuánto vale' }]" class="mb-4" />
+        </div>
+
+        <div class="w-full">
+            <SaasCalculator />
+            <SaasSeoContent />
+        </div>
+    </div>
 </template>
 
 <style>

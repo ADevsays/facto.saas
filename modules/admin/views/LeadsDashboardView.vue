@@ -51,6 +51,7 @@ onMounted(async () => {
         <div v-else-if="!isChecking" class="max-w-7xl mx-auto px-8 py-10">
             
             <DashboardHeader 
+                title="Beta Leads"
                 :loading="loading"
                 @refresh="load"
                 @logout="logout"

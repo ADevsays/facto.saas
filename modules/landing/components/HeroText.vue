@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, watch } from 'vue';
 import { useAppStatus } from '../composables/useAppStatus';
 import GlassButton from './GlassButton.vue';
 import es from '../locales/es.json';
@@ -64,12 +64,9 @@ defineExpose({ container });
         </p>
 
     <div class="reveal-item pointer-events-auto mb-14">
-        <GlassButton :href="localePath('/')">
+        <GlassButton href="/">
             {{ t.hero.cta }}
         </GlassButton>
-        <p v-if="t.hero.share" class="mt-4 text-[10px] md:text-xs uppercase tracking-[0.2em] text-white opacity-50">
-            ({{ t.hero.share }})
-        </p>
     </div>
 
     </div>

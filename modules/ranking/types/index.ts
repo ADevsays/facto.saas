@@ -9,9 +9,11 @@ export interface SaasListItem {
   founderName: string | null
   isIncognito: boolean
   mrr: number | null
+  revenue?: string
   currency: string
   category: string
   categorySlug: string
+  categories: { name: string; slug: string }[]
   provider: PaymentProvider
   views: number
   publishedAt: string

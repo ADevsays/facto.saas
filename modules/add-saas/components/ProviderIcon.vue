@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  provider: 'stripe' | 'mercadopago' | 'none'
+  provider: 'stripe' | 'mercadopago' | 'whop' | 'none'
 }>()
 </script>
 
@@ -11,7 +11,7 @@ defineProps<{
       'w-8 h-8', // Tamaño discreto y simétrico
     ]"
     :style="{
-      backgroundColor: provider === 'stripe' ? '#635BFF' : (provider === 'mercadopago' ? '#00B1EA' : '#27272a')
+      backgroundColor: provider === 'stripe' ? '#635BFF' : (provider === 'mercadopago' ? '#00B1EA' : (provider === 'whop' ? '#FF5A1F' : '#27272a'))
     }"
   >
     <!-- Logo Stripe -->
@@ -31,6 +31,17 @@ defineProps<{
         <img 
           src="/logos/mercadopago.png" 
           alt="Mercado Pago" 
+          class="w-full h-full object-contain"
+        />
+      </div>
+    </template>
+
+    <!-- Logo Whop -->
+    <template v-else-if="provider === 'whop'">
+      <div class="w-full h-full flex items-center justify-center p-1.5">
+        <img 
+          src="/logos/whop.webp" 
+          alt="Whop" 
           class="w-full h-full object-contain"
         />
       </div>

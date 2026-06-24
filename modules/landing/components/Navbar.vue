@@ -5,6 +5,7 @@ import { useBetaModal } from '../composables/useBetaModal';
 import es from '../locales/es.json';
 import en from '../locales/en.json';
 import { useLanguage } from '@/composables/useLanguage';
+import { ROUTES } from '@/utils/routes';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 
 const pillRef = ref<HTMLElement | null>(null);
@@ -31,9 +32,9 @@ onUnmounted(() => {
 });
 
 const navLinks = computed(() => [
-    { name: t.value.navbar.solution, href: '#solution' },
-    { name: t.value.navbar.process, href: '#process' },
-    { name: t.value.navbar.faq, href: '#faq' },
+    { name: t.value.navbar.solution || 'Solución', href: '#solution' },
+    { name: t.value.navbar.process || 'Proceso', href: '#process' },
+    { name: t.value.navbar.faq || 'FAQ', href: '#faq' },
 ]);
 </script>
 
@@ -53,10 +54,18 @@ const navLinks = computed(() => [
             <div class="hidden md:flex justify-center items-center">
                 <ul ref="linksRef" class="flex items-center gap-16 md:opacity-0">
                     <li v-for="link in navLinks" :key="link.name">
+                        <NuxtLink 
+                            v-if="link.href.startsWith('/')"
+                            :to="link.href"
+                            class="font-medium text-gray-400 hover:text-white text-sm tracking-wide transition-colors uppercase whitespace-nowrap"
+                        >
+                            {{ link.name }}
+                        </NuxtLink>
                         <a 
+                            v-else
                             :href="link.href" 
                             @click="scrollToSection($event, link.href)"
-                            class="font-medium text-gray-400 hover:text-white text-sm  tracking-wide transition-colors uppercase whitespace-nowrap"
+                            class="font-medium text-gray-400 hover:text-white text-sm tracking-wide transition-colors uppercase whitespace-nowrap"
                         >
                             {{ link.name }}
                         </a>
@@ -66,13 +75,13 @@ const navLinks = computed(() => [
 
             <!-- CTA Section (Right) -->
             <div class="flex justify-end items-center">
-                <button 
+                <NuxtLink 
                     ref="ctaRef"
-                    @click="openBetaModal"
+                    to="/"
                     class="glass-fluid-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest flex items-center shrink-0 transition-colors"
                 >
                     {{ t.navbar.cta }}
-                </button>
+                </NuxtLink>
             </div>
         </nav>
     </header>

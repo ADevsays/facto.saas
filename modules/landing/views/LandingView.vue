@@ -6,13 +6,15 @@ import ProcessSection from '../sections/ProcessSection.vue';
 import FaqSection from '~/ui/sections/FaqSection.vue';
 import Footer from '../sections/Footer.vue';
 import Navbar from '../components/Navbar.vue';
-import BetaAccessModal from '../sections/BetaAccessModal.vue';
 import es from '../locales/es.json';
 import en from '../locales/en.json';
 import { useLanguage } from '@/composables/useLanguage';
 import { useAppStatus } from '../composables/useAppStatus';
 import { useAppSchema } from '@/composables/useAppSchema';
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
+import { useRoute } from '#app';
+
+const route = useRoute();
 
 const { isReady } = useAppStatus();
 const { detectLanguage, t } = useLanguage({ es, en });
@@ -32,10 +34,19 @@ useAppSeo({
 onMounted(async () => {
     await detectLanguage();
 });
+
+watch(isReady, (ready) => {
+    if (ready && route.hash) {
+        setTimeout(() => {
+            const el = document.querySelector(route.hash);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+    }
+}, { immediate: true });
 </script>
 
 <template>
-    <NuxtLayout>
+    <div>
         <main class="bg-[#030305] min-h-screen">
             <Navbar />
             
@@ -48,7 +59,7 @@ onMounted(async () => {
                 
                 <!-- Pulling up the next section to eliminate dead space -->
                 <div class="relative z-20">
-                    <PainSection />
+                     <PainSection />
                 </div>
                 <SolutionSection />
                 <ProcessSection />
@@ -56,8 +67,7 @@ onMounted(async () => {
                 <Footer />
             </div>
         </main>
-        <BetaAccessModal />
-    </NuxtLayout>
+    </div>
 </template>
 
 <style>

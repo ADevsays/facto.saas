@@ -14,7 +14,7 @@ const socialLinks = SOCIAL_LINKS;
 const navLinks = computed(() => [
     { name: t.value.navbar.solution, href: '#solution' },
     { name: t.value.navbar.process, href: '#process' },
-    { name: t.value.navbar.calculator, href: '/cuanto-vale-tu-saas' },
+    { name: t.value.navbar.calculator, href: '/herramientas/cuanto-vale-tu-saas' },
     { name: t.value.navbar.faq, href: '#faq' },
 ]);
 </script>
@@ -40,17 +40,6 @@ const navLinks = computed(() => [
                 <!-- 3. Navigation Section -->
                 <FooterNavigation :links="navLinks" />
 
-            </div>
-
-            <!-- Copyright Line -->
-            <div class="mt-32 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p class="text-gray-600 text-[10px] uppercase tracking-widest">
-                    © 2026 Adevsays
-                </p>
-                <div class="flex gap-8">
-                    <NuxtLink to="/privacidad" class="text-gray-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors">{{ t.footer.privacy }}</NuxtLink>
-                    <NuxtLink to="/terminos" class="text-gray-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors">{{ t.footer.terms }}</NuxtLink>
-                </div>
             </div>
         </div>
     </footer>

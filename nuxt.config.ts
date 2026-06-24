@@ -15,7 +15,8 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@nuxtjs/i18n',
     '@nuxtjs/seo',
-    '@nuxtjs/google-fonts'
+    '@nuxtjs/google-fonts',
+    '@nuxt/icon'
   ],
   googleFonts: {
     families: {
@@ -28,8 +29,13 @@ export default defineNuxtConfig({
   },
   site: {
     url: 'https://www.factosaas.com',
-    name: 'Facto | Valuación de SaaS',
+    name: 'Facto',
     description: 'Calcula cuánto vale tu SaaS en segundos con datos reales del mercado.',
+    titleSeparator: '|',
+    trailingSlash: false,
+  },
+  sitemap: {
+    sources: ['/api/__sitemap__/urls'],
   },
   robots: {
     disallow: ['/admin'],
@@ -61,8 +67,8 @@ export default defineNuxtConfig({
       routes: [
         '/',
         '/en',
-        '/cuanto-vale-tu-saas',
-        '/en/how-much-is-your-saas-worth'
+        '/herramientas/cuanto-vale-tu-saas',
+        '/en/tools/how-much-is-your-saas-worth'
       ],
       crawlLinks: true
     }
@@ -73,6 +79,7 @@ export default defineNuxtConfig({
     '/_nuxt/**': { cache: { maxAge: 60 * 60 * 24 * 365 } }
   },
   runtimeConfig: {
+    encryptionKey: process.env.NUXT_ENCRYPTION_KEY,
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,
     adminSecretKey: process.env.ADMIN_SECRET_KEY,
@@ -80,7 +87,9 @@ export default defineNuxtConfig({
     mpClientSecret: process.env.MP_CLIENT_SECRET,
     mpRedirectUri: process.env.MP_REDIRECT_URI || 'http://localhost:3000/api/auth/mercadopago/callback',
     public: {
-      clarityProjectId: process.env.CLARITY_PROJECT_ID || ''
+      clarityProjectId: process.env.CLARITY_PROJECT_ID || '',
+      whopPlanId: process.env.WHOP_PLAN_ID,
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     }
   },
   app: {

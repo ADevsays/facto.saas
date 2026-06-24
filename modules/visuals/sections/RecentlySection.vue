@@ -1,26 +1,44 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import SaasCard from '../components/SaasCard.vue'
+import SaasCardSkeleton from '../components/SaasCardSkeleton.vue'
+import { useSaasList } from '~/composables/useSaasList'
+import { formatMrrValue, formatRevenueValue } from '~/utils/format'
 
-const items = [
-  { name: 'Linear', category: 'Project Mgmt', mrr: '$92K',  revenue: '$1.1M', multiplier: '4.2x' },
-  { name: 'Loom', category: 'Video', mrr: '$310K',           revenue: '$3.7M', multiplier: '5.1x' },
-  { name: 'Cron', category: 'Calendar', mrr: '$45K',         revenue: '$540K', multiplier: '3.8x' },
-  { name: 'Raycast', category: 'Productivity', mrr: '$67K',  revenue: '$804K', multiplier: '4.5x' },
-  { name: 'Hashnode', category: 'Blogging', mrr: '$28K',     revenue: '$336K', multiplier: '3.2x' },
-  { name: 'Screen Studio', category: 'Video', mrr: '$51K',   revenue: '$612K', multiplier: '4.0x' },
-]
+const { recentItems, loading, fetchAll } = useSaasList()
+
+onMounted(fetchAll)
 </script>
 
 <template>
   <section class="w-full py-2">
-    <p class="text-[10px] font-sans font-extralight tracking-[0.15em] text-neutral-300 mb-4 uppercase">Recently added</p>
+    <div class="flex items-center justify-between mb-4">
+      <p class="text-[10px] font-sans font-extralight tracking-[0.15em] text-neutral-300 uppercase">Recientemente agregados</p>
+      <NuxtLink to="/saas?s=latest" class="group text-neutral-300 hover:text-white transition-colors">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="transition-transform duration-300 group-hover:translate-x-0.5">
+          <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </NuxtLink>
+    </div>
     <div class="flex gap-4 overflow-x-auto no-scrollbar pb-4">
-      <SaasCard
-        v-for="item in items"
-        :key="item.name"
-        v-bind="item"
-      />
-      <NuxtLink to="/saas" class="group shrink-0 w-28 rounded-xl border border-white/5 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:border-white/15 text-neutral-600 hover:text-neutral-300">
+      <template v-if="loading">
+        <SaasCardSkeleton v-for="n in 6" :key="'rec-sk-' + n" />
+      </template>
+      <template v-else>
+        <SaasCard
+          v-for="(item, index) in recentItems"
+          :key="item.id"
+          :name="item.name || '— Anónimo —'"
+          :category="item.category"
+          :categorySlug="item.categorySlug"
+          :index="index"
+          :mrr="formatMrrValue(item.mrr)"
+          :revenue="formatRevenueValue(item.mrr)"
+          :logoUrl="item.logoUrl"
+          :isIncognito="item.isIncognito"
+        />
+      </template>
+      <NuxtLink to="/saas?s=latest" class="group shrink-0 w-28 rounded-xl border border-white/5 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:border-white/15 text-neutral-600 hover:text-neutral-300">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="transition-transform duration-300 group-hover:translate-x-0.5">
           <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>

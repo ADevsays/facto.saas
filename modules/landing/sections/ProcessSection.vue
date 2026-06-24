@@ -58,7 +58,7 @@ const steps = computed(() => t.value.process.steps.map((step: any, index: number
                 <h3 class="text-white font-serif text-3xl mb-10 max-w-lg leading-tight">
                     {{ t.process.ctaTitle }}
                 </h3>
-                <GlassButton href="#contact">
+                <GlassButton href="/">
                     {{ t.process.ctaBtn }}
                 </GlassButton>
             </div>

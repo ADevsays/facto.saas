@@ -2,7 +2,7 @@ import type { SaasListItem, SaasListState } from '~/modules/ranking/types'
 
 const state = reactive<SaasListState>({
   items: [],
-  loading: false,
+  loading: true,
   error: null,
 })
 
@@ -23,12 +23,14 @@ export function useSaasList() {
   }
 
   const rankingItems = computed(() =>
-    [...state.items].sort((a, b) => {
-      if (a.mrr === null && b.mrr === null) return 0
-      if (a.mrr === null) return 1
-      if (b.mrr === null) return -1
-      return b.mrr - a.mrr
-    })
+    [...state.items]
+      .sort((a, b) => {
+        if (a.mrr === null && b.mrr === null) return (b.views ?? 0) - (a.views ?? 0)
+        if (a.mrr === null) return 1
+        if (b.mrr === null) return -1
+        return b.mrr - a.mrr
+      })
+      .slice(0, 10)
   )
 
   const recentItems = computed(() =>
@@ -37,12 +39,15 @@ export function useSaasList() {
       .slice(0, 6)
   )
 
-  const bestItems = computed(() =>
-    [...state.items]
-      .filter((i) => i.mrr !== null)
-      .sort((a, b) => (b.mrr ?? 0) - (a.mrr ?? 0))
+  const bestItems = computed(() => {
+    const withMrr = state.items.filter((i) => i.mrr !== null)
+    if (withMrr.length >= 3) {
+      return withMrr.sort((a, b) => (b.mrr ?? 0) - (a.mrr ?? 0)).slice(0, 6)
+    }
+    return [...state.items]
+      .sort((a, b) => b.views - a.views)
       .slice(0, 6)
-  )
+  })
 
   return {
     items: computed(() => state.items),
