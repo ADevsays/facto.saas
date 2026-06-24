@@ -94,7 +94,7 @@
       },
       {
         "question": "How is my SaaS valuation calculated?",
-        "answer": "We use current market multiples based on revenue and growth. You can try our <a href='/en/how-much-is-your-saas-worth' class='text-[#00D4FF] hover:underline'>SaaS Valuation Calculator</a> to get an estimated range in seconds."
+        "answer": "We use current market multiples based on revenue and growth. You can try our <a href='/en/tools/how-much-is-your-saas-worth' class='text-[#00D4FF] hover:underline'>SaaS Valuation Calculator</a> to get an estimated range in seconds."
       }
     ]
   },
