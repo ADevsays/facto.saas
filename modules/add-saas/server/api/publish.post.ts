@@ -34,7 +34,9 @@ export default defineEventHandler(async (event) => {
   if (finalEntry.status === 'pending_review') {
     const adminEmail = process.env.ADMIN_EMAIL || 'adevsaysinfo@gmail.com'
     const name = finalEntry.name || 'Sin nombre'
-    const reviewUrl = 'https://factosaas.com/admin/pending'
+    const config = useRuntimeConfig()
+    const siteUrl = config.public.siteUrl || 'https://factosaas.com'
+    const reviewUrl = `${siteUrl}/admin/pending`
     sendFoundersReport({
       to: adminEmail,
       subject: `[Facto] Nueva startup pendiente de revisión: ${name}`,

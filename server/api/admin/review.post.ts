@@ -1,8 +1,8 @@
 import { supabase } from '~/server/lib/supabase'
 import { sendFoundersReport } from '~/modules/leadmagnets/server/services/email'
 
-function buildApprovalEmail(name: string, slug: string | null): string {
-  const profileUrl = slug ? `https://factosaas.com/saas/${slug}` : 'https://factosaas.com'
+function buildApprovalEmail(name: string, slug: string | null, siteUrl: string): string {
+  const profileUrl = slug ? `${siteUrl}/saas/${slug}` : siteUrl
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -66,7 +66,7 @@ function buildApprovalEmail(name: string, slug: string | null): string {
               <p style="margin:24px 0 0 0;font-size:11px;font-weight:300;color:#40404f;letter-spacing:0.08em;">
                 Hecho por <a href="https://www.instagram.com/a_dev_says/" style="color:#40404f;text-decoration:none;">Adevsays</a>
                 &nbsp;·&nbsp;
-                <a href="https://factosaas.com" style="color:#40404f;text-decoration:none;">factosaas.com</a>
+                <a href="${siteUrl}" style="color:#40404f;text-decoration:none;">${siteUrl.replace('https://', '')}</a>
               </p>
             </td>
           </tr>
@@ -79,8 +79,8 @@ function buildApprovalEmail(name: string, slug: string | null): string {
 </html>`
 }
 
-function buildRejectionEmail(name: string): string {
-  const retryUrl = 'https://factosaas.com'
+function buildRejectionEmail(name: string, siteUrl: string): string {
+  const retryUrl = siteUrl
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -147,7 +147,7 @@ function buildRejectionEmail(name: string): string {
               <p style="margin:24px 0 0 0;font-size:11px;font-weight:300;color:#40404f;letter-spacing:0.08em;">
                 Hecho por <a href="https://www.instagram.com/a_dev_says/" style="color:#40404f;text-decoration:none;">Adevsays</a>
                 &nbsp;·&nbsp;
-                <a href="https://factosaas.com" style="color:#40404f;text-decoration:none;">factosaas.com</a>
+                <a href="${siteUrl}" style="color:#40404f;text-decoration:none;">${siteUrl.replace('https://', '')}</a>
               </p>
             </td>
           </tr>
@@ -197,18 +197,20 @@ export default defineEventHandler(async (event) => {
 
   if (entry.founder_email) {
     const saasName = entry.name || 'Tu startup'
+    const config = useRuntimeConfig()
+    const siteUrl = config.public.siteUrl || 'https://factosaas.com'
 
     if (body.action === 'approve') {
       sendFoundersReport({
         to: entry.founder_email,
         subject: `¡${saasName} ha sido aprobada en Facto!`,
-        html: buildApprovalEmail(saasName, entry.slug)
+        html: buildApprovalEmail(saasName, entry.slug, siteUrl)
       }).catch(e => console.error('[Review] Error sending approval email:', e))
     } else {
       sendFoundersReport({
         to: entry.founder_email,
         subject: `Actualización sobre ${saasName} en Facto`,
-        html: buildRejectionEmail(saasName)
+        html: buildRejectionEmail(saasName, siteUrl)
       }).catch(e => console.error('[Review] Error sending rejection email:', e))
     }
   }
