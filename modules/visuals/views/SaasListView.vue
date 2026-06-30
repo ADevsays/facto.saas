@@ -2,8 +2,10 @@
 import { onMounted, computed } from 'vue'
 import { useSaasList } from '~/composables/useSaasList'
 import { useCategoryFilter } from '~/composables/useCategoryFilter'
+import { useCountryFilter } from '~/composables/useCountryFilter'
 import { useSortFilter } from '~/composables/useSortFilter'
 import { useCategories } from '~/composables/useCategories'
+import { useCountries } from '~/composables/useCountries'
 import { useReveal } from '../composables/useReveal'
 import SaasGemCard from '../components/SaasGemCard.vue'
 import SaasBreadcrumb from '../components/SaasBreadcrumb.vue'
@@ -12,8 +14,10 @@ import InputMrrView from '../../input-mrr/views/InputMrrView.vue'
 
 const { items, loading, error, fetchAll } = useSaasList()
 const { category, filterByCategory } = useCategoryFilter()
+const { country, filterByCountry } = useCountryFilter()
 const { sort, sortItems } = useSortFilter()
 const { categories, fetchCategories } = useCategories()
+const { countries, fetchCountries } = useCountries()
 
 const currentCategoryName = computed(() => {
   if (!category.value || category.value === 'all') return null
@@ -21,17 +25,26 @@ const currentCategoryName = computed(() => {
   return cat ? cat.name : category.value
 })
 
+const currentCountryName = computed(() => {
+  if (!country.value || country.value === 'all') return null
+  if (country.value === 'global') return 'Global'
+  const c = countries.value.find(c => c.slug === country.value)
+  return c ? c.name : country.value
+})
+
 const filteredAndSortedItems = computed(() => {
-  const filtered = filterByCategory(items.value)
+  let filtered = filterByCategory(items.value)
+  filtered = filterByCountry(filtered)
   return sortItems(filtered)
 })
 
-const { containerRef, initObserver } = useReveal([category, sort])
+const { containerRef, initObserver } = useReveal([category, country, sort])
 
 onMounted(async () => {
   await Promise.all([
     fetchAll(),
-    fetchCategories()
+    fetchCategories(),
+    fetchCountries()
   ])
   initObserver()
 })
@@ -45,8 +58,11 @@ onMounted(async () => {
     </div>
 
     <div class="w-full max-w-5xl">
-      <!-- Breadcrumb Link Back -->
-      <SaasBreadcrumb :name="currentCategoryName" :is-category="!!currentCategoryName" />
+      <SaasBreadcrumb 
+        :name="currentCategoryName || currentCountryName" 
+        :is-category="!!currentCategoryName" 
+        :is-country="!!currentCountryName" 
+      />
     </div>
 
     <div class="w-full max-w-5xl flex flex-col gap-10">

@@ -4,6 +4,7 @@ import { ROUTES } from '~/utils/routes'
 defineProps<{
   name?: string | null
   isCategory?: boolean
+  isCountry?: boolean
 }>()
 </script>
 
@@ -16,13 +17,19 @@ defineProps<{
     
     <span class="text-neutral-700 font-sans shrink-0">&gt;</span>
     
-    <NuxtLink v-if="name || isCategory" to="/saas" class="text-neutral-500 hover:text-white transition-colors duration-300 shrink-0">saas</NuxtLink>
+    <NuxtLink v-if="name || isCategory || isCountry" to="/saas" class="text-neutral-500 hover:text-white transition-colors duration-300 shrink-0">saas</NuxtLink>
     <span v-else class="text-white shrink-0">saas</span>
 
     <template v-if="isCategory">
       <span class="text-neutral-700 font-sans shrink-0">&gt;</span>
       <NuxtLink v-if="name" :to="ROUTES.CATEGORY" class="text-neutral-500 hover:text-white transition-colors duration-300 shrink-0">categoría</NuxtLink>
       <span v-else class="text-white shrink-0">categoría</span>
+    </template>
+    
+    <template v-if="isCountry">
+      <span class="text-neutral-700 font-sans shrink-0">&gt;</span>
+      <NuxtLink v-if="name" to="/saas/pais" class="text-neutral-500 hover:text-white transition-colors duration-300 shrink-0">país</NuxtLink>
+      <span v-else class="text-white shrink-0">país</span>
     </template>
 
     <template v-if="name">

@@ -6,7 +6,12 @@ export function useCategoryFilter() {
   const route = useRoute()
   const router = useRouter()
 
-  const category = computed(() => (route.params.slug as string) || '')
+  const category = computed(() => {
+    if (route.path.includes(ROUTES.CATEGORY)) {
+      return (route.params.slug as string) || ''
+    }
+    return ''
+  })
 
   function setCategory(value: string) {
     if (value === 'all' || !value) {
