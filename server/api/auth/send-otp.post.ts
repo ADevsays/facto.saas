@@ -1,5 +1,6 @@
 import { supabase } from '~/server/lib/supabase'
 import { sendFoundersReport } from '~/modules/leadmagnets/server/services/email'
+import crypto from 'crypto'
 
 function generateOtpCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString()
@@ -60,6 +61,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const code = generateOtpCode()
+  const pepper = process.env.SUPABASE_SERVICE_KEY || 'facto-secret-pepper'
+  const hashedCode = crypto.createHmac('sha256', pepper).update(code).digest('hex')
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString()
 
   // Limpiar cualquier código anterior para evitar duplicados o fallos de UPSERT
@@ -67,7 +70,7 @@ export default defineEventHandler(async (event) => {
 
   const { error: insertError } = await supabase
     .from('otp_codes')
-    .insert({ email, code, expires_at: expiresAt, attempts: 0 })
+    .insert({ email, code: hashedCode, expires_at: expiresAt, attempts: 0 })
 
   if (insertError) {
     throw createError({ statusCode: 500, message: 'Failed to generate verification code' })

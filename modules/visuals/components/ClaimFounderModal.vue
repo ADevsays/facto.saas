@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, onUnmounted } from 'vue'
 import CountrySelect from '~/ui/components/CountrySelect.vue'
+import AddSaasProviderSelection from '~/modules/add-saas/components/AddSaasProviderSelection.vue'
+import AddSaasConnectionArea from '~/modules/add-saas/components/AddSaasConnectionArea.vue'
+import { useMercadoPagoAuth } from '~/modules/add-saas/composables/useMercadoPagoAuth'
 
 const props = defineProps<{
   saasId: string
   saasName: string | null
   currentFounderName: string | null
   founderEmail: string | null
+  intent?: 'founder' | 'mrr'
 }>()
 
 const emit = defineEmits<{
@@ -44,6 +48,15 @@ const countrySlug = ref('')
 const twitterUrl = ref('')
 const linkedinUrl = ref('')
 const instagramUrl = ref('')
+
+const provider = ref('stripe')
+const apiKey = ref('')
+const detectedMrr = ref<number | null>(null)
+
+const { isMpConnecting, openMpAuth } = useMercadoPagoAuth((mrr) => {
+  detectedMrr.value = mrr
+  apiKey.value = 'MERCADO_PAGO_OAUTH_TOKEN'
+})
 
 const maskedEmail = computed(() => {
   if (!props.founderEmail) return null
@@ -194,10 +207,15 @@ async function verifyOtp() {
 }
 
 async function saveFounder(isEditFlow = false): Promise<boolean> {
-  if (!founderName.value.trim()) {
+  if (props.intent === 'founder' && !founderName.value.trim()) {
     showError('Debes ingresar tu nombre.')
     return false
   }
+  if (props.intent === 'mrr' && !apiKey.value.trim()) {
+    showError('Debes ingresar la API Key o conectar tu cuenta.')
+    return false
+  }
+  
   loading.value = true
   try {
     await $fetch('/api/saas/claim', {
@@ -205,11 +223,18 @@ async function saveFounder(isEditFlow = false): Promise<boolean> {
       body: {
         saasId: props.saasId,
         email: email.value,
+        intent: props.intent || 'founder',
+        
+        // Founder fields
         name: founderName.value.trim(),
         countrySlug: countrySlug.value,
         twitterUrl: twitterUrl.value || undefined,
         linkedinUrl: linkedinUrl.value || undefined,
-        instagramUrl: instagramUrl.value || undefined
+        instagramUrl: instagramUrl.value || undefined,
+        
+        // MRR fields
+        providerSlug: provider.value,
+        providerKey: apiKey.value.trim()
       }
     })
     if (!isEditFlow) {
@@ -278,8 +303,10 @@ function handleEditStartup() {
         <div class="px-8 pt-8 pb-6">
           <!-- Step 1: Email -->
           <div v-if="step === 'email'">
-            <h2 class="text-2xl font-serif text-white font-semibold mb-1">Reclama tu startup</h2>
-            <p class="text-sm font-sans font-light text-neutral-400 mb-6">Verifica tu identidad como fundador</p>
+            <h2 class="text-2xl font-serif text-white font-semibold mb-1">
+              {{ intent === 'mrr' ? 'Verifica tu MRR' : 'Reclama tu startup' }}
+            </h2>
+            <p class="text-sm font-sans font-light text-neutral-400 mb-6">Verifica tu identidad como dueño</p>
 
             <div v-if="maskedEmail" class="mb-4">
               <p class="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-neutral-300 mb-2">Correo registrado</p>
@@ -374,12 +401,16 @@ function handleEditStartup() {
             </div>
           </div>
 
-          <!-- Step 3: Edit Founder -->
+          <!-- Step 3: Edit Data -->
           <div v-if="step === 'edit'">
-            <h2 class="text-2xl font-serif text-white font-semibold mb-1">Completa tu perfil</h2>
-            <p class="text-sm font-sans font-light text-neutral-400 mb-6">Estos datos aparecerán en tu página de startup</p>
+            <h2 class="text-2xl font-serif text-white font-semibold mb-1">
+              {{ intent === 'mrr' ? 'Conecta tu MRR' : 'Completa tu perfil' }}
+            </h2>
+            <p class="text-sm font-sans font-light text-neutral-400 mb-6">
+              {{ intent === 'mrr' ? 'Selecciona tu pasarela de pagos' : 'Estos datos aparecerán en tu página de startup' }}
+            </p>
 
-            <div class="flex flex-col gap-5">
+            <div v-if="intent === 'founder' || !intent" class="flex flex-col gap-5">
               <div class="flex gap-4 items-end">
                 <div class="flex flex-col gap-2 flex-1">
                   <label class="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-neutral-300 block">Nombre</label>
@@ -429,6 +460,20 @@ function handleEditStartup() {
                   {{ error }}
                 </p>
               </div>
+            </div>
+            
+            <div v-else-if="intent === 'mrr'" class="flex flex-col gap-5">
+              <AddSaasProviderSelection v-model="provider" />
+              <AddSaasConnectionArea 
+                :provider="provider"
+                :detected-mrr="detectedMrr"
+                :is-mp-connecting="isMpConnecting"
+                :open-mp-auth="openMpAuth"
+                v-model:apiKey="apiKey"
+              />
+              <p class="absolute -bottom-5 left-1/2 -translate-x-1/2 w-full text-center text-[11px] text-[#00D4FF] font-sans font-light transition-opacity duration-300 pointer-events-none" :class="error ? 'opacity-100' : 'opacity-0'">
+                {{ error }}
+              </p>
             </div>
 
             <button

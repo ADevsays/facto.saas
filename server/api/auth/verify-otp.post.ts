@@ -1,4 +1,5 @@
 import { supabase } from '~/server/lib/supabase'
+import crypto from 'crypto'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ email: string; code: string }>(event)
@@ -29,7 +30,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 410, message: 'Código expirado' })
   }
 
-  if (otp.code !== body.code.trim()) {
+  const pepper = process.env.SUPABASE_SERVICE_KEY || 'facto-secret-pepper'
+  const hashedInputCode = crypto.createHmac('sha256', pepper).update(body.code.trim()).digest('hex')
+
+  if (otp.code !== hashedInputCode) {
     await supabase
       .from('otp_codes')
       .update({ attempts: otp.attempts + 1 })
