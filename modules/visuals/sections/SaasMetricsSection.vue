@@ -118,8 +118,8 @@ const hasSocials = computed(() => {
     <div class="col-span-2 md:col-span-1 border border-white/10 bg-white/[0.03] shadow-md rounded-2xl p-5 flex flex-col items-center text-center justify-center transition-all duration-300 hover:bg-white/[0.06] hover:border-white/15">
       <span class="text-[8px] md:text-[9px] font-sans font-extralight tracking-[0.15em] text-neutral-400 uppercase mb-2">País</span>
       
-      <div v-if="!saas.countryFlag || saas.countryFlag === 'global'" class="text-neutral-300 opacity-90">
-        <span class="text-2xl md:text-3xl">🌍</span>
+      <div v-if="!saas.countryFlag || saas.countryFlag === 'global'" class="text-neutral-400 mb-1">
+        <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
       </div>
       <img 
         v-else-if="saas.countryFlag.length === 2" 
