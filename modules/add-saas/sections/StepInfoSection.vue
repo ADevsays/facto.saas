@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import CategorySelect from '../components/CategorySelect.vue'
+import CategorySelect from '~/ui/components/CategorySelect.vue'
+import CountrySelect from '~/ui/components/CountrySelect.vue'
 import type { SaasSubmission } from '~/modules/add-saas/types'
 
 const emit = defineEmits<{ next: [data: Partial<SaasSubmission>] }>()
@@ -11,6 +12,7 @@ const form = reactive({
   websiteUrl: '',
   startupType: '',
   categorySlugs: [] as string[],
+  countrySlug: 'global',
 })
 
 const canContinue = computed(() => form.name.trim().length > 0 && form.categorySlugs.length > 0)
@@ -24,6 +26,7 @@ function next() {
     websiteUrl: form.websiteUrl.trim() || undefined,
     startupType: form.startupType.trim() || undefined,
     categorySlugs: form.categorySlugs,
+    countrySlug: form.countrySlug || 'global',
     isIncognito: false,
   })
 }
@@ -51,9 +54,16 @@ function next() {
         />
       </div>
 
-      <div class="flex flex-col gap-2">
-        <label class="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-neutral-300">Categoría *</label>
-        <CategorySelect v-model="form.categorySlugs" />
+      <div class="flex gap-4 items-end">
+        <div class="flex flex-col gap-2 flex-1">
+          <label class="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-neutral-300">Categoría *</label>
+          <CategorySelect v-model="form.categorySlugs" />
+        </div>
+
+        <div class="flex flex-col gap-2 shrink-0">
+          <label class="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-neutral-400 text-center">País</label>
+          <CountrySelect v-model="form.countrySlug" />
+        </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">

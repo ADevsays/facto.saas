@@ -42,7 +42,17 @@ export function useSaasList() {
   const bestItems = computed(() => {
     const withMrr = state.items.filter((i) => i.mrr !== null)
     if (withMrr.length >= 3) {
-      return withMrr.sort((a, b) => (b.mrr ?? 0) - (a.mrr ?? 0)).slice(0, 6)
+      return withMrr.sort((a, b) => {
+        const parseRev = (val?: string, fallbackMrr?: number | null) => {
+          if (!val || val === '—') return (fallbackMrr || 0) * 12
+          let num = val.replace(/[^0-9.]/g, '')
+          let multi = 1
+          if (val.includes('M')) multi = 1000000
+          else if (val.includes('K')) multi = 1000
+          return (parseFloat(num) * multi) || 0
+        }
+        return parseRev(b.revenue, b.mrr) - parseRev(a.revenue, a.mrr)
+      }).slice(0, 6)
     }
     return [...state.items]
       .sort((a, b) => b.views - a.views)

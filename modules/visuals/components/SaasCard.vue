@@ -14,6 +14,8 @@ const props = defineProps<{
   logoUrl?: string | null
   isIncognito?: boolean
   index?: number
+  labelLeft?: string
+  labelRight?: string
 }>()
 
 const gemColor = computed(() => getGemColor(props.categorySlug))
@@ -49,14 +51,14 @@ const cardStyle = computed(() => ({
     <div class="mt-auto pt-2 border-t border-white/10">
       <div class="flex items-center justify-between gap-2">
         <div class="flex flex-col">
-          <span class="text-[9px] font-sans font-extralight tracking-[0.1em] text-neutral-500 uppercase">MRR</span>
+          <span class="text-[9px] font-sans font-extralight tracking-[0.1em] text-neutral-500 uppercase">{{ labelLeft || 'MRR' }}</span>
           <span class="text-xs font-mono text-white">
             <template v-if="mrr !== '—'">{{ mrr }}</template>
             <IncognitoIcon v-else class="w-4 h-4 text-neutral-600 inline" />
           </span>
         </div>
         <div v-if="revenue" class="flex flex-col items-end">
-          <span class="text-[9px] font-sans font-extralight tracking-[0.1em] text-neutral-500 uppercase">ARR</span>
+          <span class="text-[9px] font-sans font-extralight tracking-[0.1em] text-neutral-500 uppercase">{{ labelRight || 'ARR' }}</span>
           <span class="text-xs font-mono text-neutral-200">
             <template v-if="revenue !== '—'">{{ revenue }}</template>
             <IncognitoIcon v-else class="w-4 h-4 text-[#00D4FF]/60 inline" />

@@ -1,0 +1,12 @@
+{
+  "projectId": "5df3a44f-1d93-410a-a5a8-7a54e49483c3",
+  "type": "frontend",
+  "name": "View SaaS Profile",
+  "description": "User clicks on a SaaS in the ranking to view its detailed profile.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the homepage" },
+    { "type": "action", "description": "Click on the first SaaS card in the ranking list" },
+    { "type": "assertion", "description": "Verify that the page navigates to the SaaS profile page and displays its detailed information" }
+  ]
+}

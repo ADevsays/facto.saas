@@ -7,6 +7,7 @@ import SaasMetricsSection from '../sections/SaasMetricsSection.vue'
 import SaasRevenueChart from '../components/SaasRevenueChart.vue'
 import InputMrrView from '~/modules/input-mrr/views/InputMrrView.vue'
 import MoreStartupsSection from '../sections/MoreStartupsSection.vue'
+import ClaimFounderModal from '../components/ClaimFounderModal.vue'
 import { ShieldCheck } from 'lucide-vue-next'
 
 interface Props {
@@ -19,13 +20,16 @@ interface Props {
     mrr: number | null
     currency: string
     founderName: string | null
+    hasFounderEmail?: boolean
     publishedAt: string
     views: number
     allTimeRevenue?: string
     country?: string
+    countryFlag?: string
     history?: any
     categories?: { name: string; slug: string }[]
     provider?: string
+    founderSocials?: { twitterUrl?: string; linkedinUrl?: string; instagramUrl?: string } | null
     lastSyncedAt?: number | null
   }
 }
@@ -34,10 +38,40 @@ const props = defineProps<Props>()
 const route = useRoute()
 const { open: openSaasModal } = useAddSaasModal()
 
+const showClaimModal = useState('claim-founder-modal-open', () => false)
 const showVerifyModal = ref(false)
 const verifyEmail = ref('')
 const verifyError = ref('')
 const verifying = ref(false)
+
+function handleClaimFounder() {
+  if (props.saas.hasFounderEmail) {
+    showClaimModal.value = true
+  }
+}
+
+function handleClaimClose() {
+  showClaimModal.value = false
+}
+
+function handleClaimed(founder: { name: string; countrySlug: string }) {
+  showClaimModal.value = false
+  refreshNuxtData()
+}
+
+function handleEditStartup(saasData: any) {
+  showClaimModal.value = false
+  openSaasModal({
+    id: props.saas.id,
+    name: props.saas.name,
+    websiteUrl: props.saas.websiteUrl,
+    founderName: props.saas.founderName,
+    categorySlugs: props.saas.categories?.map(c => c.slug) || [],
+    logoUrl: props.saas.logoUrl,
+    startupType: props.saas.description,
+    ...saasData
+  }, true, true) // isEditMode = true, fromClaim = true
+}
 
 async function handleClaim() {
   showVerifyModal.value = true
@@ -75,31 +109,35 @@ async function submitVerify() {
 
 <template>
   <main class="min-h-screen bg-[#030305] text-white overflow-x-clip relative isolate flex flex-col items-center pt-14 pb-20 px-6">
-    <!-- Background effects -->
     <div class="absolute inset-0 z-[-1] pointer-events-none flex items-center justify-center">
       <div class="w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-[#00D4FF]/5 rounded-full blur-[120px] opacity-50"></div>
     </div>
 
-    <!-- Breadcrumb Navigation -->
     <SaasBreadcrumb :name="saas.name" />
-
-    <!-- Top Row (Logo, Name, Button, Description) -->
     <SaasHeaderSection :saas="saas" />
-
-    <!-- Bottom Metrics (Cards) -->
-    <SaasMetricsSection :saas="saas" />
-
-    <!-- Revenue & MRR Chart -->
-    <SaasRevenueChart :mrr="saas.mrr" :currency="saas.currency" :history="saas.history" :provider="saas.provider" :last-synced-at="saas.lastSyncedAt" @claim="handleClaim" />
-
-    <!-- More Startups -->
+    <SaasMetricsSection :saas="saas" @claim-founder="handleClaimFounder" />
+    <SaasRevenueChart :mrr="saas.mrr" :currency="saas.currency" :history="saas.history" :provider="saas.provider" :last-synced-at="saas.lastSyncedAt" :founder-name="saas.founderName" @claim="handleClaim" @claim-founder="handleClaimFounder" />
     <MoreStartupsSection :current-saas-id="saas.id" />
+
+    <div class="w-full max-w-5xl mx-auto mt-16 mb-8 relative z-10">
+      <div class="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+    </div>
 
     <div class="w-full max-w-5xl mx-auto mt-16 mb-8 relative z-10">
       <InputMrrView/>
     </div>
 
-    <!-- Verify Owner Mini-Modal -->
+    <!-- Claim Founder Modal -->
+    <ClaimFounderModal
+      :saas-id="saas.id"
+      :saas-name="saas.name"
+      :current-founder-name="saas.founderName"
+      @close="handleClaimClose"
+      @claimed="handleClaimed"
+      @edit-startup="handleEditStartup"
+    />
+
+    <!-- Legacy Verify Owner Mini-Modal -->
     <Transition name="backdrop">
       <div v-if="showVerifyModal" class="fixed inset-0 z-[90] bg-black/80 backdrop-blur-md" @click="showVerifyModal = false" />
     </Transition>

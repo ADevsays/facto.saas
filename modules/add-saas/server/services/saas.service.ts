@@ -63,7 +63,8 @@ export async function upsertSaasEntry(
   body: SaasSubmission, 
   websiteUrl: string | null,
   pData: ProviderData, 
-  matchedCategories: { id: number, name: string, slug: string }[]
+  matchedCategories: { id: number, name: string, slug: string }[],
+  matchedCountry: { id: number, name: string, slug: string, flag: string } | null
 ): Promise<SaasPublicProfile & { status: string }> {
   const isIncognito = !!body.isIncognito
   const slugVal = isIncognito ? null : slugify(body.name.trim())
@@ -107,7 +108,10 @@ export async function upsertSaasEntry(
     entry = res.data
     error = res.error
     
-    if (entry && !error) await supabase.from('saas_categories').delete().eq('saas_id', entry.id)
+    if (entry && !error) {
+      await supabase.from('saas_categories').delete().eq('saas_id', entry.id)
+      await supabase.from('saas_countries').delete().eq('saas_id', entry.id)
+    }
   } else {
     const res = await supabase.from('saas_entries').insert({ ...payload, status, views: 0 }).select().single()
     entry = res.data
@@ -120,10 +124,15 @@ export async function upsertSaasEntry(
     matchedCategories.map(cat => ({ saas_id: entry.id, category_id: cat.id }))
   )
 
+  if (matchedCountry) {
+    await supabase.from('saas_countries').insert({ saas_id: entry.id, country_id: matchedCountry.id })
+  }
+
   const { data: finalEntry } = await supabase
     .from('saas_entries')
     .select(`id, name, slug, logo_url, website_url, founder_name, startup_type, is_incognito, mrr, currency, published_at,
       categories!saas_categories ( name, slug ),
+      countries!saas_countries ( name, slug, flag ),
       payment_providers ( slug )`)
     .eq('id', entry.id)
     .single()
@@ -140,6 +149,7 @@ export async function upsertSaasEntry(
     startupType: (finalEntry as any).startup_type,
     category: (finalEntry.categories as any[])[0]?.name ?? '',
     categories: (finalEntry.categories as any[]) || [],
+    country: (finalEntry.countries as any[])?.[0] || null,
     provider: (finalEntry.payment_providers as any)?.slug ?? null,
     isIncognito: finalEntry.is_incognito,
     mrr: finalEntry.mrr,

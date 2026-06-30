@@ -13,6 +13,7 @@ export function useAddSaasForm() {
     websiteUrl: '',
     founderEmail: '',
     categorySlugs: [] as string[],
+    countrySlug: 'global',
     logoUrl: undefined as string | undefined,
     startupType: undefined as string | undefined,
   })
@@ -30,6 +31,7 @@ export function useAddSaasForm() {
     form.value.websiteUrl = d.websiteUrl || ''
     form.value.founderEmail = d.founderEmail || ''
     form.value.categorySlugs = d.categorySlugs || []
+    form.value.countrySlug = d.countrySlug || ''
     form.value.logoUrl = d.logoUrl
     form.value.startupType = d.type || d.startupType || d.description
     if (d.providerSlug) provider.value = d.providerSlug
@@ -90,7 +92,7 @@ export function useAddSaasForm() {
   function reset() {
     provider.value = 'stripe'
     apiKey.value = ''
-    form.value = { id: undefined, name: '', websiteUrl: '', founderEmail: '', categorySlugs: [], logoUrl: undefined, startupType: undefined }
+    form.value = { id: undefined, name: '', websiteUrl: '', founderEmail: '', categorySlugs: [], countrySlug: 'global', logoUrl: undefined, startupType: undefined }
     error.value = ''
     detectedMrr.value = null
     publishedData.value = null

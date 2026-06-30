@@ -5,11 +5,11 @@ const props = defineProps<{
 
 const tutorials = {
   stripe: {
-    title: 'Stripe (Recomendado: Solo Lectura)',
+    title: 'Stripe (Solo Lectura)',
     steps: [
-      'Haz clic en "Ir al Dashboard" para abrir la creación de clave preconfigurada.',
-      'Crea tu clave restringida de Stripe con los permisos preseleccionados.',
-      'Copia la clave resultante y pégala abajo.'
+      'Dale click a "Ir al dashboard" para crear una API key de sólo lectura.',
+      'Cópiala sin cambiar los permisos.',
+      'Pégala aquí y no la borres.'
     ],
     linkText: 'Ir al Dashboard',
     link: 'https://dashboard.stripe.com/apikeys/create?name=Facto.saas&permissions%5B%5D=rak_charge_read&permissions%5B%5D=rak_subscription_read&permissions%5B%5D=rak_plan_read&permissions%5B%5D=rak_product_read'
@@ -28,10 +28,10 @@ const tutorials = {
   whop: {
     title: 'Whop (Conexión Segura)',
     steps: [
-      'Crea una nueva "Company API Key".',
-      'Configura "Inherit permissions from role" en "Admin".',
-      'Tu Company ID empieza con biz_ y aparece en la URL de tu dashboard de Whop.',
-      'Copia la clave generada y pega ambos valores abajo.'
+      'Crea una nueva Company API key.',
+      'Hereda los permisos de Admin para seguridad.',
+      'Copia tu company ID (empieza con biz_ en la URL)',
+      'Pega ambos valores aquí.'
     ],
     linkText: 'Abrir Dashboard de Developer',
     link: 'https://whop.com/dashboard/developer'

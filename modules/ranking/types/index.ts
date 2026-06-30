@@ -14,6 +14,7 @@ export interface SaasListItem {
   category: string
   categorySlug: string
   categories: { name: string; slug: string }[]
+  country?: { name: string; slug: string; flag: string } | null
   provider: PaymentProvider
   views: number
   publishedAt: string
@@ -28,6 +29,7 @@ export interface SaasListState {
 export interface ListQueryParams {
   sort?: SortOption
   category?: string
+  country?: string
   q?: string
   limit?: number
   offset?: number

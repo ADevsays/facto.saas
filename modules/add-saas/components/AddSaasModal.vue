@@ -10,7 +10,8 @@ import AddSaasConnectionArea from './AddSaasConnectionArea.vue'
 import AddSaasFormFields from './AddSaasFormFields.vue'
 import AddSaasFooter from './AddSaasFooter.vue'
 
-const { isOpen, close } = useAddSaasModal()
+const { isOpen, close, editMode, fromClaimModal } = useAddSaasModal()
+const showClaimModal = useState('claim-founder-modal-open', () => false)
 
 const { 
   provider, 
@@ -43,6 +44,11 @@ function dismissSuccess() {
   publishedData.value = null
   reset()
 }
+
+function handleGoBack() {
+  close()
+  showClaimModal.value = true
+}
 </script>
 
 <template>
@@ -69,18 +75,24 @@ function dismissSuccess() {
   <Transition name="fade">
     <div v-if="isOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 pointer-events-none">
       <div class="relative w-full max-w-lg bg-[#0c0c10] border border-white/10 rounded-3xl overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.8)] flex flex-col max-h-[85vh] pointer-events-auto">
-        <AddSaasHeader :on-close="close" />
+        <AddSaasHeader 
+          :on-close="close" 
+          :is-edit-mode="editMode"
+          :show-back-button="fromClaimModal"
+          :on-back="handleGoBack"
+        />
 
         <div class="flex-1 overflow-y-auto px-8 py-6 flex flex-col gap-7 custom-scrollbar">
-          <div class="bg-white/[0.03] border border-white/5 rounded-xl p-3.5">
+          <div v-if="!editMode" class="bg-white/[0.03] border border-white/5 rounded-xl p-3.5">
             <p class="text-sm font-sans font-light text-neutral-400 leading-relaxed">
               <span class="text-white font-semibold">¿Tu startup es invisible?</span> Verifica tu MRR para destacar frente al mercado.
             </p>
           </div>
 
-          <AddSaasProviderSelection v-model="provider" />
+          <AddSaasProviderSelection v-if="!editMode" v-model="provider" />
 
           <AddSaasConnectionArea 
+            v-if="!editMode"
             :provider="provider"
             :detected-mrr="detectedMrr"
             :is-mp-connecting="isMpConnecting"

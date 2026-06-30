@@ -27,7 +27,7 @@ const timeframes: { key: Timeframe; label: string }[] = [
 <template>
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 relative z-10">
     <div>
-      <h3 class="text-sm font-sans font-extralight tracking-[0.15em] text-neutral-400 uppercase mb-1">Financial Trajectory</h3>
+      <h3 class="text-sm font-sans font-extralight tracking-[0.15em] text-neutral-400 uppercase mb-1">Trayectoria Financiera</h3>
       <p class="text-2xl font-serif text-white font-semibold">
         {{ activeMetric === 'mrr' ? 'Monthly Recurring Revenue' : 'Gross Revenue' }}
       </p>
