@@ -67,6 +67,7 @@ const props = defineProps<{
       type="email"
       placeholder="hola@tuweb.com"
       required
+      tooltip="Con este email podrás reclamar y verificar la autoría de esta startup más adelante."
     />
   </div>
 </template>

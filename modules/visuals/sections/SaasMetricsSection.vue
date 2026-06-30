@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { formatMrrValue, formatRevenueValue } from '~/utils/format'
 import IncognitoIcon from '~/ui/components/IncognitoIcon.vue'
+import InfoTooltip from '~/ui/components/InfoTooltip.vue'
 import { computed } from 'vue'
 
 const props = defineProps<{
@@ -37,12 +38,9 @@ const hasSocials = computed(() => {
   <div class="w-full max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 z-10">
     
     <div class="col-span-2 md:col-span-1 border border-white/10 bg-white/[0.03] shadow-md rounded-2xl p-5 flex flex-col items-center text-center justify-center transition-all duration-300 hover:bg-white/[0.06] hover:border-white/15">
-      <div class="flex items-center justify-center gap-1.5 mb-2 group relative">
+      <div class="flex items-center justify-center gap-1.5 mb-2 relative">
         <span class="text-[8px] md:text-[9px] font-sans font-extralight tracking-[0.15em] text-neutral-400 uppercase">MRR</span>
-        <div class="w-3 h-3 rounded-full border border-neutral-500 text-neutral-500 flex items-center justify-center text-[7.5px] cursor-help transition-colors group-hover:text-white group-hover:border-white">i</div>
-        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-56 bg-[#030305]/95 backdrop-blur-md border border-white/10 text-neutral-400 text-[10px] font-sans font-thin tracking-[0.08em] leading-relaxed p-3 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-20 pointer-events-none shadow-xl">
-          El dinero fijo que gana la startup al mes por suscriptores. No incluye pagos únicos.
-        </div>
+        <InfoTooltip text="El dinero fijo que gana la startup al mes por suscriptores. No incluye pagos únicos." />
       </div>
       <div class="w-full flex justify-center">
         <span class="text-xl md:text-2xl font-serif text-white font-semibold">
@@ -54,12 +52,9 @@ const hasSocials = computed(() => {
     </div>
 
     <div class="col-span-2 md:col-span-1 border border-white/10 bg-white/[0.03] shadow-md rounded-2xl p-5 flex flex-col items-center text-center justify-center transition-all duration-300 hover:bg-white/[0.06] hover:border-white/15">
-      <div class="flex items-center justify-center gap-1.5 mb-2 group relative">
+      <div class="flex items-center justify-center gap-1.5 mb-2 relative">
         <span class="text-[8px] md:text-[9px] font-sans font-extralight tracking-[0.15em] text-neutral-400 uppercase">Ingresos Totales</span>
-        <div class="w-3 h-3 rounded-full border border-neutral-500 text-neutral-500 flex items-center justify-center text-[7.5px] cursor-help transition-colors group-hover:text-white group-hover:border-white">i</div>
-        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-56 bg-[#030305]/95 backdrop-blur-md border border-white/10 text-neutral-400 text-[10px] font-sans font-thin tracking-[0.08em] leading-relaxed p-3 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 z-20 pointer-events-none shadow-xl">
-          Todo el dinero que ha ganado la startup en total desde el primer día.
-        </div>
+        <InfoTooltip text="Todo el dinero que ha ganado la startup en total desde el primer día." />
       </div>
       <div class="w-full flex justify-center">
         <span class="text-lg md:text-xl font-serif text-neutral-200 font-semibold">

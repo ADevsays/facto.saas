@@ -59,12 +59,11 @@ function handleClick(isIncognito: boolean, name: string | null) {
         </div>
       </template>
       <template v-else>
-        <div class="w-6 h-6 rounded-full bg-white/10 border border-white/10 flex items-center justify-center shrink-0 text-[9px] text-neutral-300 font-medium">
-          {{ item.founderName[0].toUpperCase() }}
+        <div class="w-[80px] flex items-center justify-center shrink-0 hidden md:flex">
+          <span class="text-xs text-neutral-500 font-sans font-extralight truncate text-center w-full">
+            {{ item.founderName }}
+          </span>
         </div>
-        <span class="text-xs text-neutral-500 font-sans font-extralight truncate hidden md:block">
-          {{ item.founderName }}
-        </span>
       </template>
     </div>
 

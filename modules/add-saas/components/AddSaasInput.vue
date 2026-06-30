@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import InfoTooltip from '~/ui/components/InfoTooltip.vue'
+
 const props = defineProps<{
   label: string
   modelValue?: string | null
   type?: string
   placeholder?: string
   required?: boolean
+  tooltip?: string
 }>()
 
 const emit = defineEmits(['update:modelValue'])
@@ -17,9 +20,12 @@ const updateValue = (e: Event) => {
 
 <template>
   <div class="flex flex-col gap-2">
-    <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">
-      {{ label }}{{ required ? ' *' : '' }}
-    </label>
+    <div class="flex items-center gap-1.5 relative w-max">
+      <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">
+        {{ label }}{{ required ? ' *' : '' }}
+      </label>
+      <InfoTooltip v-if="tooltip" :text="tooltip" />
+    </div>
     <input
       :type="type || 'text'"
       :value="modelValue"
