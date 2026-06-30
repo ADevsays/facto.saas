@@ -6,18 +6,30 @@ export function useCategoryFilter() {
   const route = useRoute()
   const router = useRouter()
 
+  const isOnCategoryRoute = computed(() => route.path.includes(ROUTES.CATEGORY))
+  const isOnCountryRoute = computed(() => route.path.includes(ROUTES.COUNTRY))
+
   const category = computed(() => {
-    if (route.path.includes(ROUTES.CATEGORY)) {
+    if (isOnCategoryRoute.value) {
       return (route.params.slug as string) || ''
     }
-    return ''
+    return (route.query.categoria as string) || ''
   })
 
   function setCategory(value: string) {
-    if (value === 'all' || !value) {
-      router.push('/saas')
+    if (isOnCountryRoute.value) {
+      if (value === 'all' || !value) {
+        const { categoria, ...rest } = route.query
+        router.push({ path: route.path, query: rest })
+      } else {
+        router.push({ path: route.path, query: { ...route.query, categoria: value } })
+      }
     } else {
-      router.push(`${ROUTES.CATEGORY}/${value}`)
+      if (value === 'all' || !value) {
+        router.push('/saas')
+      } else {
+        router.push(`${ROUTES.CATEGORY}/${value}`)
+      }
     }
   }
 

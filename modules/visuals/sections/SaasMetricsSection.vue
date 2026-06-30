@@ -12,6 +12,7 @@ const props = defineProps<{
     publishedAt: string
     allTimeRevenue?: string
     country?: string
+    countrySlug?: string
     countryFlag?: string
     founderSocials?: { twitterUrl?: string; linkedinUrl?: string; instagramUrl?: string } | null
   }
@@ -110,10 +111,13 @@ const hasSocials = computed(() => {
       <span class="text-[9px] font-sans font-extralight tracking-wider text-neutral-500 mt-2">Fecha de pub.</span>
     </div>
 
-    <div class="col-span-2 md:col-span-1 border border-white/10 bg-white/[0.03] shadow-md rounded-2xl p-5 flex flex-col items-center text-center justify-center transition-all duration-300 hover:bg-white/[0.06] hover:border-white/15">
+    <NuxtLink 
+      :to="(saas.countrySlug && saas.countrySlug !== 'global') ? `/saas/pais/${saas.countrySlug}` : '/saas'"
+      class="col-span-2 md:col-span-1 border border-white/10 bg-white/[0.03] shadow-md rounded-2xl p-5 flex flex-col items-center text-center justify-center transition-all duration-300 hover:bg-white/[0.06] hover:border-white/15 cursor-pointer hover:shadow-[0_0_15px_rgba(0,212,255,0.05)] group"
+    >
       <span class="text-[8px] md:text-[9px] font-sans font-extralight tracking-[0.15em] text-neutral-400 uppercase mb-2">País</span>
       
-      <div v-if="!saas.countryFlag || saas.countryFlag === 'global'" class="text-neutral-400 mb-1">
+      <div v-if="!saas.countryFlag || saas.countryFlag === 'global'" class="text-neutral-400 mb-1 group-hover:text-neutral-300 transition-colors duration-300">
         <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
       </div>
       <img 
@@ -124,8 +128,8 @@ const hasSocials = computed(() => {
       />
       <span v-else class="text-2xl md:text-3xl font-serif text-neutral-200 font-semibold">{{ saas.countryFlag }}</span>
 
-      <span class="text-[9px] font-sans font-extralight tracking-wider text-neutral-500 mt-2">{{ saas.country || 'Sede central' }}</span>
-    </div>
+      <span class="text-[9px] font-sans font-extralight tracking-wider text-neutral-500 mt-2 group-hover:text-[#00D4FF] transition-colors">{{ saas.country || 'Sede central' }}</span>
+    </NuxtLink>
 
   </div>
 </template>

@@ -7,6 +7,7 @@ import SaasMetricsSection from '../sections/SaasMetricsSection.vue'
 import SaasRevenueChart from '../components/SaasRevenueChart.vue'
 import MoreStartupsSection from '../sections/MoreStartupsSection.vue'
 import ClaimFounderModal from '../components/ClaimFounderModal.vue'
+import InputMrrView from '../../input-mrr/views/InputMrrView.vue'
 import { ShieldCheck } from 'lucide-vue-next'
 
 interface Props {
@@ -24,6 +25,7 @@ interface Props {
     views: number
     allTimeRevenue?: string
     country?: string
+    countrySlug?: string
     countryFlag?: string
     history?: any
     categories?: { name: string; slug: string }[]
@@ -90,8 +92,13 @@ async function handleClaim() {
     <SaasRevenueChart :mrr="saas.mrr" :currency="saas.currency" :history="saas.history" :provider="saas.provider" :last-synced-at="saas.lastSyncedAt" :founder-name="saas.founderName" @claim="handleClaim" @claim-founder="handleClaimFounder" />
     <MoreStartupsSection :current-saas-id="saas.id" />
 
-    <div class="w-full max-w-5xl mx-auto mt-16 mb-8 relative z-10">
+    <div class="w-full max-w-5xl mx-auto mt-4 relative z-10">
       <div class="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+    </div>
+
+    <!-- Add MRR Component -->
+    <div class="w-full max-w-5xl mx-auto mt-8 -mb-8 relative z-10">
+      <InputMrrView />
     </div>
 
     <!-- Claim Founder & MRR Modal -->

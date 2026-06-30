@@ -141,6 +141,7 @@ export default defineEventHandler(async (event) => {
       publishedAt: dbEntry.published_at,
       allTimeRevenue: allTimeRev,
       country: countryData?.name || 'Global',
+      countrySlug: countryData?.slug || 'global',
       countryFlag: countryData?.iso_code || 'global',
       history,
       founderSocials: null, // we will populate this below if founder_id exists

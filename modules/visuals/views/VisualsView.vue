@@ -10,6 +10,7 @@ import InputMrrView from '../../input-mrr/views/InputMrrView.vue'
 import RankingView from '../../ranking/views/RankingView.vue'
 import AddSaasModal from '../../add-saas/components/AddSaasModal.vue'
 import CategoryLinks from '~/ui/components/CategoryLinks.vue'
+import CountryCardsSection from '../sections/CountryCardsSection.vue'
 
 const router = useRouter()
 const { categories, fetchCategories } = useCategories()
@@ -52,13 +53,23 @@ const widthLayout = "max-w-5xl w-full"
       <RankingView />
     </div>
 
-    <!-- Contenedor externo de ancho completo -->
-    <div class="w-full pb-14 pt-4 px-6 flex justify-center">
+    <!-- Contenedor externo de ancho completo para que las categorías no se rompan -->
+    <div class="w-full pb-12 pt-4 px-6 flex justify-center">
       <CategoryLinks 
         :categories="filteredCategories"
         @select="handleCategorySelect"
         @select-all="handleSelectAll"
       />
+    </div>
+
+    <!-- Separador con el ancho exacto del contenido -->
+    <div :class="[widthLayout, 'mx-auto px-6']">
+      <div class="w-full border-b border-white/5"></div>
+    </div>
+
+    <!-- Country Cards Section -->
+    <div :class="[widthLayout, 'mx-auto px-6']">
+      <CountryCardsSection />
     </div>
   </div>
 
