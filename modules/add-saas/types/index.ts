@@ -22,6 +22,7 @@ export interface SaasSubmission {
   founderEmail?: string
   startupType?: string
   categorySlugs: string[]
+  countrySlug?: string
   providerSlug?: PaymentProvider
   providerKey?: string
   isIncognito: boolean
@@ -36,6 +37,7 @@ export interface SaasPublicProfile {
   startupType: string | null
   category: string
   categories: { name: string; slug: string }[]
+  country?: { name: string; slug: string; flag: string } | null
   provider: PaymentProvider | null
   isIncognito: boolean
   mrr: number | null

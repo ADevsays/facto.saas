@@ -32,8 +32,10 @@ onMounted(fetchAll)
           :category="item.category"
           :categorySlug="item.categorySlug"
           :index="index"
-          :mrr="formatMrrValue(item.mrr)"
-          :revenue="formatRevenueValue(item.mrr)"
+          :mrr="item.revenue || formatRevenueValue(item.mrr)"
+          :revenue="formatMrrValue(item.mrr)"
+          labelLeft="REVENUE"
+          labelRight="MRR"
           :logoUrl="item.logoUrl"
           :isIncognito="item.isIncognito"
         />

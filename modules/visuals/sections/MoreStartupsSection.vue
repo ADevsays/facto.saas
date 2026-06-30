@@ -11,16 +11,19 @@ const props = defineProps<{
 const { items, fetchAll } = useSaasList()
 
 const moreStartups = computed(() => {
-  return items.value
-    .filter(s => s.id !== props.currentSaasId)
-    .slice(0, 3)
+  const filtered = items.value.filter(s => s.id !== props.currentSaasId)
+  if (filtered.length <= 3) return filtered
+  
+  const maxOffset = Math.max(0, filtered.length - 3)
+  const offset = Math.min(randomOffset.value, maxOffset)
+  return filtered.slice(offset, offset + 3)
 })
 
 const randomOffset = ref(0)
 
 onMounted(() => {
   fetchAll()
-  randomOffset.value = Math.floor(Math.random() * 3)
+  randomOffset.value = Math.floor(Math.random() * 20)
 })
 </script>
 
@@ -45,7 +48,7 @@ onMounted(() => {
         v-for="(s, index) in moreStartups" 
         :key="s.id" 
         :saas="s"
-        :index="index + randomOffset"
+        :index="index"
       />
     </div>
   </div>

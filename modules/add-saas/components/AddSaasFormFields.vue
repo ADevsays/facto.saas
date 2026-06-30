@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import CategorySelect from './CategorySelect.vue'
+import CategorySelect from '~/ui/components/CategorySelect.vue'
+import CountrySelect from '~/ui/components/CountrySelect.vue'
 import AddSaasInput from './AddSaasInput.vue'
 
 const props = defineProps<{
@@ -9,6 +10,7 @@ const props = defineProps<{
     websiteUrl: string
     founderEmail: string
     categorySlugs: string[]
+    countrySlug: string
     logoUrl?: string
     startupType?: string
   }
@@ -47,9 +49,16 @@ const props = defineProps<{
       />
     </div>
 
-    <div class="flex flex-col gap-2">
-      <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">Categorías *</label>
-      <CategorySelect v-model="form.categorySlugs" />
+    <div class="flex gap-4 items-end">
+      <div class="flex flex-col gap-2 flex-1">
+        <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">Categorías *</label>
+        <CategorySelect v-model="form.categorySlugs" />
+      </div>
+
+      <div class="flex flex-col gap-2 shrink-0">
+        <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500 text-center">País</label>
+        <CountrySelect v-model="form.countrySlug" />
+      </div>
     </div>
 
     <AddSaasInput

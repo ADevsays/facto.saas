@@ -11,7 +11,7 @@ const providers = [
   {
     slug: 'stripe',
     name: 'Stripe',
-    description: 'Recomendado: Clave restringida de Stripe'
+    description: 'Solo Lectura: Clave restringida'
   },
   {
     slug: 'mercadopago',

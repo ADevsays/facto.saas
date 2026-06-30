@@ -58,7 +58,7 @@ watch(dbCategories, (val) => {
   
   shuffleInterval = setInterval(() => {
     shuffleCategories()
-  }, 15000)
+  }, 7000)
 }, { immediate: true })
 
 function onSelectCategory(slug: string) {

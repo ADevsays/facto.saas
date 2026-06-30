@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     websiteUrl = 'https://' + websiteUrl
   }
 
-  // 3. Validate Categories
+  // 3. Validate Categories and Country
   const { data: matchedCategories } = await supabase
     .from('categories')
     .select('id, name, slug')
@@ -24,11 +24,17 @@ export default defineEventHandler(async (event) => {
 
   if (!matchedCategories?.length) throw createError({ statusCode: 422, message: `Categories not found` })
 
+  let matchedCountry = null
+  if (body.countrySlug) {
+    const { data: c } = await supabase.from('countries').select('id, name, slug, flag').eq('slug', body.countrySlug).single()
+    if (c) matchedCountry = c
+  }
+
   // 4. Process Provider & MRR
   const pData = await processProviderInfo(body, event)
 
-  // 5. DB Transaction & Final representation
-  const finalEntry = await upsertSaasEntry(body, websiteUrl, pData, matchedCategories)
+  // 5. Upsert to DB
+  const finalEntry = await upsertSaasEntry(body, websiteUrl, pData, matchedCategories, matchedCountry)
 
   // 6. Notify admin if startup requires manual review
   if (finalEntry.status === 'pending_review') {

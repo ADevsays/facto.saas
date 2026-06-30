@@ -15,9 +15,13 @@ const props = defineProps<{
   } | null
   provider?: string
   lastSyncedAt?: number | null
+  founderName?: string | null
 }>()
 
-const emit = defineEmits<{ claim: [] }>()
+const emit = defineEmits<{ 
+  claim: [],
+  'claim-founder': [] 
+}>()
 
 const isLocked = computed(() => props.mrr === null && !props.history)
 const baseMrr = computed(() => props.mrr || 15000)
@@ -61,10 +65,23 @@ const currencyFormatter = (val: number) => {
       </div>
     </div> 
 
-    <VerificationLegend 
-      v-if="provider && lastSyncedAt && !isLocked"
-      :provider="provider"
-      :last-synced-at="lastSyncedAt"
-    />
+    <div class="mt-3 flex flex-col sm:flex-row justify-between items-center sm:items-start px-2 gap-3 sm:gap-0">
+      <button 
+        v-if="!founderName"
+        class="text-[10px] font-sans font-light text-neutral-500 hover:text-[#00D4FF] transition-colors duration-300 flex items-center gap-1.5 group"
+        @click="emit('claim-founder')"
+      >
+        <span class="opacity-70">¿Eres el dueño?</span>
+        <span class="underline decoration-white/20 underline-offset-4 group-hover:decoration-[#00D4FF]/40 transition-colors">Reclama esta startup</span>
+      </button>
+      <div v-else></div>
+
+      <VerificationLegend 
+        v-if="provider && lastSyncedAt && !isLocked"
+        :provider="provider"
+        :last-synced-at="lastSyncedAt"
+      />
+      <div v-else class="hidden sm:block"></div>
+    </div>
   </div>
 </template>

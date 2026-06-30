@@ -10,15 +10,20 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Slug is required' })
   }
  
-  const { data: dbEntry } = await supabase
+    const { data: dbEntry, error: dbError } = await supabase
     .from('saas_entries')
     .select(`
-      id, name, slug, logo_url, website_url, founder_name, startup_type, is_incognito, mrr, currency, views, published_at, provider_key_encrypted,
+      id, name, slug, logo_url, website_url, founder_name, founder_id, founder_email, startup_type, is_incognito, mrr, currency, views, published_at, provider_key_encrypted,
       categories!saas_categories ( name, slug ),
+      countries!saas_countries ( name, slug, flag, iso_code ),
       payment_providers ( slug )
     `)
     .eq('slug', slug)
     .single()
+
+  if (dbError) {
+    console.error('[slug.get.ts] Database error:', dbError)
+  }
  
   if (dbEntry) {
     const nextViews = (Number(dbEntry.views) || 0) + 1
@@ -33,15 +38,22 @@ export default defineEventHandler(async (event) => {
     const providerSlug = (dbEntry.payment_providers as any)?.slug
     if (dbEntry.provider_key_encrypted) {
       try {
-        const storage = useStorage('cache')
-        const cacheKey = `history:${providerSlug}:${dbEntry.id}`
-        const cached: any = await storage.getItem(cacheKey)
-        const now = Date.now()
+        const { data: cacheRow } = await supabase
+          .from('saas_metrics_cache')
+          .select('history_cache, history_synced_at')
+          .eq('saas_id', dbEntry.id)
+          .single()
+
+        const nowMs = Date.now()
+        let syncedAtMs = 0
+        if (cacheRow && cacheRow.history_synced_at) {
+          syncedAtMs = new Date(cacheRow.history_synced_at).getTime()
+        }
 
         // Cache valid for 48 hours
-        if (cached && cached.history && cached.timestamp && (now - cached.timestamp < 48 * 60 * 60 * 1000)) {
-          history = cached.history
-          lastSyncedAt = cached.timestamp
+        if (cacheRow && cacheRow.history_cache && (nowMs - syncedAtMs < 48 * 60 * 60 * 1000)) {
+          history = cacheRow.history_cache
+          lastSyncedAt = syncedAtMs
         } else {
           const apiKey = decryptProviderKey(dbEntry.provider_key_encrypted)
           if (providerSlug === 'stripe' && stripeService.getHistory) {
@@ -53,8 +65,14 @@ export default defineEventHandler(async (event) => {
           }
 
           if (history) {
-            await storage.setItem(cacheKey, { history, timestamp: now })
-            lastSyncedAt = now
+            await supabase
+              .from('saas_metrics_cache')
+              .upsert({
+                saas_id: dbEntry.id,
+                history_cache: history,
+                history_synced_at: new Date(nowMs).toISOString()
+              })
+            lastSyncedAt = nowMs
           }
         }
       } catch (e) {
@@ -97,20 +115,20 @@ export default defineEventHandler(async (event) => {
     }
 
     if (history) {
-      try {
-        await useStorage('cache').setItem(`metrics:${dbEntry.id}`, { mrr: mrrVal, revenue: allTimeRev })
-        if (mrrVal !== null && mrrVal !== dbEntry.mrr) {
-          supabase.from('saas_entries').update({ mrr: mrrVal }).eq('id', dbEntry.id).then(() => {})
-        }
-      } catch (e) {}
+      if (mrrVal !== null && mrrVal !== dbEntry.mrr) {
+        supabase.from('saas_entries').update({ mrr: mrrVal }).eq('id', dbEntry.id).then(() => {})
+      }
     }
 
-    return {
+    const countryData = (dbEntry.countries as any[])?.[0] || null
+
+    const result = {
       id: dbEntry.id,
       name: dbEntry.name,
       logoUrl: dbEntry.logo_url,
       websiteUrl: dbEntry.website_url,
       founderName: dbEntry.founder_name,
+      hasFounderEmail: !!dbEntry.founder_email,
       description: dbEntry.startup_type || `Detalle de ${dbEntry.name || 'SaaS'}.`,
       isIncognito: dbEntry.is_incognito,
       mrr: mrrVal,
@@ -122,10 +140,32 @@ export default defineEventHandler(async (event) => {
       views: nextViews,
       publishedAt: dbEntry.published_at,
       allTimeRevenue: allTimeRev,
-      country: 'Global',
+      country: countryData?.name || 'Global',
+      countryFlag: countryData?.iso_code || 'global',
       history,
+      founderSocials: null, // we will populate this below if founder_id exists
       lastSyncedAt: history ? lastSyncedAt : null
     }
+
+    if (dbEntry.founder_id) {
+      try {
+        const { data: founderData } = await supabase
+          .from('founders')
+          .select('twitter_url, linkedin_url, instagram_url')
+          .eq('id', dbEntry.founder_id)
+          .single()
+        
+        if (founderData) {
+          result.founderSocials = {
+            twitterUrl: founderData.twitter_url,
+            linkedinUrl: founderData.linkedin_url,
+            instagramUrl: founderData.instagram_url
+          }
+        }
+      } catch(e) {}
+    }
+
+    return result
   }
 
   throw createError({ statusCode: 404, message: 'SaaS not found' })

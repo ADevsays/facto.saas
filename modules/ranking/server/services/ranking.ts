@@ -1,5 +1,4 @@
 import { supabase } from '~/server/lib/supabase'
-import { useStorage } from '#imports'
 import type { SaasListItem, ListQueryParams, SortOption } from '~/modules/ranking/types'
 
 const SORT_COLUMN: Record<SortOption, string> = {
@@ -16,6 +15,9 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
     if (matched) selectedCat = matched
   }
 
+  const countries = (row.countries as { name: string; slug: string; flag: string }[]) || []
+  let selectedCountry = countries[0] || null
+
   return {
     id: row.id as string,
     name: row.name as string | null,
@@ -28,6 +30,7 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
     category: selectedCat?.name ?? '',
     categorySlug: selectedCat?.slug ?? '',
     categories: cats,
+    country: selectedCountry,
     provider: (row.payment_providers as Record<string, string>)?.slug as SaasListItem['provider'],
     views: row.views as number,
     publishedAt: row.published_at as string,
@@ -35,7 +38,7 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
 }
 
 export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasListItem[]> {
-  const { sort = 'mrr', category, q, limit = 100, offset = 0 } = params
+  const { sort = 'mrr', category, country, q, limit = 100, offset = 0 } = params
   const column = SORT_COLUMN[sort]
   const nullsFirst = sort === 'mrr' ? false : false
 
@@ -43,7 +46,9 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
     id, name, logo_url, website_url, founder_name,
     is_incognito, mrr, currency, views, published_at,
     categories!saas_categories${category ? '!inner' : ''} ( name, slug ),
-    payment_providers ( name, slug )
+    countries!saas_countries${country ? '!inner' : ''} ( name, slug, flag ),
+    payment_providers ( name, slug ),
+    saas_metrics_cache ( history_cache )
   `
 
   let query = supabase
@@ -57,6 +62,10 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
     query = query.eq('categories.slug', category)
   }
 
+  if (country) {
+    query = query.eq('countries.slug', country)
+  }
+
   if (q?.trim()) {
     const term = `%${q.trim()}%`
     query = query.or(`name.ilike.${term},founder_name.ilike.${term}`)
@@ -66,18 +75,61 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
 
   if (error) throw createError({ statusCode: 500, message: error.message })
 
-  const items = (data ?? []).map(row => mapRow(row as unknown as Record<string, unknown>, category))
-  
-  const storage = useStorage('cache')
-  await Promise.all(items.map(async (item) => {
-    try {
-      const metrics: any = await storage.getItem(`metrics:${item.id}`)
-      if (metrics) {
-        if (metrics.mrr !== undefined) item.mrr = metrics.mrr
-        if (metrics.revenue !== undefined) item.revenue = metrics.revenue
+  const items = (data ?? []).map(row => {
+    const item = mapRow(row as unknown as Record<string, unknown>, category)
+    const cacheData = (row as any).saas_metrics_cache
+    if (cacheData) {
+      const cacheObj = Array.isArray(cacheData) ? cacheData[0] : cacheData
+      if (cacheObj && cacheObj.history_cache) {
+        const history = cacheObj.history_cache
+        let mrrVal = item.mrr
+        let realAllTimeRevenue = 0
+
+        if (history.charges?.length) {
+          realAllTimeRevenue = history.charges.reduce((sum: number, c: any) => sum + c.amount, 0)
+        }
+        if (history.subscriptions?.length) {
+          const nowSec = Math.floor(Date.now() / 1000)
+          let currentMrr = 0
+          for (const s of history.subscriptions) {
+            if (s.created <= nowSec && (s.canceledAt === null || s.canceledAt > nowSec)) {
+              currentMrr += s.mrr
+            }
+          }
+          mrrVal = Math.round(currentMrr)
+        }
+
+        let allTimeRev = '—'
+        if (realAllTimeRevenue > 0) {
+          if (realAllTimeRevenue >= 1000000) allTimeRev = `$${(realAllTimeRevenue / 1000000).toFixed(1)}M`.replace('.0', '')
+          else if (realAllTimeRevenue >= 1000) allTimeRev = `$${(realAllTimeRevenue / 1000).toFixed(0)}K`
+          else allTimeRev = `$${Math.round(realAllTimeRevenue)}`
+        } else if (mrrVal !== null && mrrVal > 0) {
+          const annual = mrrVal * 12
+          if (annual >= 1000000) allTimeRev = `$${(annual / 1000000).toFixed(1)}M`.replace('.0', '')
+          else if (annual >= 1000) allTimeRev = `$${(annual / 1000).toFixed(0)}K`
+          else allTimeRev = `$${annual}`
+        } else if (mrrVal === 0) {
+          allTimeRev = '$0'
+        }
+
+        item.mrr = mrrVal
+        item.revenue = allTimeRev
       }
-    } catch (e) {}
-  }))
+    } else {
+      let allTimeRev = '—'
+      if (item.mrr !== null && item.mrr > 0) {
+        const annual = item.mrr * 12
+        if (annual >= 1000000) allTimeRev = `$${(annual / 1000000).toFixed(1)}M`.replace('.0', '')
+        else if (annual >= 1000) allTimeRev = `$${(annual / 1000).toFixed(0)}K`
+        else allTimeRev = `$${annual}`
+      } else if (item.mrr === 0) {
+        allTimeRev = '$0'
+      }
+      item.revenue = allTimeRev
+    }
+    return item
+  })
 
   return items
 }

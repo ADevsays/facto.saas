@@ -79,16 +79,18 @@ Flujo de dos pasos que permite a un founder publicar su SaaS en el ranking. **El
 
 **Flujo UX:**
 1. El founder hace click en "Agrega tu MRR" en la home â†’ navega a `/add`.
-2. **Paso 1 â€” Datos del SaaS** (`StepInfoSection`): Formulario con los campos:
+1. El founder hace click en "Agrega tu MRR" en la home → navega a `/add`.
+2. **Paso 1 — Datos del SaaS** (`StepInfoSection`): Formulario con los campos:
    - `name` (string, obligatorio)
    - `logoUrl` (string, URL de imagen, opcional)
    - `founderName` (string, opcional)
    - `websiteUrl` (string, URL, opcional)
    - `startupType` (string libre, ej: "B2B SaaS", "PLG", "Marketplace", opcional)
-   - `categorySlug` (uuid vÃ­a `CategorySelect`, obligatorio)
-3. **Paso 2 â€” API Key** (`StepKeySection`): El founder elige un provider y pega su key.
-   - Si conecta key vÃ¡lida â†’ MRR calculado y visible en el ranking.
-   - Si **salta este paso** (CTA "Publicar sin MRR") â†’ SaaS publicado con `mrr: null`, badge "MRR bloqueado" en la UI.
+   - `categorySlug` (uuid vía `CategorySelect`, obligatorio)
+   - `countrySlug` (string, ISO o slug del país vía `CountrySelect`, opcional)
+3. **Paso 2 — API Key** (`StepKeySection`): El founder elige un provider y pega su key.
+   - Si conecta key válida → MRR calculado y visible en el ranking.
+   - Si **salta este paso** (CTA "Publicar sin MRR") → SaaS publicado con `mrr: null`, badge "MRR bloqueado" en la UI.
 
 **Interfaces TypeScript:**
 ```ts
@@ -113,6 +115,7 @@ interface SaasSubmission {
   founderName?: string
   startupType?: string
   categorySlug: string
+  countrySlug?: string             // opcional: ISO del país
   providerSlug?: PaymentProvider   // opcional: si no hay key, se omite
   providerKey?: string             // opcional: API key en texto plano (el server la cifra)
   isIncognito: boolean
@@ -134,97 +137,97 @@ interface SaasPublicProfile {
 }
 ```
 
-**Endpoints** _(archivos en `modules/add-saas/server/api/`)_:
-- `POST /api/add-saas/validate` â€” recibe `{ providerSlug, providerKey }`, devuelve `ProviderValidationResult`
-- `POST /api/add-saas/publish` â€” recibe `SaasSubmission`, devuelve `SaasPublicProfile`
-- `GET /api/add-saas/[id]/mrr` â€” recalcula MRR usando el provider y key almacenados
+**Endpoints** *(archivos en `modules/add-saas/server/api/`)*:
+- `POST /api/add-saas/validate` — recibe `{ providerSlug, providerKey }`, devuelve `ProviderValidationResult`
+- `POST /api/add-saas/publish` — recibe `SaasSubmission`, devuelve `SaasPublicProfile`
+- `GET /api/add-saas/[id]/mrr` — recalcula MRR usando el provider y key almacenados
 
-**PatrÃ³n para agregar un nuevo provider:**
+**Patrón para agregar un nuevo provider:**
 1. Crear `modules/add-saas/server/services/<provider>.service.ts` implementando `PaymentProviderService`.
 2. Registrarlo en `provider.factory.ts`.
-3. AÃ±adirlo al tipo `PaymentProvider`.
+3. Añadirlo al tipo `PaymentProvider`.
 4. No se requieren cambios en endpoints ni en la UI del flujo.
 
 ---
 
 **Stripe** (`provider: 'stripe'`):
 - Permiso requerido en Restricted Key: lectura de Cargos (`rak_charge_read`), Suscripciones (`rak_subscription_read`), Planes (`rak_plan_read`) y Productos (`rak_product_read`).
-- CreaciÃ³n automatizada: Enlace parametrizado que preselecciona todos estos permisos en la consola de Stripe.
+- Creación automatizada: Enlace parametrizado que preselecciona todos estos permisos en la consola de Stripe.
 - Endpoints de consulta:
-  - `GET https://api.stripe.com/v1/subscriptions?status=all&limit=100` (Historial completo de suscripciones para cÃ¡lculo de MRR).
+  - `GET https://api.stripe.com/v1/subscriptions?status=all&limit=100` (Historial completo de suscripciones para cálculo de MRR).
   - `GET https://api.stripe.com/v1/charges?limit=100` (Historial de cargos exitosos para Revenue).
 - Header: `Authorization: Bearer <providerKey>`
-- CÃ¡lculo MRR por suscripciÃ³n: `items.data[].price.unit_amount Ã— quantity Ã— (interval === 'year' ? 1/12 : interval === 'week' ? 4.33 : 1) / 100`
+- Cálculo MRR por suscripción: `items.data[].price.unit_amount × quantity × (interval === 'year' ? 1/12 : interval === 'week' ? 4.33 : 1) / 100`
 
 **MercadoPago** (`provider: 'mercadopago'`):
-- Credencial: Access Token (modo producciÃ³n, solo lectura de suscripciones y pagos)
+- Credencial: Access Token (modo producción, solo lectura de suscripciones y pagos)
 - Endpoints de consulta:
   - `GET https://api.mercadopago.com/preapproval/search?limit=100` (Historial de preaprobaciones/suscripciones).
   - `GET https://api.mercadopago.com/v1/payments/search?status=approved&limit=100` (Historial de pagos recibidos exitosos).
 - Header: `Authorization: Bearer <providerKey>`
-- CÃ¡lculo MRR por suscripciÃ³n: `results[].auto_recurring.transaction_amount` (ya viene mensual).
+- Cálculo MRR por suscripción: `results[].auto_recurring.transaction_amount` (ya viene mensual).
 - Moneda: `results[].auto_recurring.currency_id` (ej: `COP`, `ARS`, `BRL`, `MXN`, `CLP`).
 
 ### Dominio
 
-**Paso 1 â€” Datos del SaaS:**
+**Paso 1 — Datos del SaaS:**
 - "El campo `name` es obligatorio. El resto son opcionales."
-- "El campo `categorySlug` debe corresponder a un slug vÃ¡lido de la tabla `categories`. El componente `CategorySelect` carga las opciones desde `useSaasList`."
+- "El campo `categorySlug` debe corresponder a un slug válido de la tabla `categories`. El componente `CategorySelect` carga las opciones desde `useSaasList`."
 - "El campo `startupType` es un texto libre descriptivo (ej: B2B SaaS, PLG, Marketplace)."
-- "Completar este paso habilita el botÃ³n de continuar al Paso 2."
+- "Completar este paso habilita el botón de continuar al Paso 2."
 
-**Paso 2 â€” API Key (opcional):**
-- "El founder elige su provider y pega su API key. El servidor instancia el service vÃ­a `provider.factory.ts`."
-- "Si el provider responde 401/403 â†’ `valid: false`, `error: 'invalid_key'`. Se muestra error inline sin bloquear la publicaciÃ³n."
-- "Si la llamada es exitosa pero no hay suscripciones activas â†’ `valid: true`, `mrr: 0`."
-- "Si el founder salta el Paso 2 â†’ `providerSlug` y `providerKey` se omiten; el SaaS se publica con `mrr: null`."
-- "El MRR se normaliza siempre a mensual. La conversiÃ³n de moneda es responsabilidad del service de cada provider."
+**Paso 2 — API Key (opcional):**
+- "El founder elige su provider y pega su API key. El servidor instancia el service vía `provider.factory.ts`."
+- "Si el provider responde 401/403 → `valid: false`, `error: 'invalid_key'`. Se muestra error inline sin bloquear la publicación."
+- "Si la llamada es exitosa pero no hay suscripciones activas → `valid: true`, `mrr: 0`."
+- "Si el founder salta el Paso 2 → `providerSlug` y `providerKey` se omiten; el SaaS se publica con `mrr: null`."
+- "El MRR se normaliza siempre a mensual. La conversión de moneda es responsabilidad del service de cada provider."
 - "El API key se almacena cifrado en Supabase (columna `provider_key_encrypted`)."
 
-**PublicaciÃ³n:**
-- "Al publicar, el SaaS aparece inmediatamente en el ranking sin moderaciÃ³n."
+**Publicación:**
+- "Al publicar, el SaaS aparece inmediatamente en el ranking sin moderación."
 - "Si `mrr: null`, aparece al fondo del ranking con badge 'MRR bloqueado' visible en su perfil."
 
-**RecÃ¡lculo de MRR y ObtenciÃ³n de Historial:**
-- "Al visitar la pÃ¡gina de detalle de un SaaS, el servidor llama al service del provider almacenado con el key cifrado."
-- "Si es un SaaS con proveedor Stripe, ademÃ¡s del MRR actual, se obtienen los Ãºltimos 100 cargos exitosos y las suscripciones histÃ³ricas en paralelo para armar la evoluciÃ³n financiera en la propiedad `history`."
-- "El botÃ³n 'Reload' en la pÃ¡gina del SaaS dispara el mismo endpoint de recÃ¡lculo manualmente."
-- "Si el key ya no es vÃ¡lido al momento del reload o de la consulta del detalle â†’ `mrr: null`, `history: null`, badge 'Key expirada' en la UI."
+**Recálculo de MRR y Obtención de Historial:**
+- "Al visitar la página de detalle de un SaaS, el servidor llama al service del provider almacenado con el key cifrado."
+- "Si es un SaaS con proveedor Stripe, además del MRR actual, se obtienen los últimos 100 cargos exitosos y las suscripciones históricas en paralelo para armar la evolución financiera en la propiedad `history`."
+- "El botón 'Reload' en la página del SaaS dispara el mismo endpoint de recálculo manualmente."
+- "Si el key ya no es válido al momento del reload o de la consulta del detalle → `mrr: null`, `history: null`, badge 'Key expirada' en la UI."
 
-### ValidaciÃ³n
-- **Happy Path completo**: Datos + Key vÃ¡lida Stripe â†’ MRR calculado, SaaS visible en ranking con MRR.
-- **GrÃ¡ficas de Stripe Reales**: Al consultar el detalle del SaaS con Restricted Key vÃ¡lida, se carga el histÃ³rico de cobros (`charges`) y suscripciones (`subscriptions`) mapeados correctamente al eje temporal.
-- **Happy Path sin key**: Solo datos â†’ SaaS publicado con `mrr: null`, badge "MRR bloqueado", y el grÃ¡fico cae en simulaciÃ³n de fallback (retrocompatibilidad).
-- **GrÃ¡ficas de MercadoPago Reales**: Al consultar el detalle del SaaS con Access Token de Mercado Pago vÃ¡lido, se carga el histÃ³rico de cobros (payments) y preaprobaciones (suscripciones) mapeados al eje temporal de forma anÃ¡loga a Stripe.
-- **Prueba Sandbox MercadoPago**: El uso de la key de desarrollo 'APP_USR_TEST_FACTO' inyecta en el servidor una serie histÃ³rica realista de pruebas para validar el grÃ¡fico.
-- **Key invÃ¡lida**: Respuesta 401 â†’ error inline en Paso 2, el founder puede publicar igual sin MRR.
-- **MRR = 0**: Key vÃ¡lida sin suscripciones activas â†’ SaaS publicado con `$0`.
-- **CategorÃ­a invÃ¡lida**: `categorySlug` no existe en BD â†’ `publish.post.ts` devuelve 422.
-- **Edge Case â€” Nuevo provider**: Solo crear service + registrar en factory â†’ funciona sin cambios en API ni UI.
-- **Edge Case â€” Key expirada en reload**: Key vÃ¡lida al publicar, revocada despuÃ©s â†’ `mrr: null` y `history: null` en el detalle.
+### Validación
+- **Happy Path completo**: Datos + Key válida Stripe → MRR calculado, SaaS visible en ranking con MRR.
+- **Gráficas de Stripe Reales**: Al consultar el detalle del SaaS con Restricted Key válida, se carga el histórico de cobros (`charges`) y suscripciones (`subscriptions`) mapeados correctamente al eje temporal.
+- **Happy Path sin key**: Solo datos → SaaS publicado con `mrr: null`, badge "MRR bloqueado", y el gráfico cae en simulación de fallback (retrocompatibilidad).
+- **Gráficas de MercadoPago Reales**: Al consultar el detalle del SaaS con Access Token de Mercado Pago válido, se carga el histórico de cobros (payments) y preaprobaciones (suscripciones) mapeados al eje temporal de forma análoga a Stripe.
+- **Prueba Sandbox MercadoPago**: El uso de la key de desarrollo 'APP_USR_TEST_FACTO' inyecta en el servidor una serie histórica realista de pruebas para validar el gráfico.
+- **Key inválida**: Respuesta 401 → error inline en Paso 2, el founder puede publicar igual sin MRR.
+- **MRR = 0**: Key válida sin suscripciones activas → SaaS publicado con `$0`.
+- **Categoría inválida**: `categorySlug` no existe en BD → `publish.post.ts` devuelve 422.
+- **Edge Case — Nuevo provider**: Solo crear service + registrar en factory → funciona sin cambios en API ni UI.
+- **Edge Case — Key expirada en reload**: Key válida al publicar, revocada después → `mrr: null` y `history: null` en el detalle.
 - **Seguridad**: El API key nunca se expone en respuestas al cliente. Solo se usa server-side. Se almacena cifrado en base64 en la columna `provider_key_encrypted`.
 
 ---
 
-## Listar SaaS âœ…
+## Listar SaaS ✅
 
-Feature que alimenta todas las secciones de la UI con los SaaS reales publicados en Supabase. Reemplaza los datos hardcodeados de `RankingSection`, `RecentlySection` y `BestSection`. El composable global `useSaasList` es la Ãºnica fuente de datos para estas tres secciones.
+Feature que alimenta todas las secciones de la UI con los SaaS reales publicados en Supabase. Reemplaza los datos hardcodeados de `RankingSection`, `RecentlySection` y `BestSection`. El composable global `useSaasList` es la única fuente de datos para estas tres secciones.
 
 ### Contrato
 
-**UbicaciÃ³n arquitectÃ³nica:**
-- `composables/useSaasList.ts` â€” composable global singleton; hace un Ãºnico `$fetch` y expone derivaciones reactivas
-- `composables/useStartupSearch.ts` â€” estado global de la query de bÃºsqueda; expone `filterItems`
-- `modules/ranking/server/services/ranking.ts` â€” service de BD: queries con JOIN y filtros dinÃ¡micos
-- `modules/ranking/server/api/list.get.ts` â€” endpoint principal
-- `modules/ranking/server/api/latest.get.ts` â€” alias: 6 mÃ¡s recientes
-- `modules/ranking/server/api/top.get.ts` â€” alias: 6 mÃ¡s vistos
-- `modules/ranking/server/api/ranking.get.ts` â€” alias: ordenado por MRR
-- `modules/ranking/types/index.ts` â€” tipos del dominio
-- `modules/ranking/components/RankingRow.vue` â€” fila del ranking
-- `modules/ranking/sections/RankingSection.vue` â€” secciÃ³n principal con estados loading/error/vacÃ­o
+**Ubicación arquitectónica:**
+- `composables/useSaasList.ts` — composable global singleton; hace un único `$fetch` y expone derivaciones reactivas
+- `composables/useStartupSearch.ts` — estado global de la query de búsqueda; expone `filterItems`
+- `modules/ranking/server/services/ranking.ts` — service de BD: queries con JOIN y filtros dinámicos
+- `modules/ranking/server/api/list.get.ts` — endpoint principal
+- `modules/ranking/server/api/latest.get.ts` — alias: 6 más recientes
+- `modules/ranking/server/api/top.get.ts` — alias: 6 más vistos
+- `modules/ranking/server/api/ranking.get.ts` — alias: ordenado por MRR
+- `modules/ranking/types/index.ts` — tipos del dominio
+- `modules/ranking/components/RankingRow.vue` — fila del ranking
+- `modules/ranking/sections/RankingSection.vue` — sección principal con estados loading/error/vacío
 
-**Supabase â€” esquema real (ya creado):**
+**Supabase — esquema real (ya creado):**
 
 ```sql
 -- Tablas maestras (normalizadas)
@@ -240,21 +243,47 @@ CREATE TABLE payment_providers (
   slug text UNIQUE NOT NULL
 );
 
+CREATE TABLE countries (
+  id   uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  slug text UNIQUE NOT NULL,
+  flag text
+);
+
+CREATE TABLE founders (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email         text UNIQUE NOT NULL,
+  name          text,
+  twitter_url   text,
+  linkedin_url  text,
+  instagram_url text,
+  country_slug  text,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+
 -- Tabla principal
 CREATE TABLE saas_entries (
   id                     uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  name                   text,                                              -- null si incÃ³gnito
-  logo_url               text,                                              -- null si incÃ³gnito
-  website_url            text,                                              -- null si incÃ³gnito
-  founder_name           text,                                              -- null si incÃ³gnito
+  name                   text,                                              -- null si incógnito
+  logo_url               text,                                              -- null si incógnito
+  website_url            text,                                              -- null si incógnito
+  founder_name           text,                                              -- null si incógnito
+  founder_id             uuid        REFERENCES founders(id) ON DELETE SET NULL,
+  founder_email          text,
   is_incognito           boolean     NOT NULL DEFAULT false,
-  mrr                    numeric,                                           -- null si key expirÃ³
+  mrr                    numeric,                                           -- null si key expiró
   currency               text        NOT NULL DEFAULT 'USD',
   category_id            uuid        REFERENCES categories(id) ON DELETE SET NULL,
   provider_id            uuid        REFERENCES payment_providers(id) ON DELETE SET NULL,
   provider_key_encrypted text,
   views                  bigint      NOT NULL DEFAULT 0,
   published_at           timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE saas_countries (
+  saas_id    uuid REFERENCES saas_entries(id) ON DELETE CASCADE,
+  country_id uuid REFERENCES countries(id) ON DELETE CASCADE,
+  PRIMARY KEY (saas_id, country_id)
 );
 
 CREATE INDEX idx_saas_mrr       ON saas_entries (mrr DESC NULLS LAST);
@@ -305,6 +334,8 @@ interface SaasListItem {
   currency: string
   category: string        // name resuelto por JOIN
   categorySlug: string    // slug resuelto por JOIN
+  country?: string        // name resuelto por JOIN (opcional)
+  countryFlag?: string    // flag resuelto por JOIN (opcional)
   provider: PaymentProvider
   views: number
   publishedAt: string
@@ -358,6 +389,29 @@ interface ListQueryParams {
 - âœ… **Filtro por categorÃ­a**: Tab seleccionado â†’ `useStartupSearch` filtra el array en memoria.
 - âœ… **BÃºsqueda vacÃ­a**: Borrar texto â†’ Se restaura la lista completa.
 - âœ… **Sin resultados**: Query sin coincidencias â†’ RankingSection muestra "No se encontraron resultados".
+
+---
+
+---
+
+## Reclamar Startup (Claim Founder)
+
+Flujo que permite a un usuario verificar su identidad como fundador de un SaaS previamente agregado y enlazar su perfil social al proyecto.
+
+### Contrato
+- **Endpoint**: `POST /api/saas/claim`
+- **Vista**: Modal `ClaimFounderModal.vue` invocado desde el perfil de SaaS (`SaasProfileView.vue`).
+
+### Dominio
+- "El SaaS debe tener `founder_email` registrado."
+- "El usuario ingresa su email. Si coincide con `founder_email`, el sistema le permite actualizar sus redes (Twitter, LinkedIn, Instagram), nombre y país."
+- "Se crea o actualiza un registro en la tabla `founders` (upsert por `email`)."
+- "El SaaS se enlaza a ese fundador guardando el `founder_id` en `saas_entries`."
+- "Al visualizar un SaaS, si está enlazado a un fundador (`founder_id`), se cargan sus redes sociales para mostrarlas en la UI."
+
+### Validación
+- **Happy Path**: El founder entra al perfil de su SaaS, hace click en reclamar o verificar, ingresa su correo original, ingresa sus redes y se guardan correctamente.
+- **Email Inválido**: Si el email no coincide con `founder_email`, el backend devuelve error `403`.
 
 ---
 
