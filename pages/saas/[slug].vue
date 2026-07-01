@@ -4,6 +4,8 @@ import SaasProfileView from '~/modules/visuals/views/SaasProfileView.vue'
 import SaasProfileSkeleton from '~/modules/visuals/components/SaasProfileSkeleton.vue'
 import { computed } from 'vue'
 
+import { useAppSchema } from '~/composables/useAppSchema'
+
 const route = useRoute()
 const slug = route.params.slug as string
 
@@ -11,16 +13,20 @@ const { data: saas, error, pending } = await useFetch<any>(`/api/saas/${slug}`, 
   lazy: import.meta.client
 })
 
+const { defineSaasProfile } = useAppSchema()
+watchEffect(() => {
+  if (saas.value) {
+    defineSaasProfile(saas.value)
+  }
+})
+
 useSeoMeta({
-  title: () => saas.value?.name ? `${saas.value.name} | Facto` : 'Facto — Ranking SaaS',
+  title: () => saas.value?.name ? `${saas.value.name} - MRR, Ingresos y Análisis | Facto` : 'SaaS Profile | Facto',
   description: () => {
-    if (!saas.value) return 'Descubre el MRR, historial financiero y métricas clave de este SaaS verificado en Facto.'
-    const name = saas.value.name || 'Este SaaS'
+    if (!saas.value) return 'Descubre los ingresos, historial financiero y métricas clave de este SaaS verificado en Facto.'
+    const name = saas.value.name || 'este SaaS'
     const category = saas.value.categories?.[0]?.name || 'Software'
-    if (saas.value.description && saas.value.description !== `Detalle de ${name}.`) {
-      return saas.value.description
-    }
-    return `Descubre el MRR, historial financiero y métricas clave de ${name} en la categoría ${category} — verificado en Facto.`
+    return saas.value.description || `Descubre cuánto gana ${name}, su MRR exacto y métricas clave. El análisis completo de esta startup de ${category} verificada en Facto.`
   }
 })
 
