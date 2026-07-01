@@ -1,4 +1,5 @@
 import type { PaymentProviderService, ProviderValidationResult } from '~/modules/add-saas/types'
+import { convertToUsd } from '~/server/utils/currency'
 
 const WHOP_API_BASE = 'https://api.whop.com/api/v1'
 
@@ -23,6 +24,7 @@ interface WhopPayment {
   id: string
   total: number
   usd_total?: number
+  currency?: string
   created_at: string
   substatus: string
 }
@@ -162,10 +164,13 @@ export const whopService: PaymentProviderService = {
       const activeMemberships = memberships.filter(m => 
         m.status === 'active' || m.status === 'trialing' || (!m.canceled_at && m.status !== 'canceled')
       )
-      const currency = activeMemberships[0]?.currency?.toUpperCase() || 'USD'
-      const mrr = activeMemberships.reduce((sum, m) => sum + calculateMembershipMrr(m, plansMap), 0)
+      
+      let mrr = 0
+      for (const m of activeMemberships) {
+        mrr += await convertToUsd(calculateMembershipMrr(m, plansMap), m.currency || 'USD')
+      }
 
-      return { valid: true, mrr: Math.round(mrr), currency }
+      return { valid: true, mrr: Math.round(mrr), currency: 'USD' }
     } catch (e: any) {
       console.error('[Whop API Error (getMrr)]:', e?.data || e?.message || e)
       const status = e?.response?.status
@@ -190,11 +195,13 @@ export const whopService: PaymentProviderService = {
         fetchWhopPayments(companyId, headers)
       ])
 
-      const subscriptions = memberships.map(s => {
+      const subscriptions = await Promise.all(memberships.map(async s => {
         let canceledAt = s.canceled_at ? Math.floor(Date.parse(s.canceled_at) / 1000) : null
         
-        // Ensure inactive subscriptions are properly marked as canceled for the graph logic
-        if (!canceledAt && s.status !== 'active' && s.status !== 'trialing' && s.status !== 'valid') {
+        // Active states that should continue generating MRR
+        const isActive = s.status === 'active' || s.status === 'trialing' || s.status === 'valid' || s.status === 'past_due'
+        
+        if (!canceledAt && !isActive) {
           canceledAt = s.created_at ? Math.floor(Date.parse(s.created_at) / 1000) : Math.floor(Date.now() / 1000)
         }
 
@@ -202,16 +209,16 @@ export const whopService: PaymentProviderService = {
           created: s.created_at ? Math.floor(Date.parse(s.created_at) / 1000) : Math.floor(Date.now() / 1000),
           status: s.status,
           canceledAt,
-          mrr: calculateMembershipMrr(s, plansMap)
+          mrr: await convertToUsd(calculateMembershipMrr(s, plansMap), s.currency || 'USD')
         }
-      })
+      }))
 
-      const charges = payments
+      const charges = await Promise.all(payments
         .filter(p => p.substatus === 'succeeded' || p.substatus === 'paid')
-        .map(p => ({
-          amount: p.usd_total || p.total || 0,
+        .map(async p => ({
+          amount: p.usd_total || await convertToUsd(p.total || 0, p.currency || 'USD'),
           created: p.created_at ? Math.floor(Date.parse(p.created_at) / 1000) : Math.floor(Date.now() / 1000)
-        }))
+        })))
 
       return { subscriptions, charges }
     } catch (e: any) {

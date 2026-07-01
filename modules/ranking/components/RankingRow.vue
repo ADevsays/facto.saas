@@ -67,12 +67,12 @@ function handleClick(isIncognito: boolean, name: string | null) {
       </template>
     </div>
 
-    <!-- MRR -->
+    <!-- REVENUE -->
     <div
       class="text-sm font-mono tabular-nums text-right flex items-center justify-end w-full"
-      :class="item.mrr !== null ? 'text-[#00D4FF]' : 'text-neutral-600'"
+      :class="item.revenue && item.revenue !== '—' ? 'text-[#00D4FF]' : 'text-neutral-600'"
     >
-      <template v-if="item.mrr !== null">{{ formatMrr(item.mrr, item.currency) }}</template>
+      <template v-if="item.revenue && item.revenue !== '—'">{{ item.revenue }}</template>
       <IncognitoIcon v-else class="w-4 h-4" />
     </div>
 

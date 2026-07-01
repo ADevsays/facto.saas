@@ -1,21 +1,24 @@
 import type { PaymentProviderService, ProviderValidationResult } from '~/modules/add-saas/types'
+import { convertToUsd } from '~/server/utils/currency'
 
 interface StripeSubscription {
   id: string
-  items: { data: { price: { unit_amount: number; recurring: { interval: string } }; quantity: number }[] }
+  items: { data: { price: { unit_amount: number; currency: string; recurring: { interval: string } }; quantity: number }[] }
 }
 
 interface StripeResponse {
   data: StripeSubscription[]
 }
 
-function calcMrr(sub: StripeSubscription): number {
-  return sub.items.data.reduce((sum, item) => {
+async function calcMrr(sub: StripeSubscription): Promise<number> {
+  let total = 0
+  for (const item of sub.items.data) {
     const amount = item.price.unit_amount * item.quantity
     const interval = item.price.recurring.interval
     const monthly = interval === 'year' ? amount / 12 : interval === 'week' ? amount * 4.33 : amount
-    return sum + monthly / 100
-  }, 0)
+    total += await convertToUsd(monthly / 100, item.price.currency)
+  }
+  return total
 }
 
 async function fetchAllStripe<T extends { id: string }>(baseUrl: string, headers: Record<string, string>): Promise<T[]> {
@@ -58,7 +61,10 @@ export const stripeService: PaymentProviderService = {
         headers
       )
 
-      const mrr = data.reduce((sum, sub) => sum + calcMrr(sub), 0)
+      let mrr = 0
+      for (const sub of data) {
+        mrr += await calcMrr(sub)
+      }
       return { valid: true, mrr: Math.round(mrr), currency: 'USD' }
     } catch (e: unknown) {
       const status = (e as { response?: { status?: number } })?.response?.status
@@ -98,25 +104,25 @@ export const stripeService: PaymentProviderService = {
         fetchAllStripe<any>('https://api.stripe.com/v1/charges?limit=100', headers)
       ])
 
-      const subscriptions = subsData.map((s: any) => {
+      const subscriptions = await Promise.all(subsData.map(async (s: any) => {
         let canceledAt = s.canceled_at
-        if (!canceledAt && s.status !== 'active' && s.status !== 'trialing') {
-          canceledAt = s.created || Math.floor(Date.now() / 1000)
+        if (!canceledAt && (s.status === 'canceled' || s.status === 'unpaid' || s.status === 'incomplete_expired')) {
+          canceledAt = s.created
         }
         return {
           created: s.created,
           status: s.status,
           canceledAt,
-          mrr: calcMrr(s)
+          mrr: await calcMrr(s)
         }
-      })
+      }))
 
-      const charges = chargesData
+      const charges = await Promise.all(chargesData
         .filter((c: any) => c.paid && c.status === 'succeeded' && !c.refunded)
-        .map((c: any) => ({
-          amount: c.amount / 100,
+        .map(async (c: any) => ({
+          amount: await convertToUsd(c.amount / 100, c.currency),
           created: c.created
-        }))
+        })))
 
       return { subscriptions, charges }
     } catch {

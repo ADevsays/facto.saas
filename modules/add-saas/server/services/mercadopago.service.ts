@@ -1,4 +1,5 @@
 import type { PaymentProviderService, ProviderValidationResult } from '~/modules/add-saas/types'
+import { convertToUsd } from '~/server/utils/currency'
 
 interface MpResult {
   auto_recurring: { transaction_amount: number; currency_id: string }
@@ -44,10 +45,12 @@ export const mercadopagoService: PaymentProviderService = {
         headers
       )
 
-      const currency = results[0]?.auto_recurring?.currency_id ?? 'USD'
-      const mrr = results.reduce((sum, r) => sum + (r.auto_recurring?.transaction_amount || 0), 0)
+      let mrr = 0
+      for (const r of results) {
+        mrr += await convertToUsd(r.auto_recurring?.transaction_amount || 0, r.auto_recurring?.currency_id || 'USD')
+      }
  
-      return { valid: true, mrr: Math.round(mrr), currency }
+      return { valid: true, mrr: Math.round(mrr), currency: 'USD' }
     } catch (e: unknown) {
       const status = (e as { response?: { status?: number } })?.response?.status
       if (status === 401 || status === 403) return { valid: false, mrr: null, currency: 'USD', error: 'invalid_key' }
@@ -86,7 +89,7 @@ export const mercadopagoService: PaymentProviderService = {
         fetchAllMP('https://api.mercadopago.com/v1/payments/search?status=approved', headers)
       ])
  
-      const subscriptions = subsData.map((s: any) => {
+      const subscriptions = await Promise.all(subsData.map(async (s: any) => {
         let canceledAt = s.status === 'cancelled' && s.last_modified ? Math.floor(Date.parse(s.last_modified) / 1000) : null
         if (!canceledAt && s.status !== 'authorized') {
           canceledAt = s.date_created ? Math.floor(Date.parse(s.date_created) / 1000) : Math.floor(Date.now() / 1000)
@@ -95,14 +98,14 @@ export const mercadopagoService: PaymentProviderService = {
           created: s.date_created ? Math.floor(Date.parse(s.date_created) / 1000) : Math.floor(Date.now() / 1000),
           status: s.status,
           canceledAt,
-          mrr: s.auto_recurring?.transaction_amount || 0
+          mrr: await convertToUsd(s.auto_recurring?.transaction_amount || 0, s.auto_recurring?.currency_id || 'USD')
         }
-      })
- 
-      const charges = paymentsData.map((p: any) => ({
-        amount: p.transaction_amount || 0,
-        created: p.date_approved ? Math.floor(Date.parse(p.date_approved) / 1000) : Math.floor(Date.now() / 1000)
       }))
+ 
+      const charges = await Promise.all(paymentsData.map(async (p: any) => ({
+        amount: await convertToUsd(p.transaction_amount || 0, p.currency_id || 'USD'),
+        created: p.date_approved ? Math.floor(Date.parse(p.date_approved) / 1000) : Math.floor(Date.now() / 1000)
+      })))
  
       return { subscriptions, charges }
     } catch {

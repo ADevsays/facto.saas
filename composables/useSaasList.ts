@@ -6,6 +6,15 @@ const state = reactive<SaasListState>({
   error: null,
 })
 
+const parseRev = (val?: string, fallbackMrr?: number | null) => {
+  if (!val || val === '—') return (fallbackMrr || 0) * 12
+  let num = val.replace(/[^0-9.]/g, '')
+  let multi = 1
+  if (val.includes('M')) multi = 1000000
+  else if (val.includes('K')) multi = 1000
+  return (parseFloat(num) * multi) || 0
+}
+
 export function useSaasList() {
   async function fetchAll() {
     if (state.items.length > 0) return
@@ -28,7 +37,7 @@ export function useSaasList() {
         if (a.mrr === null && b.mrr === null) return (b.views ?? 0) - (a.views ?? 0)
         if (a.mrr === null) return 1
         if (b.mrr === null) return -1
-        return b.mrr - a.mrr
+        return parseRev(b.revenue, b.mrr) - parseRev(a.revenue, a.mrr)
       })
       .slice(0, 10)
   )
@@ -43,14 +52,6 @@ export function useSaasList() {
     const withMrr = state.items.filter((i) => i.mrr !== null)
     if (withMrr.length >= 3) {
       return withMrr.sort((a, b) => {
-        const parseRev = (val?: string, fallbackMrr?: number | null) => {
-          if (!val || val === '—') return (fallbackMrr || 0) * 12
-          let num = val.replace(/[^0-9.]/g, '')
-          let multi = 1
-          if (val.includes('M')) multi = 1000000
-          else if (val.includes('K')) multi = 1000
-          return (parseFloat(num) * multi) || 0
-        }
         return parseRev(b.revenue, b.mrr) - parseRev(a.revenue, a.mrr)
       }).slice(0, 6)
     }

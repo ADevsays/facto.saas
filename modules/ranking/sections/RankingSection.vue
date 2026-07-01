@@ -31,7 +31,7 @@ const filteredItems = computed(() => rankingItems.value)
         <span class="text-[10px] text-neutral-600 uppercase tracking-widest text-center">#</span>
         <span class="text-[10px] text-neutral-600 uppercase tracking-widest font-sans font-extralight">Startup</span>
         <span class="text-[10px] text-neutral-600 uppercase tracking-widest font-sans font-extralight w-[80px] text-center block">Founder</span>
-        <span class="text-[10px] text-neutral-600 uppercase tracking-widest font-sans font-extralight text-right">MRR</span>
+        <span class="text-[10px] text-neutral-600 uppercase tracking-widest font-sans font-extralight text-right">REVENUE</span>
       </div>
 
       <RankingRow
