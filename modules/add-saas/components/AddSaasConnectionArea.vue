@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, watch, computed } from 'vue'
 import ProviderTutorial from './ProviderTutorial.vue'
 import AddSaasInput from './AddSaasInput.vue'
 
@@ -13,10 +14,15 @@ const apiKey = defineModel<string>('apiKey', { default: '' })
 
 const rawApiKey = ref('')
 const companyId = ref('')
+const stripeProductId = ref('')
+const stripeProducts = ref<{id: string, name: string}[]>([])
+const isLoadingStripeProducts = ref(false)
 
-watch([rawApiKey, companyId], ([newRaw, newComp]) => {
+watch([rawApiKey, companyId, stripeProductId], ([newRaw, newComp, newProd]) => {
   if (props.provider === 'whop' && newComp.trim()) {
     apiKey.value = `${newComp.trim()}:${newRaw.trim()}`
+  } else if (props.provider === 'stripe' && newProd.trim()) {
+    apiKey.value = `${newProd.trim()}:${newRaw.trim()}`
   } else {
     apiKey.value = newRaw.trim()
   }
@@ -27,16 +33,47 @@ watch(apiKey, (newVal) => {
   if (!newVal) {
     rawApiKey.value = ''
     companyId.value = ''
+    stripeProductId.value = ''
     return
   }
   if (props.provider === 'whop' && newVal.includes(':') && newVal.startsWith('biz_')) {
     const parts = newVal.split(':')
     companyId.value = parts[0]
     rawApiKey.value = parts.slice(1).join(':')
+  } else if (props.provider === 'stripe' && newVal.includes(':') && newVal.startsWith('prod_')) {
+    const parts = newVal.split(':')
+    stripeProductId.value = parts[0]
+    rawApiKey.value = parts.slice(1).join(':')
   } else if (rawApiKey.value !== newVal) {
     rawApiKey.value = newVal
   }
 }, { immediate: true })
+
+let timeout: any
+watch(rawApiKey, (newVal) => {
+  if (props.provider !== 'stripe') return
+  const key = newVal.trim()
+  if (key.startsWith('rk_') || key.startsWith('sk_')) {
+    clearTimeout(timeout)
+    timeout = setTimeout(async () => {
+      isLoadingStripeProducts.value = true
+      try {
+        const res = await $fetch<any>('/api/stripe/products', { method: 'POST', body: { apiKey: key } })
+        stripeProducts.value = res.products || []
+        if (stripeProducts.value.length === 1 && !stripeProductId.value) {
+          stripeProductId.value = stripeProducts.value[0].id
+        }
+      } catch (e) {
+        stripeProducts.value = []
+      } finally {
+        isLoadingStripeProducts.value = false
+      }
+    }, 500)
+  } else {
+    stripeProducts.value = []
+    if (!key.includes(':')) stripeProductId.value = ''
+  }
+})
 </script>
 
 <template>
@@ -45,11 +82,38 @@ watch(apiKey, (newVal) => {
 
     <div v-if="provider === 'stripe'" class="flex flex-col gap-2">
       <AddSaasInput
-        v-model="apiKey"
+        v-model="rawApiKey"
         label="2. Stripe Restricted Key"
         type="password"
-        placeholder="sk_live_..."
+        placeholder="rk_live_..."
       />
+      
+      <div v-if="isLoadingStripeProducts" class="text-[10px] text-[#00D4FF] font-sans animate-pulse px-1 mt-1">
+        Buscando productos...
+      </div>
+      
+      <div v-else-if="stripeProducts.length > 1" class="flex flex-col gap-1.5 mt-2 animate-in fade-in slide-in-from-top-2">
+        <label class="text-[10px] uppercase font-bold text-[#00D4FF] ml-1 tracking-widest opacity-80">
+          3. Selecciona tu Producto
+        </label>
+        <div class="relative">
+          <select 
+            v-model="stripeProductId"
+            class="w-full bg-[#111111] border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white font-sans focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition-all duration-300 appearance-none"
+          >
+            <option value="" disabled>Selecciona el producto de esta startup...</option>
+            <option v-for="p in stripeProducts" :key="p.id" :value="p.id">
+              {{ p.name }}
+            </option>
+          </select>
+          <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+        <p class="text-[10px] text-white/40 ml-1">Hemos detectado múltiples proyectos en esta cuenta.</p>
+      </div>
     </div>
 
     <div v-else-if="provider === 'whop'" class="flex flex-col gap-2">

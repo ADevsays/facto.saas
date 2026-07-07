@@ -40,7 +40,7 @@ const selected = computed(() => {
     
     <div 
       v-if="isOpen" 
-      class="absolute right-0 sm:left-0 sm:right-auto mt-2 w-[220px] bg-[#0c0c10]/95 border border-white/10 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md z-40 flex flex-col py-1 max-h-60 overflow-y-auto no-scrollbar animate-fade-in"
+      class="absolute left-0 mt-2 w-[220px] bg-[#0c0c10]/95 border border-white/10 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md z-40 flex flex-col py-1 max-h-60 overflow-y-auto no-scrollbar animate-fade-in"
     >
       <button 
         @click="$emit('select', 'all')"

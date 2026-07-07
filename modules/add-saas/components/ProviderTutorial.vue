@@ -12,7 +12,7 @@ const tutorials = {
       'Pégala aquí y no la borres.'
     ],
     linkText: 'Ir al Dashboard',
-    link: 'https://dashboard.stripe.com/apikeys/create?name=Facto.saas&permissions%5B%5D=rak_charge_read&permissions%5B%5D=rak_subscription_read&permissions%5B%5D=rak_plan_read&permissions%5B%5D=rak_product_read'
+    link: 'https://dashboard.stripe.com/apikeys/create?name=Facto.saas&permissions%5B%5D=rak_charge_read&permissions%5B%5D=rak_subscription_read&permissions%5B%5D=rak_plan_read&permissions%5B%5D=rak_product_read&permissions%5B%5D=rak_invoice_read&permissions%5B%5D=rak_credit_note_read'
   },
   mercadopago: {
     title: 'Mercado Pago (Conexión Segura)',
