@@ -261,6 +261,7 @@ function handleEditStartup() {
     id: props.saasId,
     name: props.saasName,
     founderName: founderName.value,
+    founderEmail: email.value || props.founderEmail,
     countrySlug: countrySlug.value,
     twitterUrl: twitterUrl.value,
     linkedinUrl: linkedinUrl.value,

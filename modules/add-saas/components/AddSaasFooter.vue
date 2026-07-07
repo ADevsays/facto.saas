@@ -2,12 +2,16 @@
 const props = defineProps<{
   loading: boolean
   isUpdate?: boolean
+  error?: string
   onSubmit: () => void
 }>()
 </script>
 
 <template>
-  <div class="p-4 border-t border-white/5 bg-[#0c0c10] flex justify-end">
+  <div class="p-4 border-t border-white/5 bg-[#0c0c10] flex justify-between items-center gap-4">
+    <div class="flex-1">
+      <p v-if="error" class="text-[11px] text-red-400 font-sans font-medium">{{ error }}</p>
+    </div>
     <button
       @click="onSubmit"
       :disabled="loading"

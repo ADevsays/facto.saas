@@ -101,13 +101,9 @@ function handleGoBack() {
           />
 
           <AddSaasFormFields :form="form" />
-
-          <p v-if="error" class="text-xs text-red-100 font-sans font-light bg-red-400/20 p-4 rounded-xl border border-red-400/30">
-            {{ error }}
-          </p>
         </div>
 
-        <AddSaasFooter :loading="loading" :on-submit="onSubmit" :is-update="!!form.id" />
+        <AddSaasFooter :loading="loading" :on-submit="onSubmit" :is-update="!!form.id" :error="error" />
       </div>
     </div>
   </Transition>
