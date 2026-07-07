@@ -74,6 +74,7 @@ export default defineNuxtConfig({
     }
   },
   routeRules: {
+    '/cuanto-vale-tu-saas': { redirect: { to: '/herramientas/cuanto-vale-tu-saas', statusCode: 301 } },
     '/': { prerender: true },
     '/en': { prerender: true },
     '/_nuxt/**': { cache: { maxAge: 60 * 60 * 24 * 365 } }
