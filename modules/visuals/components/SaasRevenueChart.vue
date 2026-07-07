@@ -16,6 +16,7 @@ const props = defineProps<{
   provider?: string
   lastSyncedAt?: number | null
   founderName?: string | null
+  isVerifiedOwner?: boolean
 }>()
 
 const emit = defineEmits<{ 
@@ -67,14 +68,22 @@ const currencyFormatter = (val: number) => {
 
     <div class="mt-3 flex flex-col sm:flex-row justify-between items-center sm:items-start px-2 gap-3 sm:gap-0">
       <button 
-        v-if="!founderName"
         class="text-[10px] font-sans font-light text-neutral-500 hover:text-[#00D4FF] transition-colors duration-300 flex items-center gap-1.5 group"
         @click="emit('claim-founder')"
       >
-        <span class="opacity-70">¿Eres el dueño?</span>
-        <span class="underline decoration-white/20 underline-offset-4 group-hover:decoration-[#00D4FF]/40 transition-colors">Reclama esta startup</span>
+        <template v-if="isVerifiedOwner">
+          <span class="opacity-70">¿Eres el dueño?</span>
+          <span class="underline decoration-white/20 underline-offset-4 group-hover:decoration-[#00D4FF]/40 transition-colors">Editar startup</span>
+        </template>
+        <template v-else-if="!founderName">
+          <span class="opacity-70">¿Eres el dueño?</span>
+          <span class="underline decoration-white/20 underline-offset-4 group-hover:decoration-[#00D4FF]/40 transition-colors">Reclama esta startup</span>
+        </template>
+        <template v-else>
+          <span class="opacity-70">Círculo de fundadores</span>
+          <span class="underline decoration-white/20 underline-offset-4 group-hover:decoration-[#00D4FF]/40 transition-colors">Verificar identidad para gestionar</span>
+        </template>
       </button>
-      <div v-else></div>
 
       <VerificationLegend 
         v-if="provider && lastSyncedAt && !isLocked"

@@ -2,17 +2,20 @@
 import CategorySelect from '~/ui/components/CategorySelect.vue'
 import CountrySelect from '~/ui/components/CountrySelect.vue'
 import type { SaasSubmission } from '~/modules/add-saas/types'
+import { useAddSaasModal } from '~/composables/useAddSaasModal'
 
 const emit = defineEmits<{ next: [data: Partial<SaasSubmission>] }>()
 
+const { prefillData } = useAddSaasModal()
+
 const form = reactive({
-  name: '',
-  logoUrl: '',
-  founderName: '',
-  websiteUrl: '',
-  startupType: '',
-  categorySlugs: [] as string[],
-  countrySlug: 'global',
+  name: prefillData.value?.name || '',
+  logoUrl: prefillData.value?.logoUrl || '',
+  founderName: prefillData.value?.founderName || '',
+  websiteUrl: prefillData.value?.websiteUrl || '',
+  startupType: prefillData.value?.startupType || '',
+  categorySlugs: prefillData.value?.categorySlugs || ([] as string[]),
+  countrySlug: prefillData.value?.countrySlug || 'global',
 })
 
 const canContinue = computed(() => form.name.trim().length > 0 && form.categorySlugs.length > 0)

@@ -186,11 +186,15 @@ async function verifyOtp() {
     if (import.meta.client) {
       localStorage.setItem(`facto_founder_verified_${props.saasId}`, JSON.stringify({
         email: email.value,
-        expires: Date.now() + 24 * 60 * 60 * 1000
+        expires: Date.now() + 15 * 24 * 60 * 60 * 1000 // 15 días
       }))
     }
 
-    step.value = 'edit'
+    if (props.currentFounderName) {
+      emit('edit-startup', {})
+    } else {
+      step.value = 'edit'
+    }
   } catch (e: any) {
     const msg = e?.data?.message || ''
     if (msg.includes('expired')) showError('Código expirado')
@@ -304,7 +308,7 @@ function handleEditStartup() {
           <!-- Step 1: Email -->
           <div v-if="step === 'email'">
             <h2 class="text-2xl font-serif text-white font-semibold mb-1">
-              {{ intent === 'mrr' ? 'Verifica tu MRR' : 'Reclama tu startup' }}
+              {{ intent === 'mrr' ? 'Verifica tu MRR' : (currentFounderName ? 'Verifica tu identidad' : 'Reclama tu startup') }}
             </h2>
             <p class="text-sm font-sans font-light text-neutral-400 mb-6">Verifica tu identidad como dueño</p>
 

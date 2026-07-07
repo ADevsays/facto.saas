@@ -33,6 +33,39 @@ export default defineEventHandler(async (event) => {
   // 4. Process Provider & MRR
   const pData = await processProviderInfo(body, event)
 
+  // 4.5 Process Logo Upload
+  if (body.logoFileBase64) {
+    try {
+      const match = body.logoFileBase64.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/)
+      if (match && match.length === 3) {
+        const buffer = Buffer.from(match[2], 'base64')
+        const ext = match[1] === 'jpeg' ? 'jpg' : match[1]
+        const filename = `${crypto.randomUUID()}-${Date.now()}.${ext}`
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('saas_logos')
+          .upload(filename, buffer, {
+            contentType: `image/${match[1]}`,
+            upsert: false
+          })
+          
+        if (!uploadError && uploadData) {
+          const { data: publicUrlData } = supabase.storage
+            .from('saas_logos')
+            .getPublicUrl(uploadData.path)
+            
+          if (publicUrlData?.publicUrl) {
+            body.logoUrl = publicUrlData.publicUrl
+          }
+        } else {
+          console.error('[Publish] Supabase storage error:', uploadError)
+        }
+      }
+    } catch (e) {
+      console.error('[Publish] Error uploading logo:', e)
+    }
+  }
+
   // 5. Upsert to DB
   const finalEntry = await upsertSaasEntry(body, websiteUrl, pData, matchedCategories, matchedCountry)
 

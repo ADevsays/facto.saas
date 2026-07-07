@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAddSaasModal } from '~/composables/useAddSaasModal'
 import SaasBreadcrumb from '../components/SaasBreadcrumb.vue'
 import SaasHeaderSection from '../sections/SaasHeaderSection.vue'
@@ -41,8 +41,29 @@ const { open: openSaasModal } = useAddSaasModal()
 
 const showClaimModal = useState('claim-founder-modal-open', () => false)
 const claimIntent = ref<'founder' | 'mrr'>('founder')
+const isVerifiedOwner = ref(false)
+const verifiedEmail = ref<string | null>(null)
+
+onMounted(() => {
+  const stored = localStorage.getItem(`facto_founder_verified_${props.saas.id}`)
+  if (stored) {
+    try {
+      const data = JSON.parse(stored)
+      if (data.email && data.expires > Date.now()) {
+        isVerifiedOwner.value = true
+        verifiedEmail.value = data.email
+      } else {
+        localStorage.removeItem(`facto_founder_verified_${props.saas.id}`)
+      }
+    } catch {}
+  }
+})
 
 function handleClaimFounder() {
+  if (isVerifiedOwner.value) {
+    handleEditStartup({ founderEmail: verifiedEmail.value })
+    return
+  }
   if (props.saas.hasFounderEmail) {
     claimIntent.value = 'founder'
     showClaimModal.value = true
@@ -68,6 +89,7 @@ function handleEditStartup(saasData: any) {
     categorySlugs: props.saas.categories?.map(c => c.slug) || [],
     logoUrl: props.saas.logoUrl,
     startupType: props.saas.description,
+    countrySlug: props.saas.countrySlug,
     ...saasData
   }, true, true) // isEditMode = true, fromClaim = true
 }
@@ -88,8 +110,8 @@ async function handleClaim() {
 
     <SaasBreadcrumb :name="saas.name" />
     <SaasHeaderSection :saas="saas" />
-    <SaasMetricsSection :saas="saas" @claim-founder="handleClaimFounder" />
-    <SaasRevenueChart :mrr="saas.mrr" :currency="saas.currency" :history="saas.history" :provider="saas.provider" :last-synced-at="saas.lastSyncedAt" :founder-name="saas.founderName" @claim="handleClaim" @claim-founder="handleClaimFounder" />
+    <SaasMetricsSection :saas="saas" :is-verified-owner="isVerifiedOwner" @claim-founder="handleClaimFounder" />
+    <SaasRevenueChart :mrr="saas.mrr" :currency="saas.currency" :history="saas.history" :provider="saas.provider" :last-synced-at="saas.lastSyncedAt" :founder-name="saas.founderName" :is-verified-owner="isVerifiedOwner" @claim="handleClaim" @claim-founder="handleClaimFounder" />
     <MoreStartupsSection :current-saas-id="saas.id" />
 
     <div class="w-full max-w-5xl mx-auto mt-4 relative z-10">

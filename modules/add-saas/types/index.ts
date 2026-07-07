@@ -17,6 +17,7 @@ export interface SaasSubmission {
   id?: string
   name: string
   logoUrl?: string
+  logoFileBase64?: string
   websiteUrl?: string
   founderName?: string
   founderEmail?: string
