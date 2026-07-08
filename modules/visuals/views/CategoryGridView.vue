@@ -103,7 +103,7 @@ const mappedCategories = computed(() => {
               {{ cat.name }}
             </h3>
           </div>
-          <p v-if="cat.description" class="mt-2 text-xs font-sans text-neutral-500 font-light line-clamp-2 leading-relaxed">
+          <p v-if="cat.description" class="hidden mt-2 text-xs font-sans text-neutral-500 font-light line-clamp-2 leading-relaxed">
             {{ cat.description }}
           </p>
         </button>
