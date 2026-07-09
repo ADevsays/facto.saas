@@ -2,6 +2,7 @@ import { supabase } from '~/server/lib/supabase'
 import { stripeService } from '~/modules/add-saas/server/services/stripe.service'
 import { mercadopagoService } from '~/modules/add-saas/server/services/mercadopago.service'
 import { whopService } from '~/modules/add-saas/server/services/whop.service'
+import { checkAndNotifyAchievement } from '~/modules/achievements/server/services/achievements'
  
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
@@ -32,6 +33,14 @@ export default defineEventHandler(async (event) => {
       .update({ views: nextViews })
       .eq('id', dbEntry.id)
       .then(() => {})
+
+    checkAndNotifyAchievement({
+      saasId: dbEntry.id,
+      saasName: dbEntry.name || 'Tu SaaS',
+      founderEmail: dbEntry.founder_email,
+      saasSlug: slug,
+      currentViews: nextViews
+    })
  
     let history = null
     let lastSyncedAt: number | null = null
