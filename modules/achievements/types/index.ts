@@ -9,6 +9,7 @@ export interface Achievement {
 export interface AchievementCheckParams {
   saasId: string
   saasName: string
+  saasLogoUrl: string | null
   founderEmail: string | null
   saasSlug: string
   currentViews: number

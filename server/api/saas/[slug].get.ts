@@ -37,6 +37,7 @@ export default defineEventHandler(async (event) => {
     checkAndNotifyAchievement({
       saasId: dbEntry.id,
       saasName: dbEntry.name || 'Tu SaaS',
+      saasLogoUrl: dbEntry.logo_url,
       founderEmail: dbEntry.founder_email,
       saasSlug: slug,
       currentViews: nextViews

@@ -5,7 +5,7 @@ import { buildAchievementEmailHtml } from '../utils/achievementEmail'
 import type { AchievementCheckParams } from '../../types'
 
 export async function checkAndNotifyAchievement(params: AchievementCheckParams): Promise<void> {
-  const { saasId, saasName, founderEmail, saasSlug, currentViews } = params
+  const { saasId, saasName, saasLogoUrl, founderEmail, saasSlug, currentViews } = params
 
   if (!ACHIEVEMENT_THRESHOLDS.includes(currentViews as any)) return
 
@@ -27,7 +27,7 @@ export async function checkAndNotifyAchievement(params: AchievementCheckParams):
   if (!data || !founderEmail) return
 
   try {
-    const html = buildAchievementEmailHtml(saasName, currentViews, saasSlug)
+    const html = buildAchievementEmailHtml(saasName, currentViews, saasSlug, saasLogoUrl)
     const formatted = formatMilestone(currentViews)
 
     await sendFoundersReport({
