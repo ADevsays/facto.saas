@@ -47,6 +47,7 @@ export interface SendEmailParams {
     to: string
     subject: string
     html: string
+    from?: string
 }
 
 export const sendFoundersReport = async (params: SendEmailParams) => {
@@ -54,7 +55,7 @@ export const sendFoundersReport = async (params: SendEmailParams) => {
 
     try {
         const info = await transporter.sendMail({
-            from: '"Adevsays" <oficial@adevsays.com>',
+            from: params.from || '"Facto" <oficial@adevsays.com>',
             to: to,
             subject: subject,
             html: html,
