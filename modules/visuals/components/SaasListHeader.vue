@@ -34,6 +34,15 @@ const {
 } = useListHeaderFilters()
 
 const { countries } = useCountries()
+const { isOnContinentRoute, continentSlug, continent } = useCountryFilter()
+
+const displayedCountries = computed(() => {
+  if (isOnContinentRoute.value && continent.value) {
+    const allowed = new Set(continent.value.countrySlugs)
+    return countries.value.filter(c => allowed.has(c.slug) || c.slug === 'global')
+  }
+  return countries.value
+})
 
 const currentCountryName = computed(() => {
   if (!country.value || country.value === 'all') return null
@@ -48,6 +57,7 @@ const activeMeta = computed(() => {
     categoryName: currentCategoryLabel.value !== t.value.filters.all_categories && currentCategoryLabel.value !== t.value.filters.categories_fallback ? currentCategoryLabel.value : null,
     countrySlug: country.value,
     countryName: currentCountryName.value,
+    continentSlug: isOnContinentRoute.value ? continentSlug.value : null,
     locale: locale.value
   })
 })
@@ -118,7 +128,7 @@ onUnmounted(() => {
         <SaasCountryDropdown 
           :is-open="isCountryOpen"
           :active-value="country"
-          :countries="countries"
+          :countries="displayedCountries"
           class="order-2 shrink-0 sm:order-3"
           @toggle="toggleCountry"
           @select="selectCountryOption"

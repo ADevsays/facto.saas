@@ -1,6 +1,7 @@
 import es from '~/modules/visuals/locales/es.json'
 import en from '~/modules/visuals/locales/en.json'
 import { getCategoryDisplayName } from '~/utils/categories'
+import { getContinent, CONTINENTS } from '~/utils/continents'
 
 export interface ViewMeta {
   titleStart: string
@@ -76,11 +77,31 @@ export function useSaasViewMeta() {
     }
   }
 
+  function getContinentMeta(slug: string, locale = 'es'): ViewMeta {
+    const cont = getContinent(slug) || CONTINENTS.america
+    const continentName = cont.name[locale === 'en' ? 'en' : 'es'] || cont.name.es
+    const titleStart = locale === 'en' ? 'Best startups in' : 'Mejores startups de'
+    const titleHighlight = continentName
+    const fullTitle = `${titleStart} ${titleHighlight}`
+    const desc = cont.description[locale === 'en' ? 'en' : 'es'] || cont.description.es
+    const seoTitle = cont.seoTitle[locale === 'en' ? 'en' : 'es'] || fullTitle
+
+    return {
+      titleStart,
+      titleHighlight,
+      fullTitle,
+      description: desc,
+      seoTitle,
+      seoDescription: desc
+    }
+  }
+
   function getActiveMeta(params: {
     categorySlug?: string | null
     categoryName?: string | null
     countrySlug?: string | null
     countryName?: string | null
+    continentSlug?: string | null
     locale?: string
   }): ViewMeta {
     const locale = params.locale || 'es'
@@ -89,6 +110,7 @@ export function useSaasViewMeta() {
 
     const hasCategory = !!params.categorySlug && params.categorySlug !== 'all'
     const hasCountry = !!params.countrySlug && params.countrySlug !== 'all' && params.countrySlug !== 'global'
+    const hasContinent = !!params.continentSlug
 
     if (hasCategory && hasCountry) {
       const catMeta = getCategoryMeta(params.categorySlug!, params.categoryName, locale)
@@ -109,12 +131,35 @@ export function useSaasViewMeta() {
       }
     }
 
+    if (hasCategory && hasContinent) {
+      const catMeta = getCategoryMeta(params.categorySlug!, params.categoryName, locale)
+      const cont = getContinent(params.continentSlug!) || CONTINENTS.america
+      const contName = cont.name[locale === 'en' ? 'en' : 'es'] || cont.name.es
+      const titleStart = `${catMeta.titleHighlight} ${locale === 'en' ? 'in' : 'en'}`
+      const titleHighlight = contName
+      const fullTitle = `${titleStart} ${titleHighlight}`
+      const desc = `${catMeta.titleHighlight} — ${cont.description[locale === 'en' ? 'en' : 'es'] || cont.description.es}`
+
+      return {
+        titleStart,
+        titleHighlight,
+        fullTitle,
+        description: desc,
+        seoTitle: `${fullTitle} | Facto`,
+        seoDescription: desc
+      }
+    }
+
     if (hasCategory) {
       return getCategoryMeta(params.categorySlug!, params.categoryName, locale)
     }
 
     if (hasCountry) {
       return getCountryMeta(params.countrySlug!, params.countryName, locale)
+    }
+
+    if (hasContinent) {
+      return getContinentMeta(params.continentSlug!, locale)
     }
 
     return getDefaultMeta(locale)
@@ -124,6 +169,7 @@ export function useSaasViewMeta() {
     getDefaultMeta,
     getCategoryMeta,
     getCountryMeta,
+    getContinentMeta,
     getActiveMeta
   }
 }

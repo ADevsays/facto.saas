@@ -21,10 +21,11 @@ const { t } = useLanguage({ es, en })
 
 const { items, loading, error, fetchAll } = useSaasList()
 const { category, filterByCategory } = useCategoryFilter()
-const { country, filterByCountry } = useCountryFilter()
+const { country, filterByCountry, isOnContinentRoute, continent } = useCountryFilter()
 const { sort, sortItems } = useSortFilter()
 const { categories, fetchCategories } = useCategories()
 const { countries, fetchCountries } = useCountries()
+const { locale } = useI18n()
 
 const currentCategoryName = computed(() => {
   if (!category.value || category.value === 'all') return null
@@ -37,6 +38,11 @@ const currentCountryName = computed(() => {
   if (country.value === 'global') return 'Global'
   const c = countries.value.find(c => c.slug === country.value)
   return c ? c.name : country.value
+})
+
+const currentContinentName = computed(() => {
+  if (!isOnContinentRoute.value || !continent.value) return null
+  return continent.value.name[locale.value === 'en' ? 'en' : 'es'] || continent.value.name.es
 })
 
 const filteredAndSortedItems = computed(() => {
@@ -66,9 +72,9 @@ onMounted(async () => {
 
     <div class="w-full max-w-5xl">
       <SaasBreadcrumb 
-        :name="currentCategoryName || currentCountryName" 
-        :is-category="!!currentCategoryName" 
-        :is-country="!!currentCountryName" 
+        :name="currentCountryName || currentCategoryName || currentContinentName" 
+        :is-category="!!currentCategoryName && !currentCountryName" 
+        :is-country="!!currentCountryName || !!currentContinentName" 
       />
     </div>
 

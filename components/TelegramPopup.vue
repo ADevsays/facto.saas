@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -13,6 +13,7 @@ function closePopup() {
   isOpen.value = false
   if (typeof window !== 'undefined') {
     localStorage.setItem(STORAGE_KEY, String(Date.now()))
+    window.removeEventListener('scroll', handleScroll)
   }
 }
 
@@ -20,6 +21,21 @@ function handleJoin() {
   if (typeof window !== 'undefined') {
     window.open(TELEGRAM_URL, '_blank', 'noopener,noreferrer')
     closePopup()
+  }
+}
+
+function handleScroll() {
+  if (isOpen.value || typeof window === 'undefined') return
+
+  const scrollY = window.scrollY
+  const viewportHeight = window.innerHeight
+  const fullHeight = document.documentElement.scrollHeight
+
+  const isNearEnd = (scrollY + viewportHeight >= fullHeight - 750) || (scrollY + viewportHeight >= fullHeight * 0.7)
+
+  if (isNearEnd && scrollY > 350) {
+    isOpen.value = true
+    window.removeEventListener('scroll', handleScroll)
   }
 }
 
@@ -36,12 +52,18 @@ onMounted(() => {
         return
       }
     }
+  } else {
+    isOpen.value = true
+    return
   }
 
-  // Smooth entrance after page stabilizes
-  setTimeout(() => {
-    isOpen.value = true
-  }, 1200)
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('scroll', handleScroll)
+  }
 })
 </script>
 
@@ -51,61 +73,64 @@ onMounted(() => {
       v-if="isOpen"
       class="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-[100] max-w-[390px] w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]"
     >
-      <div class="bg-surface-elevated border border-white/10 hover:border-white/20 rounded-3xl p-6 sm:p-7 text-left relative overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.92),0_0_35px_rgba(0,212,255,0.12)] transition-all duration-300">
-        
-        <!-- Subtle Ambient Cyan Glow -->
-        <div class="absolute -top-12 -right-12 w-32 h-32 bg-[#00D4FF]/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <!-- Close Button (positioned with generous spacing) -->
-        <button
-          type="button"
-          @click="closePopup"
-          class="absolute top-5 right-5 text-neutral-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors z-10 cursor-pointer"
-          aria-label="Cerrar"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-
-        <!-- Header: Badge & Icon aligned with clean breathing room -->
-        <div class="flex items-center gap-3 pr-10">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-sans font-semibold uppercase tracking-wider text-[#00D4FF] bg-[#00D4FF]/10 border border-[#00D4FF]/25 shadow-sm">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#00D4FF] animate-pulse"></span>
-            <span>{{ t('telegram_popup.badge') }}</span>
-          </div>
+      <!-- Glowing Border Outer Wrapper with Facto brand cyan colors -->
+      <div class="relative p-[1.5px] rounded-3xl bg-gradient-to-r from-[#00D4FF] via-white/50 to-[#00D4FF] shadow-[0_0_25px_rgba(0,212,255,0.45),0_0_50px_rgba(0,212,255,0.2)] transition-all duration-300">
+        <div class="bg-surface-elevated rounded-[22.5px] p-6 sm:p-7 text-left relative overflow-hidden">
           
-          <div class="w-7 h-7 rounded-lg bg-[#00D4FF]/10 border border-[#00D4FF]/25 text-[#00D4FF] flex items-center justify-center shrink-0">
-            <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-[#00D4FF]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21.5 2L2 9.5l7 3 3 7.5 9.5-18z"></path>
-              <path d="M9 12.5L21.5 2"></path>
+          <!-- Subtle Ambient Cyan Glow Inside -->
+          <div class="absolute -top-12 -right-12 w-32 h-32 bg-[#00D4FF]/15 rounded-full blur-3xl pointer-events-none"></div>
+
+          <!-- Close Button -->
+          <button
+            type="button"
+            @click="closePopup"
+            class="absolute top-5 right-5 text-neutral-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors z-10 cursor-pointer"
+            aria-label="Cerrar"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
+          </button>
+
+          <!-- Header: Badge & Icon -->
+          <div class="flex items-center gap-3 pr-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-sans font-semibold uppercase tracking-wider text-[#00D4FF] bg-[#00D4FF]/10 border border-[#00D4FF]/25 shadow-sm">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#00D4FF] animate-pulse"></span>
+              <span>{{ t('telegram_popup.badge') }}</span>
+            </div>
+            
+            <div class="w-7 h-7 rounded-lg bg-[#00D4FF]/10 border border-[#00D4FF]/25 text-[#00D4FF] flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-[#00D4FF]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.5 2L2 9.5l7 3 3 7.5 9.5-18z"></path>
+                <path d="M9 12.5L21.5 2"></path>
+              </svg>
+            </div>
           </div>
+
+          <!-- Title & Description -->
+          <h3 class="font-serif text-lg sm:text-xl font-bold text-white tracking-tight mt-5 leading-snug">
+            {{ t('telegram_popup.title') }}
+          </h3>
+          
+          <p class="text-xs sm:text-[13px] font-sans font-light text-neutral-400 leading-relaxed mt-2.5 tracking-wide">
+            {{ t('telegram_popup.description') }}
+          </p>
+
+          <!-- Action Button (Facto GlassButton Style) -->
+          <button
+            type="button"
+            @click="handleJoin"
+            class="mt-6 w-full py-3.5 px-6 rounded-full bg-white text-black font-sans font-bold text-xs uppercase tracking-wider hover:scale-[1.02] hover:bg-neutral-100 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.35),0_0_30px_rgba(0,212,255,0.15)] flex items-center justify-center gap-2 cursor-pointer group"
+          >
+            <span>{{ t('telegram_popup.cta') }}</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:translate-x-1">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+
         </div>
-
-        <!-- Title & Description with ample spacing -->
-        <h3 class="font-serif text-lg sm:text-xl font-bold text-white tracking-tight mt-5 leading-snug">
-          {{ t('telegram_popup.title') }}
-        </h3>
-        
-        <p class="text-xs sm:text-[13px] font-sans font-light text-neutral-400 leading-relaxed mt-2.5 tracking-wide">
-          {{ t('telegram_popup.description') }}
-        </p>
-
-        <!-- Action Button (Facto GlassButton Style with top margin) -->
-        <button
-          type="button"
-          @click="handleJoin"
-          class="mt-6 w-full py-3.5 px-6 rounded-full bg-white text-black font-sans font-bold text-xs uppercase tracking-wider hover:scale-[1.02] hover:bg-neutral-100 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.35),0_0_30px_rgba(0,212,255,0.15)] flex items-center justify-center gap-2 cursor-pointer group"
-        >
-          <span>{{ t('telegram_popup.cta') }}</span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:translate-x-1">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
-        </button>
-
       </div>
     </div>
   </Transition>

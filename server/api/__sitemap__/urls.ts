@@ -16,7 +16,10 @@ export default defineEventHandler(async () => {
     { es: '/paises', en: '/en/countries' },
     { es: '/herramientas/cuanto-vale-tu-saas', en: '/en/tools/how-much-is-your-saas-worth' },
     { es: '/herramientas/generador-de-facturas', en: '/en/tools/invoice-generator' },
-    { es: '/herramientas/descargar-miniaturas-youtube', en: '/en/tools/youtube-thumbnail-downloader' }
+    { es: '/herramientas/descargar-miniaturas-youtube', en: '/en/tools/youtube-thumbnail-downloader' },
+    { es: '/saas/continente/america', en: '/en/saas/continent/america' },
+    { es: '/saas/continente/europa', en: '/en/saas/continent/europa' },
+    { es: '/saas/continente/asia', en: '/en/saas/continent/asia' }
   ]
 
   for (const route of staticRoutes) {

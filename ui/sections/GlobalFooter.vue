@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useCategories } from '~/composables/useCategories'
-import { useCountries } from '~/composables/useCountries'
 import { useLoginModal } from '~/composables/useLoginModal'
 import { useFounderSession } from '~/composables/useFounderSession'
 import { ROUTES } from '~/utils/routes'
@@ -8,7 +7,6 @@ import { onMounted } from 'vue'
 
 const { t } = useI18n()
 const { categories, fetchCategories } = useCategories()
-const { countries, fetchCountries } = useCountries()
 const { open: openLoginModal } = useLoginModal()
 const { isAuthenticated } = useFounderSession()
 const localePath = useLocalePath()
@@ -24,7 +22,6 @@ function handleLoginClick() {
 
 onMounted(() => {
   fetchCategories()
-  fetchCountries()
 })
 </script>
 
@@ -104,12 +101,28 @@ onMounted(() => {
           <h4 class="font-medium text-white tracking-widest uppercase text-xs text-left pt-2">{{ t('footer.countries') }}</h4>
           <div class="flex flex-col gap-3 items-start text-left">
             <NuxtLink 
-              v-for="country in countries.filter(c => c.slug !== 'global')" 
-              :key="country.slug"
-              :to="localePath(`${ROUTES.COUNTRY}/${country.slug}`)" 
-              class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light truncate max-w-[150px]"
+              :to="localePath(`${ROUTES.CONTINENT}/america`)" 
+              class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light"
             >
-              {{ country.name }}
+              {{ t('footer.america') }}
+            </NuxtLink>
+            <NuxtLink 
+              :to="localePath(`${ROUTES.CONTINENT}/europa`)" 
+              class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light"
+            >
+              {{ t('footer.europe') }}
+            </NuxtLink>
+            <NuxtLink 
+              :to="localePath(`${ROUTES.CONTINENT}/asia`)" 
+              class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light"
+            >
+              {{ t('footer.asia') }}
+            </NuxtLink>
+            <NuxtLink 
+              :to="localePath(ROUTES.COUNTRY)" 
+              class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light"
+            >
+              {{ t('footer.all_countries') }}
             </NuxtLink>
           </div>
         </div>

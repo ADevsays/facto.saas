@@ -44,8 +44,22 @@
     "valuation_calc": "Valuation Calculator",
     "invoice_gen": "Invoice Generator",
     "youtube_thumb": "Download YouTube Thumbnails",
-    "have_account_login": "Have an account? Log in here.",
-    "telegram": "Telegram Channel"
+    "telegram": "Telegram Channel",
+    "america": "America",
+    "europe": "Europe",
+    "asia": "Asia",
+    "all_countries": "All countries"
+  },
+  "continent": {
+    "title_start": "Best startups in",
+    "all_countries_in": "All in {continent}",
+    "verified_mrr": "Verified MRR",
+    "active_startups": "Startups in catalog",
+    "countries_count": "Active countries",
+    "filter_country": "Filter by country:",
+    "empty": "No startups found in this continent with the selected filters.",
+    "explore_continents": "Explore by continent:",
+    "view_all_countries": "View all countries"
   },
   "common": {
     "loading": "Loading...",

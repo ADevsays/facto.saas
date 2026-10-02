@@ -9,6 +9,7 @@ export function useCategoryFilter() {
 
   const isOnCategoryRoute = computed(() => route.path.includes('/saas/categoria') || route.path.includes('/saas/category'))
   const isOnCountryRoute = computed(() => route.path.includes('/saas/pais') || route.path.includes('/saas/country'))
+  const isOnContinentRoute = computed(() => route.path.includes('/saas/continente') || route.path.includes('/saas/continent'))
 
   const category = computed(() => {
     if (isOnCategoryRoute.value) {
@@ -18,7 +19,7 @@ export function useCategoryFilter() {
   })
 
   function setCategory(value: string) {
-    if (isOnCountryRoute.value) {
+    if (isOnCountryRoute.value || isOnContinentRoute.value) {
       if (value === 'all' || !value) {
         const { categoria, ...rest } = route.query
         router.push({ path: route.path, query: rest })

@@ -73,7 +73,7 @@ export default defineEventHandler(async (): Promise<StatsOverviewResponse> => {
       id, name, slug, mrr, currency, views, published_at, is_incognito,
       categories!saas_categories ( name, slug ),
       countries!saas_countries ( id, name, slug, flag, iso_code ),
-      saas_metrics_cache ( history_cache )
+      saas_metrics_cache ( created_at, history_synced_at, history_cache )
     `)
     .eq('status', 'published')
 
@@ -89,11 +89,17 @@ export default defineEventHandler(async (): Promise<StatsOverviewResponse> => {
     const cats = (row.categories as any[]) || []
     const countries = (row.countries as any[]) || []
 
+    const cache = Array.isArray(row.saas_metrics_cache) ? row.saas_metrics_cache[0] : row.saas_metrics_cache
+    const mrrDate = cache?.created_at
+      ? new Date(cache.created_at).toISOString()
+      : (cache?.history_synced_at ? new Date(cache.history_synced_at).toISOString() : validDate)
+
     return {
       id: row.id,
       name: row.name || 'Startup',
       slug: row.slug,
       mrr,
+      mrrDate,
       views,
       date: validDate,
       isIncognito: Boolean(row.is_incognito),
@@ -161,13 +167,20 @@ export default defineEventHandler(async (): Promise<StatsOverviewResponse> => {
       countryMap.set(cSlug, existing)
     }
 
-    // Daily bucket
-    const dayKey = item.date.slice(0, 10)
-    const dayEntry = dailyAdditionsMap.get(dayKey) || { startups: 0, mrr: 0, views: 0 }
-    dayEntry.startups++
-    if (item.mrr) dayEntry.mrr += item.mrr
-    dayEntry.views += item.views
-    dailyAdditionsMap.set(dayKey, dayEntry)
+    // Daily bucket for startup launches & views
+    const startupDayKey = item.date.slice(0, 10)
+    const startupDayEntry = dailyAdditionsMap.get(startupDayKey) || { startups: 0, mrr: 0, views: 0 }
+    startupDayEntry.startups++
+    startupDayEntry.views += item.views
+    dailyAdditionsMap.set(startupDayKey, startupDayEntry)
+
+    // Daily bucket for MRR additions (assigned to when revenue was registered/verified)
+    if (item.mrr && item.mrr > 0) {
+      const mrrDayKey = item.mrrDate ? item.mrrDate.slice(0, 10) : startupDayKey
+      const mrrDayEntry = dailyAdditionsMap.get(mrrDayKey) || { startups: 0, mrr: 0, views: 0 }
+      mrrDayEntry.mrr += item.mrr
+      dailyAdditionsMap.set(mrrDayKey, mrrDayEntry)
+    }
   }
 
   // Build a continuous daily timeline

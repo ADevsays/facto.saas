@@ -44,8 +44,22 @@
     "valuation_calc": "Calculadora de Valoración",
     "invoice_gen": "Emisor de Facturas",
     "youtube_thumb": "Descargar Miniaturas YouTube",
-    "have_account_login": "¿Tienes una cuenta? Inicia sesión aquí.",
-    "telegram": "Canal de Telegram"
+    "telegram": "Canal de Telegram",
+    "america": "América",
+    "europe": "Europa",
+    "asia": "Asia",
+    "all_countries": "Todos los países"
+  },
+  "continent": {
+    "title_start": "Mejores startups de",
+    "all_countries_in": "Todos en {continent}",
+    "verified_mrr": "MRR verificado",
+    "active_startups": "Startups en catálogo",
+    "countries_count": "Países activos",
+    "filter_country": "Filtrar por país:",
+    "empty": "No se encontraron startups en este continente con los filtros seleccionados.",
+    "explore_continents": "Explorar por continente:",
+    "view_all_countries": "Ver todos los países"
   },
   "common": {
     "loading": "Cargando...",
