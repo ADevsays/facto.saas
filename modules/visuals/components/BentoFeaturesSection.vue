@@ -141,6 +141,7 @@ const founderLink = computed(() => {
 
         <NuxtLink 
           :to="founderLink"
+          :aria-label="saas.founderName || 'Perfil del fundador'"
           class="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden shrink-0 border-2 border-white/20 bg-black flex items-center justify-center shadow-md mb-4 transition-transform hover:scale-105"
         >
           <img v-if="saas.founderAvatar" :src="saas.founderAvatar" :alt="saas.founderName || 'Founder'" class="w-full h-full object-cover" />

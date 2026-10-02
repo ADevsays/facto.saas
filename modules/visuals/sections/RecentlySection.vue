@@ -20,7 +20,7 @@ onMounted(fetchAll)
   <section class="w-full min-w-0 py-2">
     <div class="flex items-center justify-between mb-4">
       <p class="text-[10px] font-sans font-extralight tracking-[0.15em] text-neutral-300 uppercase">{{ t.recently_section.title }}</p>
-      <NuxtLink :to="localePath('/saas?s=latest')" class="group text-neutral-300 hover:text-white transition-colors">
+      <NuxtLink :to="localePath('/saas?s=latest')" :aria-label="t.recently_section.title || 'Ver startups recientes'" class="group text-neutral-300 hover:text-white transition-colors">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="transition-transform duration-300 group-hover:translate-x-0.5">
           <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>

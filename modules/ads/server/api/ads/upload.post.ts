@@ -1,4 +1,3 @@
-import sharp from 'sharp'
 import { supabase } from '~/server/lib/supabase'
 
 export default defineEventHandler(async (event) => {
@@ -50,12 +49,15 @@ export default defineEventHandler(async (event) => {
   const isVectorOrAnimated = ['svg', 'gif', 'ico'].includes(fileExt)
   if (!isVectorOrAnimated) {
     try {
-      uploadBuffer = await sharp(file.data)
-        .resize(256, 256, { fit: 'inside', withoutEnlargement: true })
-        .webp({ quality: 85, effort: 4 })
-        .toBuffer()
-      finalExt = 'webp'
-      targetMime = 'image/webp'
+      const sharpModule = await import('sharp').then(m => m.default || m).catch(() => null)
+      if (sharpModule) {
+        uploadBuffer = await sharpModule(file.data)
+          .resize(256, 256, { fit: 'inside', withoutEnlargement: true })
+          .webp({ quality: 85, effort: 4 })
+          .toBuffer()
+        finalExt = 'webp'
+        targetMime = 'image/webp'
+      }
     } catch (optErr) {
       console.warn('[Ads Upload] Image optimization warning, using original buffer:', optErr)
     }

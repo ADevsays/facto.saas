@@ -45,15 +45,15 @@ onMounted(() => {
     </div>
 
     <div class="w-full max-w-xl z-10 relative">
-      <GlobalBreadcrumb :items="[{ label: t.value.breadcrumb }]" class="mb-12 justify-center" />
+      <GlobalBreadcrumb :items="[{ label: t?.breadcrumb || 'Feedback' }]" class="mb-12 justify-center" />
       
       <div class="text-center mb-20 stagger-fade-up">
         <h1 class="font-serif text-[12vw] md:text-[6rem] leading-[0.85] tracking-tight mb-8">
-          {{ t.value.title.line1 }}<br/>
-          <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-neutral-300 to-white relative inline-block" style="-webkit-text-fill-color: rgba(0, 212, 255, 0.4); filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.3)); animation: shine 12s ease-in-out infinite;">{{ t.value.title.line2 }}</span>
+          {{ t?.title?.line1 }}<br/>
+          <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-neutral-300 to-white relative inline-block" style="-webkit-text-fill-color: rgba(0, 212, 255, 0.4); filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.3)); animation: shine 12s ease-in-out infinite;">{{ t?.title?.line2 }}</span>
         </h1>
         <p class="font-sans font-extralight tracking-[0.08em] text-neutral-400 text-sm md:text-base max-w-md mx-auto leading-relaxed">
-          {{ t.value.description }}
+          {{ t?.description }}
         </p>
       </div>
 
