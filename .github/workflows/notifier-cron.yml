@@ -1,0 +1,54 @@
+name: Notifier Cron Jobs
+
+on:
+  schedule:
+    # Run milestone detector every 15 minutes
+    - cron: '*/15 * * * *'
+    # Run daily digest at 23:00 UTC
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+    inputs:
+      job_type:
+        description: 'Job to execute'
+        required: true
+        default: 'run'
+        type: choice
+        options:
+          - run
+          - digest
+
+jobs:
+  execute-cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine Endpoint
+        id: endpoint
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "target=${{ github.event.inputs.job_type }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "0 23 * * *" ]; then
+            echo "target=digest" >> $GITHUB_OUTPUT
+          else
+            echo "target=run" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Trigger Notifier Endpoint
+        run: |
+          TARGET="${{ steps.endpoint.outputs.target }}"
+          BASE_URL="${{ secrets.APP_URL || 'https://www.factosaas.com' }}"
+          SECRET="${{ secrets.CRON_SECRET || secrets.ADMIN_SECRET_KEY }}"
+          
+          echo "Triggering $BASE_URL/api/notifier/$TARGET..."
+          
+          if [ -n "$SECRET" ]; then
+            HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $SECRET" "$BASE_URL/api/notifier/$TARGET")
+          else
+            HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/notifier/$TARGET")
+          fi
+          
+          echo "HTTP Response: $HTTP_RESPONSE"
+          if [ "$HTTP_RESPONSE" -ge 200 ] && [ "$HTTP_RESPONSE" -lt 300 ]; then
+            echo "Cron executed successfully."
+          else
+            echo "Warning: Received HTTP $HTTP_RESPONSE"
+          fi
