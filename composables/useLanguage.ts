@@ -21,57 +21,72 @@ export function useLanguage(locales?: { es: any, en: any }) {
     return language.value === 'es' ? locales.es : locales.en;
   });
 
+  const switchLocalePath = useSwitchLocalePath();
+
   const applyLocale = async (detected: string) => {
     const lang = (detected === 'es' ? 'es' : 'en') as 'es' | 'en';
-    console.log(`[Lang] applyLocale → detected="${detected}" | resolved="${lang}" | current="${locale.value}" | will change=${lang !== locale.value}`);
+    
     if (lang !== locale.value) {
+      const targetPath = switchLocalePath(lang);
       await setLocale(lang);
-      console.log(`[Lang] setLocale("${lang}") done → locale is now "${locale.value}"`);
+      const currentPath = useRoute().fullPath;
+      if (targetPath && targetPath !== currentPath) {
+        await navigateTo(targetPath);
+      }
     }
   };
 
   const detectLanguage = async () => {
-    console.log(`[Lang] detectLanguage start → current locale="${locale.value}"`);
     const countryCookie = useCookie('app-user-country', { maxAge: 60 * 60 * 24 * 7 });
 
-    if (countryCookie.value) {
-      country.value = countryCookie.value;
-      const lang = SPANISH_SPEAKING_COUNTRIES.includes(countryCookie.value) ? 'es' : 'en';
-      console.log(`[Lang] source=cookie | country="${countryCookie.value}" | lang="${lang}"`);
-      await applyLocale(lang);
-      return;
-    }
-
-    console.log('[Lang] no cookie, calling /api/geoip…');
     try {
+      // 1. Prioritize internal geoip (Vercel / Cloudflare headers reflect current VPN / network immediately)
       const internalGeo = await $fetch<{ country: string | null; language: string | null }>('/api/geoip');
-      console.log('[Lang] /api/geoip response:', internalGeo);
 
-      if (internalGeo.country) {
+      if (internalGeo && internalGeo.country) {
         country.value = internalGeo.country;
         countryCookie.value = internalGeo.country;
-        await applyLocale(internalGeo.language ?? 'en');
+        const lang = internalGeo.language ?? (SPANISH_SPEAKING_COUNTRIES.includes(internalGeo.country) ? 'es' : 'en');
+        await applyLocale(lang);
         return;
       }
 
-      console.log('[Lang] geoip returned no country, falling back to ipapi.co…');
-      const response = await fetch('https://ipapi.co/json/');
-      const data = await response.json();
-      console.log('[Lang] ipapi.co response:', data);
-
-      if (data.country_code) {
-        country.value = data.country_code;
-        countryCookie.value = data.country_code;
-        const lang = SPANISH_SPEAKING_COUNTRIES.includes(data.country_code) ? 'es' : 'en';
+      // 2. If no server header (e.g. local dev), check cookie fallback
+      if (countryCookie.value) {
+        country.value = countryCookie.value;
+        const isSpanish = SPANISH_SPEAKING_COUNTRIES.includes(countryCookie.value);
+        const lang = isSpanish ? 'es' : 'en';
         await applyLocale(lang);
+        return;
       }
 
+      // 3. Fallback external IP service for local development
+      const response = await fetch('https://ipwho.is/');
+      const data = await response.json();
+
+      if (data && data.success && data.country_code) {
+        country.value = data.country_code;
+        countryCookie.value = data.country_code;
+        const isSpanish = SPANISH_SPEAKING_COUNTRIES.includes(data.country_code);
+        const lang = isSpanish ? 'es' : 'en';
+        await applyLocale(lang);
+        return;
+      }
+
+      // 4. Browser language fallback
+      const browserLang = (typeof navigator !== 'undefined' ? (navigator.language || (navigator as any).userLanguage || 'es') : 'es').toLowerCase();
+      const detectedLang = browserLang.startsWith('es') ? 'es' : 'en';
+      await applyLocale(detectedLang);
+
     } catch (error) {
-      console.error('[Lang] Error detecting location:', error);
+      const browserLang = (typeof navigator !== 'undefined' ? (navigator.language || (navigator as any).userLanguage || 'es') : 'es').toLowerCase();
+      const detectedLang = browserLang.startsWith('es') ? 'es' : 'en';
+      await applyLocale(detectedLang);
     }
   };
 
   return {
+    locale,
     language,
     country,
     t,

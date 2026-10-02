@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useSaasList } from '~/composables/useSaasList'
 import SaasGemCard from '../components/SaasGemCard.vue'
 import { ArrowRight } from 'lucide-vue-next'
+
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+const { t } = useLanguage({ es, en })
+const localePath = useLocalePath()
 
 const props = defineProps<{
   currentSaasId: string
@@ -33,11 +38,11 @@ onMounted(() => {
     <!-- Header with Title and Button -->
     <div class="w-full flex items-end justify-between mb-10 border-b border-white/5 pb-4">
       <h2 class="font-serif text-3xl text-white tracking-tight">
-        Mira más <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00D4FF]/70 drop-shadow-[0_0_15px_rgba(0,212,255,0.4)]">startups</span>
+        {{ t.profile.more.title_start }} <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00D4FF]/70 drop-shadow-[0_0_15px_rgba(0,212,255,0.4)]">{{ t.profile.more.title_highlight }}</span>
       </h2>
       
-      <NuxtLink to="/saas" class="group flex items-center gap-2 text-xs font-sans tracking-widest uppercase text-neutral-400 hover:text-white transition-colors mb-1">
-        Ver startups
+      <NuxtLink :to="localePath('/saas')" class="group flex items-center gap-2 text-xs font-sans tracking-widest uppercase text-neutral-400 hover:text-white transition-colors mb-1">
+        {{ t.profile.more.view_all }}
         <ArrowRight class="w-4 h-4 text-neutral-500 group-hover:text-[#00D4FF] transition-all duration-300 group-hover:translate-x-1" />
       </NuxtLink>
     </div>

@@ -1,7 +1,8 @@
 interface SeoConfig {
   title: () => string;
   description: () => string;
-  imagePath: string;
+  imagePath?: string;
+  robots?: string;
 }
 
 export function useAppSeo(config: SeoConfig) {
@@ -20,7 +21,8 @@ export function useAppSeo(config: SeoConfig) {
   });
 
   const imageUrl = () => {
-    const cleanPath = config.imagePath.startsWith('/') ? config.imagePath : `/${config.imagePath}`;
+    const rawPath = config.imagePath || '/og-image.png';
+    const cleanPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
     return `${siteUrl}${cleanPath}?v=2`;
   };
 
@@ -40,5 +42,6 @@ export function useAppSeo(config: SeoConfig) {
     twitterTitle: config.title,
     twitterDescription: config.description,
     twitterImage: imageUrl,
+    ...(config.robots ? { robots: config.robots } : {}),
   });
 }

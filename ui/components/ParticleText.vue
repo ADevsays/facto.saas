@@ -8,15 +8,20 @@ const props = defineProps<{
 const displayText = ref(props.text)
 const phase = ref<'idle' | 'out'>('idle')
 
-// Generamos 8 pequeñas partículas
 const particles = Array.from({ length: 8 }).map((_, i) => {
-  const angle = Math.random() * Math.PI * 2
-  const distance = Math.random() * 10 + 5 // entre 5px y 15px de distancia
+  // Usamos una función pseudo-aleatoria basada en el índice para que sea determinista
+  // y así evitar advertencias de Hydration Mismatch entre el servidor y el cliente.
+  const pr1 = Math.abs((Math.sin(i * 12.9898) * 43758.5453) % 1)
+  const pr2 = Math.abs((Math.sin(i * 78.233) * 43758.5453) % 1)
+  const pr3 = Math.abs((Math.sin(i * 45.123) * 43758.5453) % 1)
+  
+  const angle = pr1 * Math.PI * 2
+  const distance = pr2 * 10 + 5 // entre 5px y 15px de distancia
   return {
     id: i,
-    x: Math.cos(angle) * distance,
-    y: Math.sin(angle) * distance,
-    scale: Math.random() * 0.8 + 0.5
+    x: Number((Math.cos(angle) * distance).toFixed(4)),
+    y: Number((Math.sin(angle) * distance).toFixed(4)),
+    scale: Number((pr3 * 0.8 + 0.5).toFixed(4))
   }
 })
 

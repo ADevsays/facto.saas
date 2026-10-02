@@ -3,8 +3,7 @@ export async function fetchClearbitLogo(websiteUrl: string): Promise<string | nu
     const urlObj = new URL(websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`)
     const domain = urlObj.hostname.replace('www.', '')
     
-    // Usar Google Favicon en lugar de Clearbit (logo.clearbit.com está fallando)
-    const faviconUrl = `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=128`
+    const faviconUrl = `https://icons.duckduckgo.com/ip3/${domain}.ico`
     
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 3000)

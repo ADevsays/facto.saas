@@ -19,20 +19,25 @@ function formatMrr(mrr: number | null, currency: string): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(mrr)
 }
 
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+
+const { t } = useLanguage({ es, en })
+const localePath = useLocalePath()
+
 function handleClick(isIncognito: boolean, name: string | null) {
   if (isIncognito || !name) return
-  navigateTo(`/saas/${slugify(name)}`)
+  navigateTo(localePath(`/saas/${slugify(name)}`))
 }
 </script>
 
 <template>
-  <div
-    @click="handleClick(item.isIncognito, item.name)"
-    class="ranking-row grid grid-cols-[1.2rem_1fr_1fr_80px] sm:grid-cols-[2rem_1fr_1fr_100px] items-center py-[18px] px-3 sm:px-5 border-b border-white/5 last:border-0 transition-all duration-300 group gap-2 sm:gap-3"
-    :class="item.isIncognito ? 'cursor-default' : 'cursor-pointer'"
+  <NuxtLink
+    v-if="!item.isIncognito && (item.slug || item.name)"
+    :to="localePath(`/saas/${item.slug || slugify(item.name || '')}`)"
+    class="ranking-row grid grid-cols-[1.2rem_1fr_1fr_80px] sm:grid-cols-[2rem_1fr_1fr_100px] items-center py-[18px] px-3 sm:px-5 border-b border-white/5 last:border-0 transition-all duration-300 group gap-2 sm:gap-3 block cursor-pointer"
     :style="{ '--glow': rowColor }"
   >
-
     <span class="text-xs font-mono text-neutral-600 text-center">{{ position }}</span>
 
     <div class="flex items-center gap-2.5 min-w-0">
@@ -42,10 +47,11 @@ function handleClick(isIncognito: boolean, name: string | null) {
         :initial="item.isIncognito ? '?' : (item.name?.[0] ?? '?')"
         size="sm"
         :gem-color="rowColor"
+        :websiteUrl="item.websiteUrl"
       />
       <div class="min-w-0">
         <p class="text-sm text-white font-sans truncate">
-          {{ item.isIncognito ? '— Anónimo —' : (item.name ?? '—') }}
+          {{ item.isIncognito ? t.row.incognito : (item.name ?? '—') }}
         </p>
         <p class="text-[10px] text-neutral-600 font-sans font-extralight tracking-[0.06em] truncate">{{ item.category }}</p>
       </div>
@@ -75,7 +81,47 @@ function handleClick(isIncognito: boolean, name: string | null) {
       <template v-if="item.revenue && item.revenue !== '—'">{{ item.revenue }}</template>
       <IncognitoIcon v-else class="w-4 h-4" />
     </div>
+  </NuxtLink>
 
+  <div
+    v-else
+    class="ranking-row grid grid-cols-[1.2rem_1fr_1fr_80px] sm:grid-cols-[2rem_1fr_1fr_100px] items-center py-[18px] px-3 sm:px-5 border-b border-white/5 last:border-0 transition-all duration-300 group gap-2 sm:gap-3 block cursor-default"
+    :style="{ '--glow': rowColor }"
+  >
+    <span class="text-xs font-mono text-neutral-600 text-center">{{ position }}</span>
+
+    <div class="flex items-center gap-2.5 min-w-0">
+      <SaasLogo
+        :src="null"
+        :alt="''"
+        :initial="'?'"
+        size="sm"
+        :gem-color="rowColor"
+        :websiteUrl="null"
+      />
+      <div class="min-w-0">
+        <p class="text-sm text-white font-sans truncate">
+          {{ t.row.incognito }}
+        </p>
+        <p class="text-[10px] text-neutral-600 font-sans font-extralight tracking-[0.06em] truncate">{{ item.category }}</p>
+      </div>
+    </div>
+
+    <!-- Founder -->
+    <div class="flex items-center gap-2.5 min-w-0">
+      <div class="w-[80px] flex items-center justify-center shrink-0">
+        <IncognitoIcon class="w-5 h-5 text-neutral-600" />
+      </div>
+    </div>
+
+    <!-- REVENUE -->
+    <div
+      class="text-sm font-mono tabular-nums text-right flex items-center justify-end w-full"
+      :class="item.revenue && item.revenue !== '—' ? 'text-[#00D4FF]' : 'text-neutral-600'"
+    >
+      <template v-if="item.revenue && item.revenue !== '—'">{{ item.revenue }}</template>
+      <IncognitoIcon v-else class="w-4 h-4" />
+    </div>
   </div>
 </template>
 

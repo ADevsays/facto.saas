@@ -7,10 +7,16 @@ import { useRouter } from '#app'
 
 import { ROUTES } from '~/utils/routes'
 
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+
+const { t } = useLanguage({ es, en })
+
 const { items, fetchAll } = useSaasList()
 const { categories: dbCategories, fetchCategories } = useCategories()
 const { open: openAddModal } = useAddSaasModal()
 const router = useRouter()
+const localePath = useLocalePath()
 
 const localQuery = ref('')
 const results = ref<any[]>([])
@@ -24,7 +30,7 @@ onMounted(async () => {
   await fetchCategories()
 })
 
-const categories = ref<{ name: string; slug: string }[]>([{ name: 'Todas', slug: 'all' }])
+const categories = ref<{ name: string; slug: string }[]>([{ name: t.value.tabs.all, slug: 'all' }])
 
 let initializedCategories = false
 let shuffleInterval: any = null
@@ -45,27 +51,29 @@ function shuffleCategories() {
   }
   
   categories.value = [
-    { name: 'Todas', slug: 'all' },
+    { name: t.value.tabs.all, slug: 'all' },
     ...pool.slice(0, 3).map(c => ({ name: c.name, slug: c.slug }))
   ]
 }
 
 watch(dbCategories, (val) => {
-  if (!val.length || initializedCategories) return
+  if (!import.meta.client || !val.length || initializedCategories) return
   initializedCategories = true
   
   shuffleCategories()
   
-  shuffleInterval = setInterval(() => {
-    shuffleCategories()
-  }, 7000)
+  if (!shuffleInterval) {
+    shuffleInterval = setInterval(() => {
+      shuffleCategories()
+    }, 7000)
+  }
 }, { immediate: true })
 
 function onSelectCategory(slug: string) {
   if (slug === 'all') {
-    router.push('/saas')
+    router.push(localePath('/saas'))
   } else {
-    router.push(`${ROUTES.CATEGORY}/${slug}`)
+    router.push(localePath(`${ROUTES.CATEGORY}/${slug}`))
   }
 }
 
@@ -81,7 +89,7 @@ function onEnter() {
     if (!first.isIncognito && first.slug) {
       showDropdown.value = false
       localQuery.value = ''
-      router.push(`/saas/${first.slug}`)
+      router.push(localePath(`/saas/${first.slug}`))
     }
   }
 }
@@ -160,7 +168,7 @@ onUnmounted(() => {
           @focus="showDropdown = true"
           @keydown.enter="onEnter"
           type="text"
-          placeholder="Busca cualquier SaaS: salud, 10kMRR, etc..."
+          :placeholder="t.input.placeholder"
           class="w-full bg-white/10 border border-white/20 rounded-xl pl-10 pr-5 py-3.5 text-white text-sm font-sans tracking-wide placeholder:text-neutral-500 focus:outline-none focus:border-[#00D4FF] focus:bg-white/15 focus:ring-4 focus:ring-[#00D4FF]/10 transition-all duration-300 shadow-sm"
         />
 
@@ -182,7 +190,7 @@ onUnmounted(() => {
         >
           <path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
-        Agrega tu MRR
+        {{ t.input.add_mrr_button }}
       </button>
     </div>
 

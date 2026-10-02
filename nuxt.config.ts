@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
-import { readdirSync, statSync } from 'node:fs'
+import { readdirSync, statSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const modulesDir = fileURLToPath(new URL('./modules', import.meta.url))
@@ -41,9 +41,11 @@ export default defineNuxtConfig({
     disallow: ['/admin'],
   },
   i18n: {
+    restructureDir: false as any,
+    langDir: 'locales',
     locales: [
-      { code: 'en', name: 'English', language: 'en-US' },
-      { code: 'es', name: 'Español', language: 'es-ES' }
+      { code: 'en', name: 'English', language: 'en-US', file: 'en.json' },
+      { code: 'es', name: 'Español', language: 'es-ES', file: 'es.json' }
     ],
     defaultLocale: 'es',
     strategy: 'prefix_except_default',
@@ -108,6 +110,19 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' }
       ]
+    }
+  },
+  hooks: {
+    ready: (nuxt) => {
+      const buildId = nuxt.options.runtimeConfig.app.buildId ||= nuxt.options.buildId || 'dev'
+      const metaDir = join(nuxt.options.buildDir, 'manifest', 'meta')
+      try {
+        mkdirSync(metaDir, { recursive: true })
+        const target = join(metaDir, `${buildId}.json`)
+        if (!statSync(target, { throwIfNoEntry: false })) {
+          writeFileSync(target, JSON.stringify({}))
+        }
+      } catch {}
     }
   },
   vite: {

@@ -11,20 +11,45 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Slug is required' })
   }
  
-    const { data: dbEntry, error: dbError } = await supabase
-    .from('saas_entries')
-    .select(`
-      id, name, slug, logo_url, website_url, founder_name, founder_id, founder_email, startup_type, is_incognito, mrr, currency, views, published_at, provider_key_encrypted,
-      categories!saas_categories ( name, slug ),
-      countries!saas_countries ( name, slug, flag, iso_code ),
-      payment_providers ( slug )
-    `)
-    .eq('slug', slug)
-    .single()
+    let dbEntry: any = null
+    let dbError: any = null
 
-  if (dbError) {
-    console.error('[slug.get.ts] Database error:', dbError)
-  }
+    // Intento 1: Traer columnas completas incluyendo Showcase Bento
+    const fullRes = await supabase
+      .from('saas_entries')
+      .select(`
+        id, name, slug, logo_url, website_url, founder_name, founder_id, founder_email, startup_type, is_incognito, mrr, currency, views, published_at, provider_key_encrypted,
+        value_proposition, problem_solved, tech_stack, acquisition_channels, facto_message, faq, github_repo,
+        categories!saas_categories ( name, slug ),
+        countries!saas_countries ( name, slug, flag, iso_code ),
+        payment_providers ( slug )
+      `)
+      .eq('slug', slug)
+      .single()
+
+    if (fullRes.error && fullRes.error.code === '42703') {
+      // Si aún no se corrió el SQL en Supabase, hacer fallback a las columnas existentes
+      const fallbackRes = await supabase
+        .from('saas_entries')
+        .select(`
+          id, name, slug, logo_url, website_url, founder_name, founder_id, founder_email, startup_type, is_incognito, mrr, currency, views, published_at, provider_key_encrypted,
+          categories!saas_categories ( name, slug ),
+          countries!saas_countries ( name, slug, flag, iso_code ),
+          payment_providers ( slug )
+        `)
+        .eq('slug', slug)
+        .single()
+
+      dbEntry = fallbackRes.data
+      dbError = fallbackRes.error
+    } else {
+      dbEntry = fullRes.data
+      dbError = fullRes.error
+    }
+
+    if (dbError) {
+      console.error('[slug.get.ts] Database error:', dbError)
+    }
  
   if (dbEntry) {
     const nextViews = (Number(dbEntry.views) || 0) + 1
@@ -34,13 +59,18 @@ export default defineEventHandler(async (event) => {
       .eq('id', dbEntry.id)
       .then(() => {})
 
+    const referer = getHeader(event, 'referer') || ''
+    const isEn = referer.includes('/en/') || (getHeader(event, 'accept-language')?.toLowerCase().startsWith('en') ?? false)
+    const lang: 'es' | 'en' = isEn ? 'en' : 'es'
+
     checkAndNotifyAchievement({
       saasId: dbEntry.id,
       saasName: dbEntry.name || 'Tu SaaS',
       saasLogoUrl: dbEntry.logo_url,
       founderEmail: dbEntry.founder_email,
       saasSlug: slug,
-      currentViews: nextViews
+      currentViews: nextViews,
+      lang
     })
  
     let history = null
@@ -131,13 +161,16 @@ export default defineEventHandler(async (event) => {
     }
 
     const countryData = (dbEntry.countries as any[])?.[0] || null
+    const isGlobal = !countryData || countryData.slug === 'global' || countryData.iso_code === 'un'
 
     const result = {
       id: dbEntry.id,
       name: dbEntry.name,
+      slug: dbEntry.slug,
       logoUrl: dbEntry.logo_url,
       websiteUrl: dbEntry.website_url,
       founderName: dbEntry.founder_name,
+      founderId: dbEntry.founder_id,
       hasFounderEmail: !!dbEntry.founder_email,
       description: dbEntry.startup_type || `Detalle de ${dbEntry.name || 'SaaS'}.`,
       isIncognito: dbEntry.is_incognito,
@@ -150,23 +183,34 @@ export default defineEventHandler(async (event) => {
       views: nextViews,
       publishedAt: dbEntry.published_at,
       allTimeRevenue: allTimeRev,
-      country: countryData?.name || 'Global',
-      countrySlug: countryData?.slug || 'global',
-      countryFlag: countryData?.iso_code || 'global',
+      country: isGlobal ? 'Global' : (countryData?.name || 'Global'),
+      countrySlug: isGlobal ? 'global' : (countryData?.slug || 'global'),
+      countryFlag: isGlobal ? 'global' : (countryData?.iso_code || 'global'),
       history,
-      founderSocials: null, // we will populate this below if founder_id exists
-      lastSyncedAt: history ? lastSyncedAt : null
+      founderSocials: null as { twitterUrl?: string; linkedinUrl?: string; instagramUrl?: string } | null,
+      founderAvatar: null as string | null,
+      founderBio: null as string | null,
+      lastSyncedAt: history ? lastSyncedAt : null,
+      valueProposition: dbEntry.value_proposition || null,
+      problemSolved: dbEntry.problem_solved || null,
+      techStack: Array.isArray(dbEntry.tech_stack) ? dbEntry.tech_stack : [],
+      acquisitionChannels: Array.isArray(dbEntry.acquisition_channels) ? dbEntry.acquisition_channels : [],
+      factoMessage: dbEntry.facto_message || null,
+      faq: Array.isArray(dbEntry.faq) ? dbEntry.faq : [],
+      githubRepo: dbEntry.github_repo || null
     }
 
     if (dbEntry.founder_id) {
       try {
         const { data: founderData } = await supabase
           .from('founders')
-          .select('twitter_url, linkedin_url, instagram_url')
+          .select('avatar_url, bio, twitter_url, linkedin_url, instagram_url')
           .eq('id', dbEntry.founder_id)
           .single()
         
         if (founderData) {
+          result.founderAvatar = founderData.avatar_url || null
+          result.founderBio = founderData.bio || null
           result.founderSocials = {
             twitterUrl: founderData.twitter_url,
             linkedinUrl: founderData.linkedin_url,

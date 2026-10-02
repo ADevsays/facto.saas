@@ -1,0 +1,102 @@
+{
+  "header": {
+    "add": "Add your",
+    "edit": "Edit your",
+    "startup": "Startup",
+    "subtitle": "Reach +10,000 founders monthly",
+    "back": "Back to profile"
+  },
+  "fields": {
+    "name": "SaaS Name",
+    "namePlaceholder": "My Startup",
+    "url": "Web URL",
+    "urlPlaceholder": "https://...",
+    "logo": "Logo",
+    "logoUpdated": "Logo updated",
+    "logoChange": "Change logo",
+    "logoUpload": "Upload image",
+    "uploadReady": "Ready to save",
+    "uploadRecommended": "Recommended: 256x256",
+    "description": "Short Description",
+    "descriptionPlaceholder": "AI Platform for...",
+    "categories": "Categories *",
+    "country": "Country",
+    "email": "Email (Private)",
+    "emailPlaceholder": "hello@yourweb.com",
+    "emailTooltip": "With this email you will be able to claim and verify the authorship of this startup later.",
+    "emailWarning": "⚠️ Attention: If you change your email you will lose current access to this screen. You will have to re-verify your identity with the new email to manage the startup in the future."
+  },
+  "provider": {
+    "select": "Choose your provider",
+    "stripeDesc": "Read-only: Restricted Key",
+    "mpDesc": "Production Access Token",
+    "whopDesc": "API key from your Whop Dashboard",
+    "later": "Later",
+    "laterDesc": "Publish without connecting for now",
+    "manualReview": "Your startup will be sent for manual review. You will receive an email with the result."
+  },
+  "connection": {
+    "apiKey": "API Key (Read-only)",
+    "apiKeyPlaceholder": "sk_live_...",
+    "connect": "Connect",
+    "connecting": "Connecting...",
+    "detectedMrr": "Detected MRR",
+    "verifyMrr": "Verify MRR",
+    "stripeRk": "2. Stripe Restricted Key",
+    "searchingProducts": "Searching for products...",
+    "selectProduct": "3. Select your Product",
+    "selectProductPlaceholder": "Select this startup's product...",
+    "multipleProjects": "We have detected multiple projects in this account.",
+    "whopCompanyId": "2. Company ID (biz_...)",
+    "whopApiKey": "3. Whop API Key",
+    "connectMp": "Connect Mercado Pago",
+    "reconnectMp": "Reconnect Mercado Pago"
+  },
+  "footer": {
+    "submiting": "Submitting...",
+    "update": "Update",
+    "join": "Join Ranking"
+  },
+  "success": {
+    "updated": "Startup Updated!",
+    "pending": "Sent for review",
+    "registered": "Startup Registered!",
+    "pendingDesc": "Your startup was sent for review. We will notify you soon.",
+    "registeredDesc": "Your startup is now public. Show off your MRR!",
+    "viewProfile": "View public profile"
+  },
+  "info": {
+    "invisible": "Is your startup invisible?",
+    "verifyDesc": "Verify your MRR to stand out in the market."
+  },
+  "tutorial": {
+    "stripeTitle": "Stripe (Read-Only)",
+    "stripeSteps": [
+      "Click \"Go to Dashboard\" to create a read-only API key.",
+      "Copy it without changing permissions.",
+      "Paste it here and don't delete it."
+    ],
+    "stripeLink": "Go to Dashboard",
+    "mpTitle": "Mercado Pago (Secure Connection)",
+    "mpSteps": [
+      "Click \"Connect Mercado Pago\"",
+      "Log in and authorize Facto",
+      "Verify \"Read-Only\" permissions",
+      "MRR will be detected automatically"
+    ],
+    "whopTitle": "Whop (Secure Connection)",
+    "whopSteps": [
+      "Create a new Company API key.",
+      "Inherit Admin permissions for security.",
+      "Copy your company ID (starts with biz_ in the URL)",
+      "Paste both values here."
+    ],
+    "whopLink": "Open Developer Dashboard",
+    "noneTitle": "Later Verification",
+    "noneSteps": [
+      "You can publish now without MRR",
+      "Use your private email to validate later",
+      "Verified startups have priority"
+    ]
+  }
+}

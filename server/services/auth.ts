@@ -13,5 +13,18 @@ export const authService = {
     }
     
     return data.user
+  },
+
+  async getOrCreateUser(email: string, password?: string) {
+    try {
+      return await this.createUser(email, password)
+    } catch (err: any) {
+      if (err.message?.toLowerCase().includes('already') || err.message?.toLowerCase().includes('exists')) {
+        const { data } = await supabase.auth.admin.listUsers()
+        const found = data?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase())
+        if (found) return found
+      }
+      throw err
+    }
   }
 }

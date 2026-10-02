@@ -8,7 +8,7 @@ interface StripeSubscription {
   customer: string
   latest_invoice?: string | null
   discount?: { coupon: { amount_off: number | null; percent_off: number | null; currency: string | null } } | null
-  items: { data: { price: { unit_amount: number; currency: string; recurring: { interval: string } }; quantity: number }[] }
+  items: { data: { price: { unit_amount: number; currency: string; product?: string; recurring: { interval: string } }; quantity: number }[] }
 }
 
 /**

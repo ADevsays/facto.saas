@@ -27,12 +27,16 @@ export async function checkAndNotifyAchievement(params: AchievementCheckParams):
   if (!data || !founderEmail) return
 
   try {
-    const html = buildAchievementEmailHtml(saasName, currentViews, saasSlug, saasLogoUrl)
+    const lang = params.lang || 'es'
+    const html = buildAchievementEmailHtml(saasName, currentViews, saasSlug, saasLogoUrl, lang)
     const formatted = formatMilestone(currentViews)
+    const subject = lang === 'en'
+      ? `🚀 ${saasName} reached ${formatted} visits on Facto`
+      : `🚀 ${saasName} alcanzó las ${formatted} visitas en Facto`
 
     await sendFoundersReport({
       to: founderEmail,
-      subject: `🚀 ${saasName} alcanzó las ${formatted} visitas en Facto`,
+      subject,
       html
     })
 

@@ -24,6 +24,10 @@ defineEmits<{
                     Pendientes
                 </NuxtLink>
                 <span class="text-neutral-800">·</span>
+                <NuxtLink to="/admin/ads" class="text-[10px] uppercase tracking-widest text-neutral-600 hover:text-[#00D4FF] transition-colors">
+                    Anuncios & Afiliados
+                </NuxtLink>
+                <span class="text-neutral-800">·</span>
                 <NuxtLink to="/admin/reportes" class="text-[10px] uppercase tracking-widest text-neutral-600 hover:text-white transition-colors">
                     Reportes
                 </NuxtLink>

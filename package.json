@@ -6,7 +6,13 @@
     "dev": "nuxt dev",
     "build": "nuxt build",
     "preview": "nuxt preview",
-    "generate": "nuxt generate"
+    "generate": "nuxt generate",
+    "test": "npx tsx --test modules/**/tests/*.test.ts",
+    "notifier:run": "npx tsx scripts/notifier-run.ts",
+    "notifier:digest": "npx tsx scripts/notifier-digest.ts",
+    "notifier:dry-run": "npx tsx scripts/notifier-dry-run.ts",
+    "notifier:baseline": "npx tsx scripts/notifier-baseline.ts",
+    "notifier:test-message": "npx tsx scripts/notifier-test-message.ts"
   },
   "dependencies": {
     "@getbrevo/brevo": "^4.0.1",
@@ -16,6 +22,7 @@
     "@vercel/speed-insights": "^1.3.1",
     "chart.js": "^4.5.1",
     "gsap": "^3.14.2",
+    "html2pdf.js": "^0.14.0",
     "lucide-vue-next": "^1.0.0",
     "nodemailer": "^8.0.1",
     "nuxt": "^3.15.2",
@@ -24,7 +31,6 @@
     "vue-chartjs": "^5.3.3"
   },
   "devDependencies": {
-    "@nuxt/icon": "^2.2.3",
     "@nuxtjs/google-fonts": "^3.2.0",
     "@nuxtjs/seo": "^3.4.0",
     "@nuxtjs/tailwindcss": "^6.14.0",

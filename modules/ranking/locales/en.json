@@ -1,0 +1,20 @@
+{
+  "section": {
+    "title": "Ranking",
+    "col_startup": "Startup",
+    "col_founder": "Founder",
+    "col_revenue": "REVENUE",
+    "no_results": "No results found"
+  },
+  "row": {
+    "incognito": "— Anonymous —"
+  },
+  "page": {
+    "breadcrumb": "Ranking",
+    "title_start": "Global Ranking of",
+    "title_highlight": "SaaS Startups",
+    "description": "Explore the Top 100 startups and SaaS products ranked by verified Monthly Recurring Revenue (MRR) and real revenue.",
+    "seo_title": "Global SaaS Startups Ranking by MRR | Facto",
+    "seo_description": "Discover the most successful SaaS startups in Ibero-America and worldwide. Real revenue metrics, verified MRR, and founders."
+  }
+}

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Facto Promo Video</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@100..900&display=swap');
+
+    body {
+      background-color: #030305;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    
+    .font-serif {
+        font-family: 'Playfair Display', serif;
+    }
+    
+    .font-sans {
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .facto-glow {
+        text-shadow: 0 0 30px rgba(255, 255, 255, 0.5), 0 0 60px rgba(0, 212, 255, 0.3), 0 0 90px rgba(0, 212, 255, 0.1);
+    }
+    
+    .facto-cyan {
+        color: #00D4FF;
+    }
+    
+    .facto-outline-text {
+        background: linear-gradient(
+            120deg, 
+            rgba(255, 255, 255, 0) 30%, 
+            rgba(255, 255, 255, 0.8) 50%, 
+            rgba(255, 255, 255, 0) 70%
+        );
+        background-size: 200% auto;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: rgba(0, 212, 255, 0.3);
+        filter: drop-shadow(0 0 25px rgba(0, 212, 255, 0.4));
+        display: inline-block;
+    }
+
+    /* Set exactly to 1920x1080 (16:9) */
+    #composition-root {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      background: #030305;
+    }
+    
+    .clip {
+      position: absolute;
+      inset: 0;
+      visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .frame-content {
+      width: 90%;
+    }
+
+    /* Enormous text sizes for 1920x1080 screens */
+    .title-text {
+      font-size: 160px !important;
+      line-height: 1.05 !important;
+      letter-spacing: -0.03em;
+      margin-bottom: 3rem;
+    }
+
+    .body-text {
+      font-size: 64px !important;
+      font-weight: 200;
+      letter-spacing: 0.08em;
+      color: #d1d5db;
+    }
+
+    .step-text {
+        font-size: 110px !important;
+    }
+    
+    .bg-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, rgba(0, 212, 255, 0.12) 0%, rgba(3, 3, 5, 1) 70%);
+        z-index: 0;
+    }
+    
+    .content-z {
+        position: relative;
+        z-index: 10;
+    }
+  </style>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<!-- COMPOSITION ROOT -->
+<div id="composition-root" data-composition-id="facto-promo" data-width="1920" data-height="1080" data-duration="37" data-start="0">
+    
+    <!-- AUDIO TRACK -->
+    <audio id="bg-audio" src="assets/0720.MP3" preload="auto" data-start="0"></audio>
+
+    <div class="bg-glow"></div>
+
+    <!-- FRAME 1: Problema (0 - 8.08s) -->
+    <div id="frame-1" class="clip" data-track-index="1">
+        <div class="frame-content content-z">
+            <h1 class="font-serif facto-cyan facto-glow title-text title-1">Nadie confía en</h1>
+            <h1 class="font-serif title-text title-1-2">tus números</h1>
+        </div>
+    </div>
+
+    <!-- FRAME 2: Agitación (8.08 - 14.88s) -->
+    <div id="frame-2" class="clip" data-track-index="1">
+        <div class="frame-content content-z">
+            <p class="font-sans body-text text-2">¿Capturas de pantalla de tu MRR?</p>
+            <h1 class="font-serif text-white facto-glow mt-12 title-text title-2">Nadie te cree.</h1>
+        </div>
+    </div>
+
+    <!-- FRAME 3: Transición (14.88 - 21.66s) -->
+    <div id="frame-3" class="clip" data-track-index="1">
+        <div class="frame-content content-z">
+            <h1 class="font-serif facto-cyan title-text title-3 facto-outline-text">Es hora de</h1>
+            <h1 class="font-serif text-white title-text title-3-2">demostrar la verdad.</h1>
+        </div>
+    </div>
+
+    <!-- FRAME 4: Solución (21.66 - 28.44s) -->
+    <div id="frame-4" class="clip" data-track-index="1">
+        <div class="frame-content content-z">
+            <p class="font-sans body-text text-4 uppercase tracking-[0.2em] text-cyan-400 mb-10">La Solución Facto</p>
+            <h1 class="font-serif text-white title-text title-4">Conviértete en un</h1>
+            <h1 class="font-serif facto-cyan facto-glow title-text title-4-2">SaaS verificado.</h1>
+        </div>
+    </div>
+
+    <!-- FRAME 5: Proceso (28.44 - 34.00s) -->
+    <div id="frame-5" class="clip" data-track-index="1">
+        <div class="frame-content content-z flex flex-col items-center justify-center gap-16">
+            <div class="proc-item opacity-0 translate-y-10">
+                <h2 class="font-serif step-text text-white">1. Conecta tu API</h2>
+            </div>
+            <div class="proc-item opacity-0 translate-y-10">
+                <h2 class="font-serif step-text text-white">2. Demuestra tus ingresos</h2>
+            </div>
+            <div class="proc-item opacity-0 translate-y-10">
+                <h2 class="font-serif step-text text-white facto-cyan facto-glow">3. Gana tráfico orgánico</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- FRAME 6: Cierre / CTA (34.00 - 36.90s) -->
+    <div id="frame-6" class="clip" data-track-index="1">
+        <div class="frame-content content-z flex flex-col items-center justify-center">
+            <!-- Facto Logo Huge -->
+            <img src="assets/favicon.svg" class="w-96 h-96 mb-16 logo-6" alt="Facto Logo">
+            <h1 class="font-serif title-6 facto-outline-text pb-6" style="font-size: 220px !important; margin-bottom: 0;">Facto</h1>
+            <p class="font-sans text-6 mt-8" style="font-size: 72px !important;">Demuestra que tu MRR es real.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const frameTimes = [
+        { id: '#frame-1', start: 0, end: 8.08 },
+        { id: '#frame-2', start: 8.08, end: 14.88 },
+        { id: '#frame-3', start: 14.88, end: 21.66 },
+        { id: '#frame-4', start: 21.66, end: 28.44 },
+        { id: '#frame-5', start: 28.44, end: 34.00 },
+        { id: '#frame-6', start: 34.00, end: 36.91 }
+    ];
+
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    window.__timelines["facto-promo"] = tl;
+
+    function createFrameAnimation(frameSelector, start, end) {
+        tl.set(frameSelector, { autoAlpha: 1 }, start);
+        
+        const title1 = document.querySelector(`${frameSelector} .title-1`);
+        const title12 = document.querySelector(`${frameSelector} .title-1-2`);
+        const title2 = document.querySelector(`${frameSelector} .title-2`);
+        const text2 = document.querySelector(`${frameSelector} .text-2`);
+        const title3 = document.querySelector(`${frameSelector} .title-3`);
+        const title32 = document.querySelector(`${frameSelector} .title-3-2`);
+        const title4 = document.querySelector(`${frameSelector} .title-4`);
+        const title42 = document.querySelector(`${frameSelector} .title-4-2`);
+        const text4 = document.querySelector(`${frameSelector} .text-4`);
+        const procItems = document.querySelectorAll(`${frameSelector} .proc-item`);
+        const logo6 = document.querySelector(`${frameSelector} .logo-6`);
+        const title6 = document.querySelector(`${frameSelector} .title-6`);
+        const text6 = document.querySelector(`${frameSelector} .text-6`);
+
+        if (title1 && title12) {
+            tl.fromTo([title1, title12], 
+                { y: 80, opacity: 0 }, 
+                { y: 0, opacity: 1, duration: 1.5, ease: "power3.out", stagger: 0.2 }, 
+                start
+            );
+            tl.to([title1, title12], { scale: 1.05, duration: end - start, ease: "none" }, start);
+        }
+
+        if (title2 && text2) {
+            tl.fromTo([text2, title2], 
+                { y: 80, opacity: 0 }, 
+                { y: 0, opacity: 1, duration: 1.5, ease: "power3.out", stagger: 0.2 }, 
+                start
+            );
+            tl.to([text2, title2], { scale: 1.05, duration: end - start, ease: "none" }, start);
+        }
+        
+        if (title3 && title32) {
+            tl.fromTo([title3, title32], 
+                { scale: 0.8, opacity: 0 }, 
+                { scale: 1, opacity: 1, duration: 2, ease: "power3.out", stagger: 0.2 }, 
+                start
+            );
+        }
+
+        if (title4 && title42 && text4) {
+            tl.fromTo([text4, title4, title42], 
+                { y: -60, opacity: 0 }, 
+                { y: 0, opacity: 1, duration: 1.5, ease: "power3.out", stagger: 0.15 }, 
+                start
+            );
+        }
+        
+        if (procItems.length > 0) {
+            tl.fromTo(procItems, 
+                { y: 60, opacity: 0 }, 
+                { y: 0, opacity: 1, duration: 1.5, ease: "power3.out", stagger: 0.8 }, 
+                start
+            );
+        }
+        
+        if (logo6 && title6 && text6) {
+            tl.fromTo([logo6, title6, text6], 
+                { y: 80, opacity: 0, scale: 0.9 }, 
+                { y: 0, opacity: 1, scale: 1, duration: 1.5, ease: "power4.out", stagger: 0.3 }, 
+                start
+            );
+        }
+
+        tl.set(frameSelector, { autoAlpha: 0 }, end);
+    }
+
+    frameTimes.forEach(ft => {
+        createFrameAnimation(ft.id, ft.start, ft.end);
+    });
+    
+    tl.set({}, {}, 37.0); 
+
+</script>
+</body>
+</html>

@@ -7,36 +7,40 @@ const model = defineModel<'stripe' | 'mercadopago' | 'whop' | 'none' | null>()
 
 const open = ref(false)
 
-const providers = [
+const selected = computed(() => providers.value.find(p => p.slug === model.value))
+
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+const { t } = useLanguage({ es, en })
+
+const providers = computed(() => [
   {
     slug: 'stripe',
     name: 'Stripe',
-    description: 'Solo Lectura: Clave restringida'
+    description: t.value.provider.stripeDesc
   },
   {
     slug: 'mercadopago',
     name: 'Mercado Pago',
-    description: 'Access Token de producción'
+    description: t.value.provider.mpDesc
   },
   {
     slug: 'whop',
     name: 'Whop',
-    description: 'API key de tu Whop Dashboard'
+    description: t.value.provider.whopDesc
   },
   {
     slug: 'none',
-    name: 'Más tarde',
-    description: 'Publicar sin conectar por ahora'
+    name: t.value.provider.later,
+    description: t.value.provider.laterDesc
   }
-] as const
-
-const selected = computed(() => providers.find(p => p.slug === model.value))
+] as const)
 </script>
 
 <template>
   <div class="flex flex-col gap-2">
     <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">
-      Escoge tu proveedor
+      {{ t.provider.select }}
     </label>
     <div class="relative">
       <button
@@ -98,7 +102,7 @@ const selected = computed(() => providers.find(p => p.slug === model.value))
 
     <p v-if="model === 'none'" class="text-[10px] font-sans font-light text-amber-400/70 tracking-wide leading-relaxed mt-1">
       <Clock class="inline w-3 h-3 mr-0.5 -mt-0.5" />
-      Tu startup será enviada a revisión humana. Recibirás un correo con el resultado.
+      {{ t.provider.manualReview }}
     </p>
   </div>
 </template>

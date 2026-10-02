@@ -15,6 +15,10 @@ const saasLink = computed(() => {
 })
 
 const emit = defineEmits(['close-modal'])
+
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+const { t } = useLanguage({ es, en })
 </script>
 
 <template>
@@ -31,14 +35,14 @@ const emit = defineEmits(['close-modal'])
     
     <div class="flex flex-col gap-2">
       <h3 class="font-serif text-2xl text-white">
-        {{ isUpdate ? '¡Startup Actualizada!' : (isPending ? 'Enviada a revisión' : '¡Startup Registrada!') }}
+        {{ isUpdate ? t.success.updated : (isPending ? t.success.pending : t.success.registered) }}
       </h3>
       
       <p v-if="!isUpdate && isPending" class="text-neutral-400 text-sm font-sans font-light">
-        Tu startup se envió para revisar. Te notificaremos pronto.
+        {{ t.success.pendingDesc }}
       </p>
       <p v-else-if="!isUpdate && !isPending" class="text-neutral-400 text-sm font-sans font-light">
-        Tu startup ya está pública. ¡Presume de tu MRR!
+        {{ t.success.registeredDesc }}
       </p>
     </div>
 
@@ -48,7 +52,7 @@ const emit = defineEmits(['close-modal'])
         :to="saasLink" 
         class="inline-flex items-center justify-center bg-[#00D4FF]/10 hover:bg-[#00D4FF]/20 text-[#00D4FF] border border-[#00D4FF]/30 hover:border-[#00D4FF]/50 transition-all rounded-full px-6 py-2.5 text-sm font-medium tracking-wide uppercase shadow-[0_0_15px_rgba(0,212,255,0.15)]"
       >
-        Ver perfil público
+        {{ t.success.viewProfile }}
       </NuxtLink>
     </div>
   </div>

@@ -1,0 +1,61 @@
+{
+  "seo": {
+    "title": "Descargar Miniatura de Video de YouTube Gratis | Facto",
+    "description": "Descarga cualquier miniatura de YouTube en alta resolución (1280×720 MaxRes) en un clic. Gratis, sin registro, sin límites. Ideal para founders y creadores de contenido.",
+    "ogTitle": "Descargar Miniatura de YouTube Gratis — Alta Resolución | Facto",
+    "ogDescription": "Extrae la miniatura de cualquier video de YouTube en 1280×720 HD. Sin registro, sin límites, directo al navegador. Herramienta gratuita para founders y content creators.",
+    "twitterTitle": "Descargar Miniatura de YouTube Gratis | Facto",
+    "twitterDescription": "Descarga miniaturas de YouTube en HD sin registro. Gratis para siempre."
+  },
+  "schema": {
+    "name": "Descargador de Miniaturas de YouTube",
+    "description": "Herramienta web gratuita para descargar e inspeccionar miniaturas de YouTube en todas las resoluciones disponibles (MaxRes 1280x720, SD, HQ). Sin registro, sin instalación."
+  },
+  "breadcrumb": {
+    "tools": "herramientas",
+    "thumbnails": "miniaturas de youtube"
+  },
+  "hero": {
+    "badge": "Herramienta gratuita",
+    "title1": "Miniaturas para",
+    "title2": "Founders",
+    "description": "Extrae en tiempo real las miniaturas de cualquier video de YouTube en HD, SD y HQ. Sin registro y sin límites."
+  },
+  "downloader": {
+    "label": "Pega la URL del video o Shorts de YouTube",
+    "paste": "Pegar del portapapeles",
+    "placeholder": "Ej: https://www.youtube.com/watch?v=...",
+    "tryExample": "Probar ejemplo:"
+  },
+  "results": {
+    "title": "Miniatura Extraída",
+    "videoId": "Video ID:",
+    "viewOriginal": "Ver Video Original",
+    "clear": "Limpiar",
+    "zoom": "Ampliar",
+    "downloading": "Descargando...",
+    "downloadMain": "Descargar Miniatura",
+    "lightVersion": "Versión Ligera",
+    "downloadLight": "Descargar Versión Ligera"
+  },
+  "card": {
+    "preview": "Vista Previa",
+    "recommended": "Recomendada",
+    "description": "Resolución original extraída directamente de los servidores de YouTube.",
+    "download": "Descargar",
+    "copied": "¡Copiado!",
+    "copyUrl": "Copiar URL"
+  },
+  "tips": {
+    "badge": "💡 Estrategia de Contenido para Founders",
+    "title": "Cómo optimizar el CTR de tus miniaturas en YouTube",
+    "description": "Si estás construyendo tu SaaS y atrayendo usuarios con contenido en YouTube, estas reglas tácticas maximizarán las reproducciones."
+  },
+  "modal": {
+    "title": "Previsualización a Pantalla Completa",
+    "close": "Cerrar"
+  },
+  "mrr": {
+    "prompt": "¿Ya tienes MRR? Descubre tu valoración"
+  }
+}

@@ -11,8 +11,10 @@ import RankingView from '../../ranking/views/RankingView.vue'
 import AddSaasModal from '../../add-saas/components/AddSaasModal.vue'
 import CategoryLinks from '~/ui/components/CategoryLinks.vue'
 import CountryCardsSection from '../sections/CountryCardsSection.vue'
+import ToolsTeaserSection from '../sections/ToolsTeaserSection.vue'
 
 const router = useRouter()
+const localePath = useLocalePath()
 const { categories, fetchCategories } = useCategories()
 
 onMounted(() => {
@@ -24,11 +26,11 @@ const filteredCategories = computed(() => {
 })
 
 function handleCategorySelect(slug: string) {
-  router.push(`${ROUTES.CATEGORY}/${slug}`)
+  router.push(localePath(`${ROUTES.CATEGORY}/${slug}`))
 }
 
 function handleSelectAll() {
-  router.push('/saas')
+  router.push(localePath('/saas'))
 }
 
 const widthLayout = "max-w-5xl w-full"
@@ -37,10 +39,10 @@ const widthLayout = "max-w-5xl w-full"
 <template>
   <div style="zoom: 1.03">
     <!-- Primer bloque -->
-    <div class="flex flex-col">
-      <div :class="[widthLayout, 'flex-1 flex flex-col mx-auto px-6']">
+    <div class="flex flex-col w-full min-w-0">
+      <div :class="[widthLayout, 'flex-1 flex flex-col mx-auto px-6 min-w-0']">
         <HomeHeaderSection />
-        <div :class="[widthLayout, 'mx-auto px-6']">
+        <div class="w-full">
           <InputMrrView />
         </div>
         <RecentlySection />
@@ -48,23 +50,26 @@ const widthLayout = "max-w-5xl w-full"
     </div>
 
     <!-- Bloque inferior centrado -->
-    <div :class="[widthLayout, 'mx-auto px-6 flex flex-col gap-8']">
+    <div :class="[widthLayout, 'mx-auto px-6 flex flex-col gap-8 min-w-0']">
       <BestSection />
-      <RankingView />
+      <RankingView :limit="30" :show-view-all="true" />
     </div>
 
     <!-- Contenedor externo de ancho completo para que las categorías no se rompan -->
     <div class="w-full pb-12 pt-4 px-6 flex justify-center">
       <CategoryLinks 
         :categories="filteredCategories"
-        @select="handleCategorySelect"
-        @select-all="handleSelectAll"
       />
     </div>
 
     <!-- Separador con el ancho exacto del contenido -->
     <div :class="[widthLayout, 'mx-auto px-6']">
       <div class="w-full border-b border-white/5"></div>
+    </div>
+
+    <!-- Sección de contexto de Herramientas -->
+    <div :class="[widthLayout, 'mx-auto px-6']">
+      <ToolsTeaserSection />
     </div>
 
     <!-- Country Cards Section -->

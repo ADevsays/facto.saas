@@ -1,4 +1,5 @@
 import type { SaasListItem, SaasListState } from '~/modules/ranking/types'
+import { getCategoryDisplayName } from '~/utils/categories'
 
 const state = reactive<SaasListState>({
   items: [],
@@ -16,8 +17,17 @@ const parseRev = (val?: string, fallbackMrr?: number | null) => {
 }
 
 export function useSaasList() {
-  async function fetchAll() {
-    if (state.items.length > 0) return
+  const { locale } = useI18n()
+
+  const localizedItems = computed(() => {
+    return state.items.map(item => ({
+      ...item,
+      category: getCategoryDisplayName(item.categorySlug, item.category, locale.value)
+    }))
+  })
+
+  async function fetchAll(force = false) {
+    if (!force && state.items.length > 0) return
     state.loading = true
     state.error = null
 
@@ -32,36 +42,35 @@ export function useSaasList() {
   }
 
   const rankingItems = computed(() =>
-    [...state.items]
+    [...localizedItems.value]
       .sort((a, b) => {
         if (a.mrr === null && b.mrr === null) return (b.views ?? 0) - (a.views ?? 0)
         if (a.mrr === null) return 1
         if (b.mrr === null) return -1
         return parseRev(b.revenue, b.mrr) - parseRev(a.revenue, a.mrr)
       })
-      .slice(0, 10)
   )
 
   const recentItems = computed(() =>
-    [...state.items]
+    [...localizedItems.value]
       .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
       .slice(0, 6)
   )
 
   const bestItems = computed(() => {
-    const withMrr = state.items.filter((i) => i.mrr !== null)
+    const withMrr = localizedItems.value.filter((i) => i.mrr !== null)
     if (withMrr.length >= 3) {
       return withMrr.sort((a, b) => {
         return parseRev(b.revenue, b.mrr) - parseRev(a.revenue, a.mrr)
       }).slice(0, 6)
     }
-    return [...state.items]
+    return [...localizedItems.value]
       .sort((a, b) => b.views - a.views)
       .slice(0, 6)
   })
 
   return {
-    items: computed(() => state.items),
+    items: localizedItems,
     loading: computed(() => state.loading),
     error: computed(() => state.error),
     rankingItems,

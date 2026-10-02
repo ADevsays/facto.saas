@@ -2,19 +2,32 @@
 import { useRoute } from 'nuxt/app'
 import { computed } from 'vue'
 import { useCategories } from '~/composables/useCategories'
+import { useSaasViewMeta } from '~/composables/useSaasViewMeta'
 import SaasListView from '~/modules/visuals/views/SaasListView.vue'
+
+defineI18nRoute({
+  paths: {
+    en: '/saas/category/[slug]',
+    es: '/saas/categoria/[slug]'
+  }
+})
 
 const route = useRoute()
 const slug = route.params.slug as string
 const { categories, fetchCategories } = useCategories()
+const { getCategoryMeta } = useSaasViewMeta()
 
 await fetchCategories()
 
 const category = computed(() => categories.value.find(c => c.slug === slug))
 
-useSeoMeta({
-  title: () => category.value ? `${category.value.name} - Startups y SaaS | Facto` : 'Categoría | Facto',
-  description: () => category.value?.description || `Descubre y filtra las mejores startups SaaS en la categoría ${slug}.`
+const { locale } = useI18n()
+
+const categoryMeta = computed(() => getCategoryMeta(slug, category.value?.name, locale.value))
+
+useAppSeo({
+  title: () => categoryMeta.value.seoTitle,
+  description: () => categoryMeta.value.seoDescription,
 })
 </script>
 

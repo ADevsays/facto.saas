@@ -4,9 +4,11 @@ export type SortOption = 'mrr' | 'latest' | 'views'
 export interface SaasListItem {
   id: string
   name: string | null
+  slug?: string | null
   logoUrl: string | null
   websiteUrl: string | null
   founderName: string | null
+  description?: string | null
   isIncognito: boolean
   mrr: number | null
   revenue?: string
@@ -14,7 +16,7 @@ export interface SaasListItem {
   category: string
   categorySlug: string
   categories: { name: string; slug: string }[]
-  country?: { name: string; slug: string; flag: string } | null
+  country?: { name: string; slug: string; flag: string; iso_code?: string } | null
   provider: PaymentProvider
   views: number
   publishedAt: string

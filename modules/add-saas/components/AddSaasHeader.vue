@@ -5,6 +5,11 @@ defineProps<{
   isEditMode?: boolean
   showBackButton?: boolean
 }>()
+
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+
+const { t } = useLanguage({ es, en })
 </script>
 
 <template>
@@ -19,13 +24,13 @@ defineProps<{
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Volver al perfil
+          {{ t.header.back }}
         </button>
         <h2 class="font-serif text-2xl text-white tracking-tight leading-tight">
-          {{ isEditMode ? 'Edita tu' : 'Agrega tu' }} <span class="text-[#00D4FF]">Startup</span>
+          {{ isEditMode ? t.header.edit : t.header.add }} <span class="text-[#00D4FF]">{{ t.header.startup }}</span>
         </h2>
         <p v-if="!isEditMode" class="text-[10px] font-sans font-bold text-[#00D4FF] tracking-[0.15em] uppercase">
-          Llega a +10,000 fundadores mensualmente
+          {{ t.header.subtitle }}
         </p>
       </div>
       <button @click="onClose" class="text-neutral-500 hover:text-white transition-colors p-1">

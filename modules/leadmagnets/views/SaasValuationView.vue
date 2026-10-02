@@ -3,21 +3,18 @@ import SaasCalculator from '../sections/SaasCalculator.vue';
 import SaasSeoContent from '../sections/SaasSeoContent.vue';
 import es from '../locales/es.json';
 import en from '../locales/en.json';
-import { useLanguage } from '@/composables/useLanguage';
 import { useAppSchema } from '@/composables/useAppSchema';
-import { onMounted } from 'vue';
+import { computed } from 'vue';
 import GlobalBreadcrumb from '~/ui/components/GlobalBreadcrumb.vue';
 
-const { t, detectLanguage } = useLanguage({ es, en });
+const { locale } = useI18n();
+const { t } = useLanguage({ es, en });
+const localePath = useLocalePath();
 const { defineSoftwareApp } = useAppSchema();
 
 defineSoftwareApp({
     name: t.value?.seo.title || 'Calculadora de Valuación SaaS',
     description: t.value?.seo.description || 'Calcula cuánto vale tu SaaS en segundos.'
-});
-
-onMounted(async () => {
-    await detectLanguage();
 });
 
 useAppSeo({
@@ -30,8 +27,23 @@ useAppSeo({
 useHead(() => {
     if (!t.value?.seoContent?.faq?.items) return {};
 
+    const schemaBreadcrumb = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            { '@type': 'ListItem', position: 1, name: locale.value === 'es' ? 'Inicio' : 'Home', item: 'https://www.factosaas.com' },
+            { '@type': 'ListItem', position: 2, name: locale.value === 'es' ? 'Herramientas' : 'Tools', item: 'https://www.factosaas.com/herramientas' },
+            { '@type': 'ListItem', position: 3, name: t.value.seo.title, item: 'https://www.factosaas.com/herramientas/cuanto-vale-tu-saas' },
+        ]
+    }
+
     return {
         script: [
+            {
+                type: 'application/ld+json',
+                key: 'breadcrumb-schema',
+                innerHTML: JSON.stringify(schemaBreadcrumb),
+            },
             {
                 type: 'application/ld+json',
                 key: 'faq-schema',
@@ -61,7 +73,7 @@ useHead(() => {
         </div>
 
         <div class="w-full max-w-[1100px] px-6 z-10 relative">
-            <GlobalBreadcrumb :items="[{ label: 'herramientas' }, { label: 'cuánto vale' }]" class="mb-4" />
+            <GlobalBreadcrumb :items="[{ label: locale === 'es' ? 'herramientas' : 'tools', to: localePath('/herramientas') }, { label: locale === 'es' ? 'cuánto vale' : 'valuation' }]" class="mb-4" />
         </div>
 
         <div class="w-full">

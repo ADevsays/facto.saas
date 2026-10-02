@@ -32,6 +32,7 @@ export interface SaasSubmission {
 export interface SaasPublicProfile {
   id: string
   name: string | null
+  slug?: string | null
   logoUrl: string | null
   websiteUrl: string | null
   founderName: string | null

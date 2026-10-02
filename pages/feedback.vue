@@ -1,8 +1,18 @@
 <script setup lang="ts">
 import FeedbackView from '~/modules/feedback/views/FeedbackView.vue'
 
-useHead({
-  title: 'Reportar Error | Facto'
+defineI18nRoute({
+  paths: {
+    en: '/feedback',
+    es: '/feedback'
+  }
+})
+
+const { t } = useI18n()
+
+useAppSeo({
+  title: () => t('footer.report_error') + ' | Facto',
+  description: () => t('seo.home_desc'),
 })
 </script>
 

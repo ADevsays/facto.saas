@@ -1,0 +1,87 @@
+{
+  "seo": {
+    "home_title": "Explora las Startups SaaS Más Exitosas",
+    "home_desc": "Descubre, filtra y analiza las métricas financieras (MRR, ingresos) de las mejores startups SaaS del mundo. El directorio definitivo de SaaS.",
+    "tools_title": "Herramientas Gratuitas para Founders y Startups | Facto",
+    "tools_desc": "Suite de utilidades web gratuitas para founders: calcula cuánto vale tu SaaS, genera facturas PDF y descarga miniaturas de YouTube. Sin registro, 100% gratis.",
+    "invoice_title": "Generador de Facturas y Comprobantes PDF | Facto",
+    "invoice_desc": "Crea y descarga documentos comerciales en PDF al instante. Multidivisa, cálculo de impuestos, sin registro. El maquetador de invoices gratuito para founders de SaaS.",
+    "saas_index_title": "Directorio de Startups SaaS — MRR e Ingresos Verificados",
+    "saas_index_desc": "Explora el directorio completo de startups SaaS con ingresos verificados. Filtra por categoría, país y MRR. El ranking definitivo de SaaS del mundo.",
+    "saas_slug_desc_default": "Descubre los ingresos, historial financiero y métricas clave de este SaaS verificado en Facto.",
+    "saas_slug_desc": "Descubre cuánto gana {name}, su MRR exacto y métricas clave. Análisis completo de esta startup de {category}{country} verificada en Facto.",
+    "saas_slug_title": "{name} — MRR, Ingresos y Análisis Verificados",
+    "saas_slug_og_title": "{name} — Ingresos verificados en Facto",
+    "saas_slug_twitter_title": "{name} | Facto",
+    "saas_not_found": "SaaS no encontrado",
+    "back_to_home": "Volver al inicio",
+    "dashboard_ads_title": "Gestión de Anuncios — Facto Dashboard",
+    "dashboard_ads_desc": "Administra tus puestos patrocinados y la visibilidad de anuncios en Facto."
+  },
+  "home": {
+    "explore_startups": "Explora las {startups}",
+    "ranking_desc": "El ranking global de startups ordenado por ingresos y validado en tiempo real."
+  },
+  "tools": {
+    "header_tools": "Herramientas para",
+    "header_founders": "fundadores y compradores",
+    "header_desc": "Calculadoras, generadores y recursos prácticos para analizar, valorar y hacer crecer tu negocio.",
+    "free_tool": "Herramienta gratuita"
+  },
+  "footer": {
+    "tools": "Herramientas",
+    "platform": "Plataforma",
+    "categories": "Categorías",
+    "countries": "Países",
+    "legal": "Legal",
+    "terms": "Términos",
+    "privacy": "Privacidad",
+    "about": "Sobre facto",
+    "world": "Mundial",
+    "faq": "Preguntas frecuentes",
+    "report_error": "Reportar Error",
+    "made_by": "Hecho por",
+    "valuation_calc": "Calculadora de Valoración",
+    "invoice_gen": "Emisor de Facturas",
+    "youtube_thumb": "Descargar Miniaturas YouTube",
+    "have_account_login": "¿Tienes una cuenta? Inicia sesión aquí.",
+    "telegram": "Canal de Telegram"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "no_results": "No se encontraron resultados",
+    "view_all": "Ver todos",
+    "all_categories": "Todas las categorías",
+    "new": "Nuevo",
+    "popular": "Popular",
+    "free": "Gratis",
+    "startups": "Startups"
+  },
+  "auth": {
+    "badge": "Acceso a tu cuenta",
+    "title": "Inicia sesión",
+    "desc": "Accede a tu panel para gestionar tus startups, métricas y puestos de anuncios.",
+    "email_label": "Correo electrónico",
+    "email_placeholder": "founder{'@'}ejemplo.com",
+    "send_code": "Continuar con código",
+    "sending_code": "Enviando código...",
+    "otp_badge": "Verificación de Seguridad",
+    "otp_title": "Introduce el código",
+    "otp_desc": "Te enviamos un código de 6 dígitos a",
+    "verify_btn": "Verificar e iniciar sesión",
+    "verifying": "Verificando...",
+    "change_email": "Cambiar correo",
+    "resend_in": "Reenviar en {seconds}s",
+    "resend_code": "Reenviar código",
+    "err_email": "Ingresa tu correo electrónico.",
+    "err_send": "Error al enviar el código de verificación.",
+    "err_code_length": "Ingresa el código completo de 6 dígitos.",
+    "err_invalid_code": "Código inválido o expirado."
+  },
+  "telegram_popup": {
+    "badge": "Comunidad",
+    "title": "Únete al canal de Telegram",
+    "description": "Recibe alertas en tiempo real sobre las nuevas startups añadidas, métricas destacadas y las últimas actualizaciones de Facto.",
+    "cta": "Entrar a Telegram"
+  }
+}

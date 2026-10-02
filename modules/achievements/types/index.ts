@@ -13,4 +13,5 @@ export interface AchievementCheckParams {
   founderEmail: string | null
   saasSlug: string
   currentViews: number
+  lang?: 'es' | 'en'
 }

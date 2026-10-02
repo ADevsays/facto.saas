@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import IncognitoIcon from '~/ui/components/IncognitoIcon.vue'
 
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+const { t } = useLanguage({ es, en })
+
 const emit = defineEmits<{ claim: [] }>()
 </script>
 
@@ -14,13 +18,13 @@ const emit = defineEmits<{ claim: [] }>()
         <IncognitoIcon class="w-6 h-6 text-neutral-500 group-hover:text-[#00D4FF] transition-colors duration-500" />
       </div>
       <div class="text-center">
-        <p class="text-sm md:text-lg font-serif text-neutral-200 font-semibold mb-1">MRR no verificado</p>
+        <p class="text-sm md:text-lg font-serif text-neutral-200 font-semibold mb-1">{{ t.profile.overlay.unverified_mrr }}</p>
         <p class="text-xs md:text-sm font-sans font-light text-neutral-500 tracking-wide max-w-xs leading-relaxed">
-          Si eres el dueño de esta startup, haz click aquí para verificar tu identidad y agregar tu MRR.
+          {{ t.profile.overlay.unverified_desc }}
         </p>
       </div>
       <div class="mt-2 text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-[#00D4FF]/60 group-hover:text-[#00D4FF] transition-colors duration-300">
-        Verificar propiedad →
+        {{ t.profile.overlay.verify_ownership }}
       </div>
     </div>
   </div>

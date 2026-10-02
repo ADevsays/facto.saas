@@ -1,18 +1,18 @@
-```
 <script setup lang="ts">
+import TermsView from '~/modules/landing/views/TermsView.vue';
+
 defineI18nRoute({
   paths: {
     en: '/terms',
     es: '/terminos'
   }
 })
-import TermsView from '~/modules/landing/views/TermsView.vue';
 
-useHead({
-  title: 'Términos y Condiciones | Facto.saas',
-  meta: [
-    { name: 'description', content: 'Términos y Condiciones de Facto.saas' }
-  ]
+const { locale } = useI18n()
+
+useAppSeo({
+  title: () => locale.value === 'es' ? 'Términos y Condiciones | Facto' : 'Terms and Conditions | Facto',
+  description: () => locale.value === 'es' ? 'Términos y Condiciones de Facto' : 'Terms and Conditions for Facto',
 });
 </script>
 

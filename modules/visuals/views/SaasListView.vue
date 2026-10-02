@@ -8,9 +8,16 @@ import { useCategories } from '~/composables/useCategories'
 import { useCountries } from '~/composables/useCountries'
 import { useReveal } from '../composables/useReveal'
 import SaasGemCard from '../components/SaasGemCard.vue'
+import SaasGemCardSkeleton from '../components/SaasGemCardSkeleton.vue'
 import SaasBreadcrumb from '../components/SaasBreadcrumb.vue'
 import SaasListHeader from '../components/SaasListHeader.vue'
 import InputMrrView from '../../input-mrr/views/InputMrrView.vue'
+
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+
+const { t } = useLanguage({ es, en })
+
 
 const { items, loading, error, fetchAll } = useSaasList()
 const { category, filterByCategory } = useCategoryFilter()
@@ -42,7 +49,7 @@ const { containerRef, initObserver } = useReveal([category, country, sort])
 
 onMounted(async () => {
   await Promise.all([
-    fetchAll(),
+    fetchAll(true),
     fetchCategories(),
     fetchCountries()
   ])
@@ -66,13 +73,12 @@ onMounted(async () => {
     </div>
 
     <div class="w-full max-w-5xl flex flex-col gap-10">
-      <!-- Header & Filtering/Sorting Area -->
+      <!-- Header & Filtering/Sorting Area (Sticky) -->
       <SaasListHeader />
 
-      <!-- Loading State -->
-      <div v-if="loading" class="flex flex-col items-center justify-center py-20">
-        <div class="w-8 h-8 border-2 border-white/10 border-t-[#00D4FF] rounded-full animate-spin"></div>
-        <span class="text-xs font-sans tracking-widest text-neutral-500 uppercase mt-4 animate-pulse">Cargando startups...</span>
+      <!-- Loading State: Startup Cards Skeleton Grid -->
+      <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10 animate-fade-in">
+        <SaasGemCardSkeleton v-for="n in 9" :key="'gem-sk-' + n" />
       </div>
 
       <!-- Error State -->
@@ -84,7 +90,7 @@ onMounted(async () => {
 
       <!-- List Empty State -->
       <div v-else-if="filteredAndSortedItems.length === 0" class="text-center py-20 border border-dashed border-white/5 rounded-2xl animate-fade-in">
-        <p class="text-neutral-500 font-sans text-sm font-light uppercase tracking-widest">No hay startups registradas</p>
+        <p class="text-neutral-500 font-sans text-sm font-light uppercase tracking-widest">{{ t.list_view.empty }}</p>
       </div>
 
       <!-- Grid of Cards -->
@@ -100,7 +106,7 @@ onMounted(async () => {
       </div>
 
       <!-- Add MRR Component -->
-      <div class="mt-8 relative z-10">
+      <div class="mt-8 relative z-10 w-full">
         <InputMrrView />
       </div>
     </div>

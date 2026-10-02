@@ -1,74 +1,98 @@
 <script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import AdCard from '../components/AdCard.vue'
+import AdEmptyCard from '../components/AdEmptyCard.vue'
 import AdCtaCard from '../components/AdCtaCard.vue'
+import { useAdsSlots } from '../composables/useAdsSlots'
 import { useAddAdModal } from '~/composables/useAddAdModal'
-import type { Ad } from '../types'
+import type { AdSlot } from '../types'
 
-const { open: openAdModal } = useAddAdModal()
+const route = useRoute()
+const isDashboard = computed(() => route.path.includes('/dashboard'))
+const { openBuy, openAuctionList } = useAddAdModal()
+const { safeSlots, topSlots, freeSlotsCount } = useAdsSlots()
 
-type TrackItem = Ad | { isCta: true }
+// Desktop track: full 20 slots tripled
+const trackDesktop = computed<AdSlot[]>(() => [
+  ...safeSlots.value,
+  ...safeSlots.value,
+  ...safeSlots.value
+])
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
-
-const { data: activeAds } = await useFetch<Ad[]>('/api/ads/active')
-
-const ads = ref<Ad[]>([])
-const set = computed<TrackItem[]>(() => [...ads.value, { isCta: true }])
-const track = computed<TrackItem[]>(() => [...set.value, ...set.value, ...set.value])
+// Mobile track: top 10 slots (#1 to #10) tripled
+const trackMobile = computed<AdSlot[]>(() => [
+  ...topSlots.value,
+  ...topSlots.value,
+  ...topSlots.value
+])
 
 const sectionRef = ref<HTMLElement | null>(null)
-const trackRef  = ref<HTMLElement | null>(null)
+const trackDesktopRef = ref<HTMLElement | null>(null)
+const trackMobileRef = ref<HTMLElement | null>(null)
 const isHovered = ref(false)
 
 let rafId: number
-let position = 0
-let positionInitialized = false
+let desktopPos = 0
+let mobilePos = 0
+let lastTime = 0
+
 let userScrollTimeout: ReturnType<typeof setTimeout>
 let isUserScrolling = false
-const SPEED = 0.1
-
-function getOneThird() {
-  return trackRef.value ? trackRef.value.scrollWidth / 3 : 0
-}
+const SPEED = 28
 
 function wrap(pos: number, limit: number) {
-  if (limit === 0) return pos
+  if (limit <= 0) return pos
   while (pos >= limit) pos -= limit
-  while (pos < 0)    pos += limit
+  while (pos < 0) pos += limit
   return pos
 }
 
-function tick() {
-  const limit = getOneThird()
-  if (!positionInitialized && limit > 0) {
-    position = Math.random() * limit
-    positionInitialized = true
-  }
+function tick(timestamp: number) {
+  if (!lastTime) lastTime = timestamp
+  const dt = Math.min((timestamp - lastTime) / 1000, 0.1)
+  lastTime = timestamp
+
   if (!isHovered.value && !isUserScrolling) {
-    position = wrap(position + SPEED, limit)
-  }
-  if (trackRef.value) {
-    trackRef.value.style.transform = `translateX(${-position}px)`
+    if (trackDesktopRef.value) {
+      const limit = trackDesktopRef.value.scrollWidth / 3
+      if (limit > 0) {
+        desktopPos = wrap(desktopPos + SPEED * dt, limit)
+        trackDesktopRef.value.style.transform = `translateX(${-desktopPos}px)`
+      }
+    }
+    if (trackMobileRef.value) {
+      const limitMobile = trackMobileRef.value.scrollWidth / 3
+      if (limitMobile > 0) {
+        mobilePos = wrap(mobilePos + SPEED * 0.9 * dt, limitMobile)
+        trackMobileRef.value.style.transform = `translateX(${-mobilePos}px)`
+      }
+    }
   }
   rafId = requestAnimationFrame(tick)
 }
 
 function onWheel(e: WheelEvent) {
   e.preventDefault()
-  position = wrap(position + e.deltaX + e.deltaY * 0.3, getOneThird())
+  if (trackDesktopRef.value) {
+    const limit = trackDesktopRef.value.scrollWidth / 3
+    desktopPos = wrap(desktopPos + e.deltaX + e.deltaY * 0.3, limit)
+  }
+  if (trackMobileRef.value) {
+    const limitMobile = trackMobileRef.value.scrollWidth / 3
+    mobilePos = wrap(mobilePos + e.deltaX + e.deltaY * 0.3, limitMobile)
+  }
   isUserScrolling = true
   clearTimeout(userScrollTimeout)
   userScrollTimeout = setTimeout(() => { isUserScrolling = false }, 1200)
 }
 
+function onEmptySlotClick(pos: number) {
+  const slotData = safeSlots.value.find(s => s.position === pos)
+  const price = slotData?.currentPrice ?? (pos === 1 ? 10 : 1)
+  openBuy(pos, price)
+}
+
 onMounted(() => {
-  ads.value = shuffle(activeAds.value || [])
   sectionRef.value?.addEventListener('wheel', onWheel, { passive: false })
   rafId = requestAnimationFrame(tick)
 })
@@ -83,36 +107,61 @@ onUnmounted(() => {
 <template>
   <section
     ref="sectionRef"
-    class="w-full overflow-hidden py-6 border-y border-white/5 sticky top-0 z-10 bg-[#030305]/85 backdrop-blur-sm"
+    :class="[
+      'w-full overflow-hidden py-3 md:py-4 border-y border-white/5 bg-[#030305]/90 backdrop-blur-md',
+      isDashboard ? 'relative' : 'sticky top-0 z-20'
+    ]"
+    @mouseenter="isHovered = true"
+    @mouseleave="isHovered = false"
   >
-    <div
-      ref="trackRef"
-      class="ads-track"
-      @mouseenter="isHovered = true"
-      @mouseleave="isHovered = false"
-    >
-      <template v-for="(item, i) in track" :key="i">
-        <div
-          v-if="'isCta' in item"
-          @click="openAdModal"
-          class="sm:hidden ad-card shrink-0 flex items-center gap-4 rounded-xl px-6 py-4 cursor-pointer transition-all duration-500 select-none border border-white/[0.08] bg-white/[0.03]"
-        >
-          <span class="text-2xl leading-none opacity-60">✦</span>
-          <div class="flex flex-col gap-0.5">
-            <p class="text-white/70 text-sm font-sans font-medium whitespace-nowrap">Anúnciate aquí</p>
-            <p class="text-neutral-500 text-xs font-sans font-extralight tracking-[0.08em] whitespace-nowrap">2/20 cupos libres</p>
-          </div>
-        </div>
-        <AdCard v-else v-bind="(item as Ad)" />
-      </template>
+    <!-- Desktop Layout: Full 20 Slots with Sticky CTA -->
+    <div class="hidden md:block relative w-full overflow-hidden">
+      <div ref="trackDesktopRef" class="ads-track">
+        <template v-for="(slot, i) in trackDesktop" :key="`desktop-${slot.position}-${i}`">
+          <AdCard
+            v-if="!slot.isAvailable && slot.ad"
+            v-bind="slot.ad"
+            :position="slot.position"
+          />
+          <AdEmptyCard
+            v-else
+            :position="slot.position"
+            :price="slot.currentPrice"
+            @click="onEmptySlotClick"
+          />
+        </template>
+      </div>
+
+      <!-- Desktop CTA overlay -->
+      <div
+        class="absolute right-0 top-0 bottom-0 flex items-center pr-4 pl-16 pointer-events-none"
+        style="background: linear-gradient(to right, transparent, #030305bb 30%, #030305f0 60%, #030305 100%);"
+      >
+        <AdCtaCard
+          :free-slots="freeSlotsCount"
+          @click="openAuctionList"
+          class="pointer-events-auto cursor-pointer"
+        />
+      </div>
     </div>
 
-    <!-- CTA overlay: solo desktop -->
-    <div
-      class="hidden sm:flex absolute right-0 top-0 bottom-0 items-center pr-4 pl-20 pointer-events-none"
-      style="background: linear-gradient(to right, transparent, #030305bb 25%, #030305f0 55%, #030305 100%);"
-    >
-      <AdCtaCard @click="openAdModal" class="pointer-events-auto cursor-pointer" />
+    <!-- Mobile Layout: Top 10 Slots (#1 to #10) in a single thin row -->
+    <div class="block md:hidden overflow-hidden w-full relative">
+      <div ref="trackMobileRef" class="ads-track-mobile">
+        <template v-for="(slot, i) in trackMobile" :key="`mobile-${slot.position}-${i}`">
+          <AdCard
+            v-if="!slot.isAvailable && slot.ad"
+            v-bind="slot.ad"
+            :position="slot.position"
+          />
+          <AdEmptyCard
+            v-else
+            :position="slot.position"
+            :price="slot.currentPrice"
+            @click="onEmptySlotClick"
+          />
+        </template>
+      </div>
     </div>
   </section>
 </template>
@@ -126,4 +175,11 @@ onUnmounted(() => {
   will-change: transform;
 }
 
+.ads-track-mobile {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+  width: max-content;
+  will-change: transform;
+}
 </style>

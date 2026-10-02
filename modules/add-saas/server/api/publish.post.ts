@@ -2,6 +2,7 @@ import { supabase } from '~/server/lib/supabase'
 import type { SaasSubmission } from '~/modules/add-saas/types'
 import { processProviderInfo, upsertSaasEntry } from '../services/saas.service'
 import { sendFoundersReport } from '~/modules/leadmagnets/server/services/email'
+import { sendFounderWelcomeEmail } from '../services/founderEmail'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<SaasSubmission>(event)
@@ -68,6 +69,19 @@ export default defineEventHandler(async (event) => {
 
   // 5. Upsert to DB
   const finalEntry = await upsertSaasEntry(body, websiteUrl, pData, matchedCategories, matchedCountry)
+
+  // 5.5 Notify founder upon registration
+  if (body.founderEmail?.trim() && finalEntry) {
+    const config = useRuntimeConfig()
+    const siteUrl = config.public.siteUrl || 'https://factosaas.com'
+    sendFounderWelcomeEmail({
+      to: body.founderEmail.trim().toLowerCase(),
+      startupName: finalEntry.name || body.name || 'Tu startup',
+      founderName: body.founderName || null,
+      startupSlug: finalEntry.slug || '',
+      siteUrl
+    }).catch(e => console.error('[Publish] Error notifying founder:', e))
+  }
 
   // 6. Notify admin if startup requires manual review
   if (finalEntry.status === 'pending_review') {

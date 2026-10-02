@@ -14,7 +14,8 @@ const socialLinks = SOCIAL_LINKS;
 const navLinks = computed(() => [
     { name: t.value.navbar.solution, href: '#solution' },
     { name: t.value.navbar.process, href: '#process' },
-    { name: t.value.navbar.calculator, href: '/herramientas/cuanto-vale-tu-saas' },
+    { name: 'Calculadora de Valoración', href: '/herramientas/cuanto-vale-tu-saas' },
+    { name: 'Emisor de Facturas', href: '/herramientas/generador-de-facturas' },
     { name: t.value.navbar.faq, href: '#faq' },
 ]);
 </script>

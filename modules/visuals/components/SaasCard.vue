@@ -5,6 +5,8 @@ import IncognitoIcon from '~/ui/components/IncognitoIcon.vue'
 import SaasLogo from '~/ui/components/SaasLogo.vue'
 import { getGemColor } from '~/ui/const/gems'
 
+const localePath = useLocalePath()
+
 const props = defineProps<{
   name: string
   category: string
@@ -12,6 +14,7 @@ const props = defineProps<{
   mrr: string
   revenue?: string
   logoUrl?: string | null
+  websiteUrl?: string | null
   isIncognito?: boolean
   index?: number
   labelLeft?: string
@@ -27,7 +30,7 @@ const cardStyle = computed(() => ({
 
 <template>
   <NuxtLink 
-    :to="`/saas/${slugify(props.name)}`" 
+    :to="localePath(`/saas/${slugify(props.name)}`)" 
     class="saas-card group shrink-0 w-64 rounded-xl border border-white/20 bg-white/[0.08] backdrop-blur-sm py-[18px] px-3.5 flex flex-col gap-2 cursor-pointer transition-all duration-500"
     :class="{ 'has-glow': hasGlow }"
     :style="cardStyle"
@@ -40,6 +43,7 @@ const cardStyle = computed(() => ({
         :initial="isIncognito ? '?' : name[0].toUpperCase()"
         size="md"
         :gem-color="gemColor"
+        :websiteUrl="websiteUrl"
       />
 
       <div class="min-w-0">

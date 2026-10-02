@@ -1,0 +1,21 @@
+{
+  "breadcrumb": "feedback",
+  "title": {
+    "line1": "Reportar",
+    "line2": "Error"
+  },
+  "description": "Ayúdanos a pulir cada detalle. Describe el problema y adjunta una captura si es posible.",
+  "form": {
+    "detailsLabel": "Detalles del Error",
+    "detailsPlaceholder": "¿Qué estabas haciendo? ¿Qué error ocurrió?",
+    "screenshotLabel": "Captura de pantalla (Opcional)",
+    "dragDrop": "Haz clic para subir o arrastra una imagen",
+    "processing": "Procesando",
+    "submit": "Enviar Reporte"
+  },
+  "success": {
+    "title": "¡Gracias por tu reporte!",
+    "description": "Nuestro equipo revisará los detalles a la brevedad.",
+    "button": "Enviar otro"
+  }
+}

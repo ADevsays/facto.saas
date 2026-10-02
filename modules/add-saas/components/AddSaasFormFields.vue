@@ -19,6 +19,11 @@ const props = defineProps<{
 
 import { ref, watch } from 'vue'
 
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+
+const { t } = useLanguage({ es, en })
+
 const initialEmail = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 
@@ -76,22 +81,22 @@ function handleFileSelect(event: Event) {
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
       <AddSaasInput
         v-model="form.name"
-        label="Nombre del SaaS"
-        placeholder="Mi Startup"
+        :label="t.fields.name"
+        :placeholder="t.fields.namePlaceholder"
         required
       />
       <AddSaasInput
         v-model="form.websiteUrl"
-        label="Web URL"
+        :label="t.fields.url"
         type="url"
-        placeholder="https://..."
+        :placeholder="t.fields.urlPlaceholder"
       />
     </div>
 
     <!-- Update Mode Fields -->
     <div v-if="form.id" class="flex flex-col gap-6">
       <div class="flex flex-col gap-2">
-        <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">Logo</label>
+        <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">{{ t.fields.logo }}</label>
         <div 
           class="w-full bg-white/[0.03] border border-dashed border-white/20 rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:bg-white/[0.05] hover:border-[#00D4FF]/50 transition-all group"
           @click="triggerFileInput"
@@ -117,20 +122,20 @@ function handleFileSelect(event: Event) {
           </div>
           <div class="flex flex-col">
             <span class="text-sm text-white font-medium group-hover:text-[#00D4FF] transition-colors">
-              {{ form.logoFileBase64 ? 'Logo actualizado' : (form.logoUrl ? 'Cambiar logo' : 'Subir imagen') }}
+              {{ form.logoFileBase64 ? t.fields.logoUpdated : (form.logoUrl ? t.fields.logoChange : t.fields.logoUpload) }}
             </span>
             <span class="text-[10px] text-neutral-500 uppercase tracking-wider">
-              {{ form.logoFileBase64 ? 'Listo para guardar' : 'Recomendado: 256x256' }}
+              {{ form.logoFileBase64 ? t.fields.uploadReady : t.fields.uploadRecommended }}
             </span>
           </div>
         </div>
       </div>
       
       <div class="flex flex-col gap-2">
-        <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">Descripción Corta</label>
+        <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">{{ t.fields.description }}</label>
         <textarea
           v-model="form.startupType"
-          placeholder="Plataforma de IA para..."
+          :placeholder="t.fields.descriptionPlaceholder"
           class="w-full bg-white/[0.07] border border-white/20 rounded-xl px-4 py-4 text-white text-sm font-sans font-light placeholder:text-neutral-500 focus:outline-none focus:border-[#00D4FF]/70 focus:bg-white/[0.1] transition-all duration-300 resize-none h-24 custom-scrollbar"
         ></textarea>
       </div>
@@ -138,27 +143,27 @@ function handleFileSelect(event: Event) {
 
     <div class="flex gap-4 items-end">
       <div class="flex flex-col gap-2 flex-1">
-        <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">Categorías *</label>
+        <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">{{ t.fields.categories }}</label>
         <CategorySelect v-model="form.categorySlugs" />
       </div>
 
       <div class="flex flex-col gap-2 shrink-0">
-        <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500 text-center">País</label>
+        <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500 text-center">{{ t.fields.country }}</label>
         <CountrySelect v-model="form.countrySlug" />
       </div>
     </div>
 
     <AddSaasInput
       v-model="form.founderEmail"
-      label="Email (Privado)"
+      :label="t.fields.email"
       type="email"
-      placeholder="hola@tuweb.com"
+      :placeholder="t.fields.emailPlaceholder"
       required
-      tooltip="Con este email podrás reclamar y verificar la autoría de esta startup más adelante."
+      :tooltip="t.fields.emailTooltip"
     />
     <Transition name="fade">
       <p v-if="form.id && initialEmail && form.founderEmail !== initialEmail" class="text-[10px] text-amber-400 bg-amber-400/10 p-2.5 rounded-xl border border-amber-400/20 leading-relaxed -mt-2">
-        ⚠️ Atención: Si cambias tu email perderás el acceso actual a esta pantalla. Tendrás que volver a verificar tu identidad con el nuevo correo para poder gestionar la startup en el futuro.
+        {{ t.fields.emailWarning }}
       </p>
     </Transition>
   </div>

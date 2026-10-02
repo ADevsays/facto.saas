@@ -4,7 +4,12 @@ import { useSortFilter } from '~/composables/useSortFilter'
 import { useCountryFilter } from '~/composables/useCountryFilter'
 import { useCategories } from '~/composables/useCategories'
 
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+
 export function useListHeaderFilters() {
+  const { t } = useLanguage({ es, en })
+
   const { category, setCategory } = useCategoryFilter()
   const { country, setCountry } = useCountryFilter()
   const { sort, setSort } = useSortFilter()
@@ -14,26 +19,26 @@ export function useListHeaderFilters() {
   const isCategoryOpen = ref(false)
   const isCountryOpen = ref(false)
 
-  const sortOptions = [
-    { value: 'latest', label: 'Últimas añadidas' },
-    { value: 'mrr', label: 'Mayor MRR' },
-    { value: 'views', label: 'Más vistas' }
-  ]
+  const sortOptions = computed(() => [
+    { value: 'latest', label: t.value.filters.sort_latest },
+    { value: 'mrr', label: t.value.filters.sort_mrr },
+    { value: 'views', label: t.value.filters.sort_views }
+  ])
 
   const categoryOptions = computed(() => {
     const filtered = categories.value.filter(c => c.slug !== 'other')
     return [
-      { name: 'Todas las categorías', slug: 'all' },
+      { name: t.value.filters.all_categories, slug: 'all' },
       ...filtered.map(c => ({ name: c.name, slug: c.slug }))
     ]
   })
 
   const currentSortLabel = computed(() => {
-    return sortOptions.find(o => o.value === sort.value)?.label || 'Ordenar'
+    return sortOptions.value.find(o => o.value === sort.value)?.label || t.value.filters.sort_fallback
   })
 
   const currentCategoryLabel = computed(() => {
-    return categoryOptions.value.find(o => o.slug === (category.value || 'all'))?.name || 'Categorías'
+    return categoryOptions.value.find(o => o.slug === (category.value || 'all'))?.name || t.value.filters.categories_fallback
   })
 
   function toggleSort() {

@@ -1,0 +1,87 @@
+{
+  "seo": {
+    "home_title": "Explore the Most Successful SaaS Startups",
+    "home_desc": "Discover, filter, and analyze financial metrics (MRR, revenue) of the world s best SaaS startups. The definitive SaaS directory.",
+    "tools_title": "Free Tools for Founders and Startups | Facto",
+    "tools_desc": "Suite of free web utilities for founders: calculate your SaaS valuation, generate PDF invoices, and download YouTube thumbnails. No signup, 100% free.",
+    "invoice_title": "PDF Invoice and Receipt Generator | Facto",
+    "invoice_desc": "Create and download commercial PDF documents instantly. Multi-currency, tax calculation, no registration. The free invoice builder for SaaS founders.",
+    "saas_index_title": "SaaS Startups Directory — Verified MRR and Revenue",
+    "saas_index_desc": "Explore the complete directory of SaaS startups with verified revenue. Filter by category, country, and MRR. The definitive SaaS ranking of the world.",
+    "saas_slug_desc_default": "Discover the revenue, financial history, and key metrics of this verified SaaS on Facto.",
+    "saas_slug_desc": "Discover how much {name} earns, its exact MRR and key metrics. Complete analysis of this {category} startup{country} verified on Facto.",
+    "saas_slug_title": "{name} — Verified MRR, Revenue, and Analysis",
+    "saas_slug_og_title": "{name} — Verified revenue on Facto",
+    "saas_slug_twitter_title": "{name} | Facto",
+    "saas_not_found": "SaaS not found",
+    "back_to_home": "Back to home",
+    "dashboard_ads_title": "Ad Management — Facto Dashboard",
+    "dashboard_ads_desc": "Manage your sponsored slots and ad preferences on Facto."
+  },
+  "home": {
+    "explore_startups": "Explore the {startups}",
+    "ranking_desc": "The global startup ranking ordered by revenue and validated in real time."
+  },
+  "tools": {
+    "header_tools": "Tools for",
+    "header_founders": "founders and buyers",
+    "header_desc": "Calculators, generators, and practical resources to analyze, value, and grow your business.",
+    "free_tool": "Free tool"
+  },
+  "footer": {
+    "tools": "Tools",
+    "platform": "Platform",
+    "categories": "Categories",
+    "countries": "Countries",
+    "legal": "Legal",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "about": "About Facto",
+    "world": "World",
+    "faq": "FAQ",
+    "report_error": "Report a Bug",
+    "made_by": "Made by",
+    "valuation_calc": "Valuation Calculator",
+    "invoice_gen": "Invoice Generator",
+    "youtube_thumb": "Download YouTube Thumbnails",
+    "have_account_login": "Have an account? Log in here.",
+    "telegram": "Telegram Channel"
+  },
+  "common": {
+    "loading": "Loading...",
+    "no_results": "No results found",
+    "view_all": "View all",
+    "all_categories": "All categories",
+    "new": "New",
+    "popular": "Popular",
+    "free": "Free",
+    "startups": "Startups"
+  },
+  "auth": {
+    "badge": "Account Access",
+    "title": "Sign in",
+    "desc": "Access your dashboard to manage your startups, metrics, and ad slots.",
+    "email_label": "Email address",
+    "email_placeholder": "founder{'@'}example.com",
+    "send_code": "Continue with code",
+    "sending_code": "Sending code...",
+    "otp_badge": "Security Verification",
+    "otp_title": "Enter the code",
+    "otp_desc": "We sent a 6-digit code to",
+    "verify_btn": "Verify & Sign In",
+    "verifying": "Verifying...",
+    "change_email": "Change email",
+    "resend_in": "Resend in {seconds}s",
+    "resend_code": "Resend code",
+    "err_email": "Enter your email address.",
+    "err_send": "Failed to send verification code.",
+    "err_code_length": "Enter the complete 6-digit code.",
+    "err_invalid_code": "Invalid or expired code."
+  },
+  "telegram_popup": {
+    "badge": "Community",
+    "title": "Join our Telegram channel",
+    "description": "Get real-time updates on newly added startups, growth metrics, and the latest releases on Facto.",
+    "cta": "Join Telegram"
+  }
+}

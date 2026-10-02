@@ -4,6 +4,12 @@ import { useCountries } from '~/composables/useCountries'
 
 const model = defineModel<string>({ required: true, default: '' })
 
+const props = withDefaults(defineProps<{
+  darkBackground?: boolean
+}>(), {
+  darkBackground: false
+})
+
 const { countries, fetchCountries } = useCountries()
 
 onMounted(() => {
@@ -11,10 +17,19 @@ onMounted(() => {
 })
 
 const open = ref(false)
+const opensUpwards = ref(false)
 const containerRef = ref<HTMLElement | null>(null)
+const dropdownRef = ref<HTMLElement | null>(null)
+const highlightedIndex = ref(-1)
+
 const selected = computed(() => {
   if (!model.value) return null
   return countries.value?.find(c => c.slug === model.value)
+})
+
+const sortedCountries = computed(() => {
+  if (!countries.value) return []
+  return countries.value
 })
 
 async function toggleOpen() {
@@ -22,11 +37,19 @@ async function toggleOpen() {
   if (open.value) {
     await nextTick()
     if (containerRef.value) {
-      const dropdown = containerRef.value.querySelector('.absolute')
-      if (dropdown) {
-        dropdown.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      }
+      const rect = containerRef.value.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      // Si hay poco espacio abajo o está en modal, abrir hacia arriba para no estirar el scroll inferior
+      opensUpwards.value = spaceBelow < 250 || rect.bottom > window.innerHeight * 0.65
     }
+    if (model.value) {
+      const idx = sortedCountries.value.findIndex(c => c.slug === model.value)
+      if (idx !== -1) highlightedIndex.value = idx
+    } else {
+      highlightedIndex.value = 0
+    }
+    await nextTick()
+    scrollToHighlighted()
   }
 }
 
@@ -35,44 +58,94 @@ function selectCountry(slug: string) {
   open.value = false
 }
 
-// Lógica de salto por teclado (A-Z)
-const searchBuffer = ref('')
+function scrollToHighlighted() {
+  if (!dropdownRef.value || highlightedIndex.value < 0) return
+  const activeEl = dropdownRef.value.children[highlightedIndex.value] as HTMLElement
+  if (activeEl) {
+    activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+}
+
+// Lógica de salto por teclado (A-Z con soporte para ciclo y búsqueda)
 let searchTimeout: any = null
+let lastKey = ''
+let lastKeyIndex = -1
 
 function handleKeydown(event: KeyboardEvent) {
-  if (!open.value) return
-  
-  // Ignorar teclas especiales
-  if (event.ctrlKey || event.metaKey || event.altKey) return
-  if (event.key.length > 1 && event.key !== 'Backspace') return
-
-  if (event.key === 'Backspace') {
-    searchBuffer.value = searchBuffer.value.slice(0, -1)
-  } else {
-    searchBuffer.value += event.key.toLowerCase()
+  if (!open.value) {
+    if (containerRef.value?.contains(document.activeElement)) {
+      if (['Enter', ' ', 'ArrowDown', 'ArrowUp'].includes(event.key)) {
+        event.preventDefault()
+        toggleOpen()
+        return
+      }
+      if (event.key.length === 1 && /[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(event.key)) {
+        toggleOpen()
+      } else {
+        return
+      }
+    } else {
+      return
+    }
   }
 
-  if (searchTimeout) clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    searchBuffer.value = ''
-  }, 1000)
+  // Ignorar atajos del sistema
+  if (event.ctrlKey || event.metaKey || event.altKey) return
 
-  if (searchBuffer.value && countries.value) {
-    let match = countries.value.find(c => c.name.toLowerCase().startsWith(searchBuffer.value))
-    
-    // Si no encuentra coincidencia con el buffer acumulado, intentamos solo con la nueva tecla presionada
-    if (!match && searchBuffer.value.length > 1) {
-      searchBuffer.value = event.key.toLowerCase()
-      match = countries.value.find(c => c.name.toLowerCase().startsWith(searchBuffer.value))
+  if (event.key === 'Escape') {
+    open.value = false
+    return
+  }
+
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    if (highlightedIndex.value >= 0 && highlightedIndex.value < sortedCountries.value.length) {
+      selectCountry(sortedCountries.value[highlightedIndex.value].slug)
     }
+    return
+  }
 
-    if (match) {
-      const el = document.getElementById(`country-${match.slug}`)
-      if (el) {
-        el.scrollIntoView({ behavior: 'auto', block: 'center' })
-        el.focus()
+  if (event.key === 'ArrowDown') {
+    event.preventDefault()
+    if (highlightedIndex.value < sortedCountries.value.length - 1) {
+      highlightedIndex.value++
+      scrollToHighlighted()
+    }
+    return
+  }
+
+  if (event.key === 'ArrowUp') {
+    event.preventDefault()
+    if (highlightedIndex.value > 0) {
+      highlightedIndex.value--
+      scrollToHighlighted()
+    }
+    return
+  }
+
+  if (event.key.length === 1 && /[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(event.key)) {
+    const key = event.key.toLowerCase()
+
+    const matches = sortedCountries.value
+      .map((c, idx) => ({ country: c, idx }))
+      .filter(({ country }) => country.name.toLowerCase().startsWith(key) || country.slug.toLowerCase().startsWith(key))
+
+    if (matches.length > 0) {
+      if (lastKey === key) {
+        lastKeyIndex = (lastKeyIndex + 1) % matches.length
+      } else {
+        lastKey = key
+        lastKeyIndex = 0
       }
+      highlightedIndex.value = matches[lastKeyIndex].idx
+      scrollToHighlighted()
     }
+
+    if (searchTimeout) clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => {
+      lastKey = ''
+      lastKeyIndex = -1
+    }, 1200)
   }
 }
 
@@ -99,11 +172,15 @@ onUnmounted(() => {
     <button
       type="button"
       @click.stop="toggleOpen"
-      class="flex items-center justify-center bg-white/[0.07] border border-white/20 rounded-xl h-[50px] w-[60px] transition-all duration-300 hover:border-white/40 focus:outline-none focus:border-[#00D4FF]/70"
-      :class="open ? 'border-[#00D4FF]/60 bg-white/[0.1] country-btn-glow' : 'hover:country-btn-glow'"
+      class="flex items-center justify-center border border-white/15 rounded-xl h-[50px] w-[60px] transition-all duration-300 hover:border-white/30 focus:outline-none focus:border-[#00D4FF]/70 cursor-pointer select-none"
+      :class="[
+        open ? 'border-[#00D4FF]/60 ring-1 ring-[#00D4FF]/30' : '',
+        darkBackground ? 'bg-surface-dark hover:bg-white/5' : 'bg-surface-elevated hover:bg-surface-elevated-hover'
+      ]"
+      :title="selected ? selected.name : 'Seleccionar país'"
     >
       <div v-if="selected?.slug === 'global'" class="text-neutral-300 opacity-90 transition-opacity hover:opacity-100">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
       </div>
       <img 
         v-else-if="selected && selected.iso_code" 
@@ -117,45 +194,62 @@ onUnmounted(() => {
       </span>
     </button>
 
+    <!-- Dropdown: Aligned right-0 (inwards towards left, safe from right border) and opens upwards if near bottom -->
     <div
       v-if="open"
-      class="absolute z-50 top-full mt-2 w-[60px] left-0 bg-[#0c0c10] border border-white/20 rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl max-h-[220px] overflow-y-auto no-scrollbar"
+      ref="dropdownRef"
+      class="absolute z-50 right-0 w-[210px] border border-white/15 rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.95)] backdrop-blur-xl max-h-[220px] overflow-y-auto custom-scrollbar p-1.5"
+      :class="[
+        opensUpwards ? 'bottom-full mb-2' : 'top-full mt-2',
+        darkBackground ? 'bg-surface-dark' : 'bg-surface-elevated'
+      ]"
     >
       <button
-        v-for="country in countries"
+        v-for="(country, idx) in sortedCountries"
         :key="country.slug"
         :id="`country-${country.slug}`"
         type="button"
         @click.stop="selectCountry(country.slug)"
+        @mouseenter="highlightedIndex = idx"
         :title="country.name"
-        class="w-full flex items-center justify-center p-3 transition-colors duration-150"
-        :class="model === country.slug ? 'bg-[#00D4FF]/20' : 'hover:bg-white/[0.08]'"
+        class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-left text-xs font-sans transition-all duration-150 cursor-pointer my-0.5"
+        :class="[
+          model === country.slug
+            ? 'bg-[#00D4FF]/20 text-white font-medium border border-[#00D4FF]/30'
+            : (highlightedIndex === idx ? 'bg-white/10 text-white' : 'text-neutral-300 hover:bg-white/5')
+        ]"
       >
-        <div v-if="country.slug === 'global'" class="text-neutral-400">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+        <div v-if="country.slug === 'global'" class="w-5 h-5 flex items-center justify-center text-neutral-300 shrink-0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
         </div>
         <img 
           v-else-if="country.iso_code" 
           :src="`https://flagcdn.com/w40/${country.iso_code}.png`" 
           :alt="country.name"
-          class="w-6 rounded-sm shadow-sm"
+          class="w-5 h-3.5 object-cover rounded-sm shadow-sm shrink-0"
         />
-        <span v-else class="text-xl">{{ country.flag }}</span>
+        <span v-else class="text-sm shrink-0">{{ country.flag }}</span>
+
+        <span class="truncate flex-1 text-xs text-neutral-200">{{ country.name }}</span>
+        
+        <svg v-if="model === country.slug" class="w-3.5 h-3.5 text-[#00D4FF] shrink-0 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
       </button>
     </div>
   </div>
 </template>
 
 <style scoped>
-.no-scrollbar::-webkit-scrollbar { 
-  display: none; 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
 }
-.no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
-
-.country-btn-glow {
-  box-shadow: 0 0 10px rgba(0,212,255,0.1), inset 0 0 10px rgba(0,212,255,0.05);
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.4);
 }
 </style>

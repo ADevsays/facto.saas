@@ -3,7 +3,7 @@ import FactoLogo from '../components/FactoLogo.vue'
 </script>
 
 <template>
-  <section class="w-full flex flex-col gap-6 py-4">
+  <section class="w-full flex flex-col pt-4 pb-0">
     <FactoLogo />
   </section>
 </template>

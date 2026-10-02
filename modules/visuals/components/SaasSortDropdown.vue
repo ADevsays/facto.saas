@@ -12,10 +12,11 @@ defineEmits(['toggle', 'select'])
 <template>
   <div class="flex items-center gap-2 relative w-full sm:w-auto">
     <span class="text-xs font-sans font-light tracking-[0.08em] text-neutral-500 uppercase shrink-0">Ordenar por:</span>
-    <div class="relative w-full sm:w-auto">
+    <div class="relative w-full sm:w-auto flex-1 sm:flex-initial">
       <button 
+        type="button"
         @click="$emit('toggle')" 
-        class="flex items-center justify-between gap-3 bg-white/[0.04] border border-white/10 hover:border-white/20 text-white rounded-xl px-4 py-2.5 text-xs font-sans tracking-wide transition-all duration-300 cursor-pointer min-w-[150px]"
+        class="flex items-center justify-between gap-3 bg-white/[0.04] border border-white/10 hover:border-white/20 text-white rounded-xl px-4 py-2.5 text-xs font-sans tracking-wide transition-all duration-300 cursor-pointer w-full sm:w-auto sm:min-w-[150px]"
       >
         <span>{{ currentLabel }}</span>
         <svg width="10" height="6" viewBox="0 0 10 6" fill="none" class="text-neutral-400 transition-transform duration-300 shrink-0" :class="{ 'rotate-180': isOpen }">
@@ -24,11 +25,12 @@ defineEmits(['toggle', 'select'])
       </button>
       <div 
         v-if="isOpen" 
-        class="absolute left-0 mt-2 w-full bg-[#0c0c10]/95 border border-white/10 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md z-40 flex flex-col py-1 animate-fade-in"
+        class="absolute left-0 mt-2 w-full min-w-[160px] bg-[#0c0c10] border border-white/15 rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.95)] z-50 flex flex-col py-1 animate-fade-in"
       >
         <button 
           v-for="option in options" 
           :key="option.value"
+          type="button"
           @click="$emit('select', option.value)"
           class="px-4 py-2.5 text-left text-xs font-sans tracking-wide hover:bg-white/[0.08] transition-colors duration-200"
           :class="activeValue === option.value ? 'text-[#00D4FF] font-medium' : 'text-neutral-300'"

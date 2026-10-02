@@ -1,11 +1,39 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { Webhook } from 'svix'
 import { whopService } from '~/server/services/whop'
 import { adsService } from '~/modules/ads/server/services/ads'
+import { sendAdSetupConfirmationEmail } from '~/modules/ads/server/services/adEmail'
+
+function resolveWebhookSecret(): string {
+  try {
+    const envPath = path.resolve(process.cwd(), '.env')
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf8')
+      for (const line of content.split('\n')) {
+        const trimmed = line.trim()
+        if (!trimmed || trimmed.startsWith('#')) continue
+        const idx = trimmed.indexOf('=')
+        if (idx !== -1) {
+          const key = trimmed.slice(0, idx).trim()
+          const val = trimmed.slice(idx + 1).trim()
+          if (key === 'WHOP_WEBHOOK_SECRET') {
+            return val
+          }
+        }
+      }
+    }
+  } catch {}
+
+  return process.env.WHOP_WEBHOOK_SECRET?.trim() || ''
+}
+
+import crypto from 'node:crypto'
 
 export default defineEventHandler(async (event) => {
   const body = await readRawBody(event) ?? ''
   const headers = getHeaders(event) as Record<string, string>
-  const secret = process.env.WHOP_WEBHOOK_SECRET
+  const secret = resolveWebhookSecret()
 
   if (!secret) {
     throw createError({ statusCode: 500, statusMessage: 'WHOP_WEBHOOK_SECRET is missing' })
@@ -14,29 +42,95 @@ export default defineEventHandler(async (event) => {
   let payload: any
 
   try {
-    const b64Secret = Buffer.from(secret).toString('base64')
-    const wh = new Webhook(b64Secret)
-    payload = wh.verify(body, headers)
+    const webhookId = headers['webhook-id'] || headers['svix-id']
+    const webhookTimestamp = headers['webhook-timestamp'] || headers['svix-timestamp']
+    const webhookSignature = headers['webhook-signature'] || headers['svix-signature']
+
+    if (webhookId && webhookTimestamp && webhookSignature) {
+      const toSign = `${webhookId}.${webhookTimestamp}.${body}`
+      const hmac = crypto.createHmac('sha256', secret).update(toSign).digest('base64')
+      const expectedSig = `v1,${hmac}`
+      const sigs = webhookSignature.split(' ')
+
+      if (!sigs.includes(expectedSig) && !sigs.includes(hmac)) {
+        throw new Error('HMAC signature mismatch')
+      }
+      payload = JSON.parse(body)
+    } else {
+      const b64Secret = Buffer.from(secret).toString('base64')
+      const wh = new Webhook(b64Secret)
+      payload = wh.verify(body, headers)
+    }
   } catch (err: any) {
-    console.error('Signature verification failed:', err.message)
+    console.error('[Whop Webhook] Signature verification failed:', err.message)
     throw createError({ statusCode: 401, statusMessage: 'Invalid webhook signature' })
   }
 
-  if (payload.type === 'membership.activated') {
-    const { data: membership } = payload
-    const user = membership.user
+  const eventType = payload.type || payload.action || payload.event || ''
 
-    if (!user?.email || !user?.id) return { ok: true }
-    await whopService.activateMembership(user, membership.id)
+  if (eventType === 'membership.activated' || eventType === 'payment.succeeded') {
+    const data = payload.data || {}
+    const email = data.user?.email || data.member?.email || data.email || data.metadata?.email
+    const id = data.user?.id || data.user_id || data.member?.id || data.id || `usr_test_${Date.now()}`
+    const membershipId = data.id || data.member?.id || `mem_test_${Date.now()}`
+
+    const setupToken = data.metadata?.setup_token
+      || data.checkout_configuration?.metadata?.setup_token
+      || data.membership?.metadata?.setup_token
+      || data.payment?.metadata?.setup_token
+      || data.custom_fields?.setup_token
+      || crypto.randomUUID()
+
+    const slot = Number(
+      data.metadata?.slot
+      || data.checkout_configuration?.metadata?.slot
+      || data.membership?.metadata?.slot
+      || 1
+    )
+
+    const price = Number(
+      data.metadata?.price
+      || data.checkout_configuration?.metadata?.price
+      || data.membership?.metadata?.price
+      || data.amount
+      || 0
+    )
+
+    if (email && id && membershipId) {
+      const cleanEmail = email.trim().toLowerCase()
+      await whopService.activateMembership({ id, email: cleanEmail }, membershipId, setupToken)
+
+      try {
+        const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://www.factosaas.com'
+        const normalizedUrl = siteUrl.startsWith('http')
+          ? siteUrl
+          : (siteUrl.includes('localhost') ? `http://${siteUrl}` : `https://${siteUrl}`)
+        const priceParam = price > 0 ? `&price=${price}` : ''
+        const setupUrl = setupToken
+          ? `${normalizedUrl}/dashboard/ads?ad_setup=true&slot=${slot}&token=${setupToken}${priceParam}`
+          : `${normalizedUrl}/dashboard/ads?ad_setup=true&slot=${slot}${priceParam}`
+
+        await sendAdSetupConfirmationEmail({
+          to: cleanEmail,
+          slot,
+          setupUrl
+        })
+      } catch (mailErr) {
+        console.error('[Whop Webhook] Failed to send setup confirmation email:', mailErr)
+      }
+    }
   }
 
   if (payload.type === 'membership.deactivated') {
     const { data: membership } = payload
-    const user = membership.user
+    const userId = membership?.user?.id || membership?.user_id || membership?.member?.id
 
-    if (!user?.id) return { ok: true }
-    await whopService.deactivateMembership(user.id)
-    await adsService.deactivateAdByMembershipId(membership.id)
+    if (userId) {
+      await whopService.deactivateMembership(userId)
+    }
+    if (membership?.id) {
+      await adsService.deactivateAdByMembershipId(membership.id)
+    }
   }
 
   return { ok: true }

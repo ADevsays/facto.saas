@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import VisualsView from '../modules/visuals/views/VisualsView.vue'
+import { useAppSchema } from '~/composables/useAppSchema'
 
-useSeoMeta({
-  title: 'Explora las Startups SaaS Más Exitosas | Facto',
-  description: 'Descubre, filtra y analiza las métricas financieras (MRR, ingresos) de las mejores startups SaaS del mundo. El directorio definitivo de SaaS.',
-  ogTitle: 'Facto SaaS - El Directorio de Startups y MRR',
-  ogDescription: 'Descubre, filtra y analiza las métricas financieras (MRR, ingresos) de las mejores startups SaaS del mundo. El directorio definitivo de SaaS.',
-  ogImage: 'https://www.factosaas.com/og-image.png',
-  twitterCard: 'summary_large_image',
-  twitterTitle: 'Facto SaaS - Directorio de Startups',
-  twitterDescription: 'Descubre y analiza las métricas de las mejores startups SaaS.',
-  twitterImage: 'https://www.factosaas.com/og-image.png'
+const { t } = useI18n()
+const { defineWebSite } = useAppSchema()
+
+defineWebSite({
+  name: 'Facto',
+  description: t('seo.home_desc'),
+})
+
+useAppSeo({
+  title: () => t('seo.home_title'),
+  description: () => t('seo.home_desc'),
 })
 </script>
 

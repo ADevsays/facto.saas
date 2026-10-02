@@ -8,6 +8,10 @@ export interface Ad {
   created_at: string
   user_id?: string
   whop_membership_id?: string
+  position?: number
+  price?: number
+  email?: string
+  is_affiliate?: boolean
 }
 
 export interface AdPayload {
@@ -15,6 +19,10 @@ export interface AdPayload {
   description: string
   url: string
   image_url: string
+  position?: number
+  price?: number
+  email?: string
+  is_affiliate?: boolean
 }
 
 export interface WhopMembership {
@@ -29,9 +37,36 @@ export interface WhopMembership {
 
 export interface AdSetupPayload {
   email: string
-  password: string
+  password?: string
   name: string
   description: string
   url: string
   image_url: string
+  position?: number
+  token?: string
+  price?: number
+}
+
+export interface AdSlot {
+  position: number
+  ad: Ad | null
+  currentPrice: number
+  nextPrice: number
+  isAvailable: boolean
+}
+
+export interface CheckoutPayload {
+  slot: number
+  price?: number
+  email?: string
+}
+
+export interface AdminAssignAdPayload {
+  position: number
+  name: string
+  description?: string
+  url: string
+  image_url?: string
+  price?: number
+  is_active?: boolean
 }

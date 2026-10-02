@@ -26,17 +26,10 @@ const openIndex = ref<number | null>(null);
                     :key="index"
                     :question="faq.question"
                     :answer="faq.answer"
-                    :isOpen="openIndex === Number(index)"
-                    @toggle="openIndex = openIndex === Number(index) ? null : Number(index)"
+                    :isOpen="openIndex === index"
+                    @toggle="openIndex = openIndex === index ? null : index"
                 />
             </div>
         </div>
     </section>
 </template>
-
-<style scoped>
-/* Transición suave para el acordeón */
-.transition-all {
-    transition-duration: 400ms;
-}
-</style>

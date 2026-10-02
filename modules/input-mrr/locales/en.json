@@ -1,0 +1,14 @@
+{
+  "input": {
+    "placeholder": "Search any SaaS: health, 10kMRR, etc...",
+    "add_mrr_button": "Add your MRR"
+  },
+  "dropdown": {
+    "subtitle": "Startups",
+    "empty": "No startups found",
+    "incognito": "— Anonymous —"
+  },
+  "tabs": {
+    "all": "All"
+  }
+}

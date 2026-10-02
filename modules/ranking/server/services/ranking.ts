@@ -15,12 +15,13 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
     if (matched) selectedCat = matched
   }
 
-  const countries = (row.countries as { name: string; slug: string; flag: string }[]) || []
+  const countries = (row.countries as { name: string; slug: string; flag: string; iso_code?: string }[]) || []
   let selectedCountry = countries[0] || null
 
   return {
     id: row.id as string,
     name: row.name as string | null,
+    slug: (row.slug as string) || null,
     logoUrl: row.logo_url as string | null,
     websiteUrl: row.website_url as string | null,
     founderName: row.founder_name as string | null,
@@ -34,6 +35,7 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
     provider: (row.payment_providers as Record<string, string>)?.slug as SaasListItem['provider'],
     views: row.views as number,
     publishedAt: row.published_at as string,
+    description: (row.startup_type as string) || null,
   }
 }
 
@@ -43,10 +45,10 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
   const nullsFirst = sort === 'mrr' ? false : false
 
   const selectQuery = `
-    id, name, logo_url, website_url, founder_name,
+    id, name, slug, logo_url, website_url, founder_name, startup_type,
     is_incognito, mrr, currency, views, published_at,
     categories!saas_categories${category ? '!inner' : ''} ( name, slug ),
-    countries!saas_countries${country ? '!inner' : ''} ( name, slug, flag ),
+    countries!saas_countries${country ? '!inner' : ''} ( name, slug, flag, iso_code ),
     payment_providers ( name, slug ),
     saas_metrics_cache ( history_cache )
   `

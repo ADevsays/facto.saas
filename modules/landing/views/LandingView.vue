@@ -31,10 +31,6 @@ useAppSeo({
     imagePath: '/og-image.png',
 });
 
-onMounted(async () => {
-    await detectLanguage();
-});
-
 watch(isReady, (ready) => {
     if (ready && route.hash) {
         setTimeout(() => {

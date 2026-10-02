@@ -415,26 +415,31 @@ Flujo que permite a un usuario verificar su identidad como fundador de un SaaS p
 
 ---
 
-## Pasarela de Pago (Whop) y Módulo de Ads
+## Pasarela de Pago (Whop), Subasta de 20 Cupos y Módulo de Ads
 
-Integración para el manejo de membresías de anunciantes usando la pasarela de Whop, registro automático de usuarios y creación de cuentas.
+Integración para el manejo de anuncios en cabecera mediante un sistema de subasta continua de 20 cupos limitados (#1 a #20), pasarela de pago Whop, notificaciones automáticas de outbid por email y herramienta de gestión para afiliados y patrocinadores en el panel de administración.
 
 ### Contrato
 - **Endpoints**:
-  - `POST /api/webhooks/whop` (Recibe `membership.activated` y guarda el `whop_user_id` y `email`).
+  - `GET /api/ads/active` (Obtiene anuncios activos ordenados ascendentemente por `position`).
+  - `GET /api/ads/slots` (Devuelve el estado de los 20 cupos: posición, disponibilidad, precio actual y precio para superar la puja).
+  - `POST /api/ads/checkout` (Genera la URL de pago en Whop con el precio correspondiente al puesto seleccionado).
+  - `POST /api/ads/upload` (Sube el logo del anunciante a Supabase Storage bucket `ads_images`).
   - `GET /api/ads/session?email=...` (Verifica que un email tenga pago activo y no usado).
-  - `POST /api/ads/setup` (Crea la cuenta en Supabase Auth, inserta el anuncio y marca la membresía como usada).
-  - `POST /api/admin/ads/create` (Administrador - Bypass automático con `x-admin-key`).
+  - `POST /api/ads/setup` (Asigna el anuncio al cupo elegido, desactiva el anuncio anterior si existía, envía correo al dueño superado y marca la membresía como usada).
+  - `GET /api/ads/my-ads` (Devuelve los anuncios y estados de permisos ad-free del usuario autenticado o email).
+  - `POST /api/ads/ad-free-checkout` (Genera checkout en Whop de $1 USD para eliminar anuncios de por vida).
+  - `POST /api/ads/ad-free-verify` (Valida y activa el token de experiencia sin anuncios).
+  - `POST /api/admin/ads/assign` (Admin protegido con `x-admin-key` - Asigna directamente un afiliado o sponsor a cualquier cupo 1..20).
+  - `POST /api/admin/ads/remove` (Admin protegido con `x-admin-key` - Desactiva/libera el anuncio de un cupo específico).
 - **Interfaces**:
 ```ts
-interface WhopMembership {
-  id: string
-  whop_user_id: string
-  whop_membership_id: string
-  email: string
-  status: 'active' | 'inactive'
-  used: boolean
-  created_at: string
+interface AdSlot {
+  position: number
+  ad: Ad | null
+  currentPrice: number
+  nextPrice: number
+  isAvailable: boolean
 }
 
 interface AdSetupPayload {
@@ -444,29 +449,105 @@ interface AdSetupPayload {
   description: string
   url: string
   image_url: string
+  position?: number
+}
+
+interface AdminAssignAdPayload {
+  position: number
+  name: string
+  description?: string
+  url: string
+  image_url?: string
+  price?: number
+  is_active?: boolean
+}
+
+interface MyAdsResponse {
+  authenticated: boolean
+  email: string | null
+  ads: Ad[]
+  canHideAds: boolean
+  isAdFree: boolean
+  hasPaidAds: boolean
 }
 ```
 
 ### Dominio
-- "La pasarela de pago para la publicación de anuncios es **Whop**."
-- "Flujo principal de Ads:"
-  1. El usuario hace clic en 'Quiero llegar a 10k' → redirige a la URL estática del checkout de Whop.
-  2. El usuario paga en Whop. El webhook `membership.activated` de Whop notifica a Facto (`/api/webhooks/whop`).
-  3. Facto guarda en la tabla `whop_memberships` el `whop_user_id`, `email`, y `membership_id` con `used: false`.
-  4. Whop redirige al usuario de vuelta a Facto (`/ads/setup`).
-  5. En `/ads/setup`, el usuario ingresa el email con el que pagó.
-  6. El sistema verifica si ese email tiene una membresía activa y `used: false`.
-  7. Si es válido, el usuario puede introducir una contraseña y los datos de su anuncio.
-  8. El sistema crea una cuenta en Supabase Auth (Service Role), crea el anuncio y marca la membresía como usada.
-- "Bypass de Admin:"
-  - "El middleware `adminAuth.ts` verifica el `x-admin-key`. Al pasar la validación, `/api/admin/ads/create` se salta la verificación de pago y el anuncio se publica automáticamente (`is_active: true`)."
-- **Webhooks**: "El evento `membership.deactivated` actualiza la tabla a `status: inactive` y desactiva el anuncio vinculado en la tabla `ads`."
+- **Mecánica de Subasta de 20 Cupos**:
+  1. Hay exactamente 20 cupos (#1 a #20) en la marquesina superior (`AdsBandSection.vue`).
+  2. El precio base de un cupo libre es de **$1 USD**.
+  3. Si un cupo ya está ocupado por otro anunciante, cualquiera puede desbancarlo pagando **$1 USD más** que el precio pagado anteriormente (`nextPrice = currentPrice + 1`).
+  4. Al ocupar un puesto tomado, el anuncio anterior pasa a `is_active: false` y el sistema envía un correo transaccional automático (vía Brevo SMTP) al anterior propietario notificándole que fue superado y dándole la opción de volver a pujar.
+- **Redirección al Dashboard**:
+  - Al completar el pago de un anuncio en Whop o finalizar el setup de datos en el modal, el usuario es redirigido a `/dashboard/ads` para visualizar de inmediato sus puestos, estado y enlace en vivo.
+- **Gestión de Ads y Toggle Ad-Free**:
+  - **Patrocinadores / Compradores de Ads**: Tienen derecho a un toggle en `/dashboard/ads` para activar o desactivar la visualización de los anuncios en toda su navegación por Facto.
+  - **Pase Ad-Free ($1 USD)**: Quienes no hayan comprado anuncios ven una tarjeta en `/dashboard/ads` con la opción de remover anuncios permanentemente por $1 USD vía Whop. Al pagar, se genera un token en `localStorage` y sesión que desbloquea el toggle y oculta los banners.
+  - **Soporte Multi-Email**: Si el usuario registró su startup con un email y pagó el anuncio con otro, puede consultar y gestionar los anuncios del segundo email desde la misma vista de `/dashboard/ads`.
+- **Marquesina Continua de 20 Cupos (`AdsBandSection.vue`)**:
+  - Los 20 puestos se deslizan continuamente en orden estricto (#1 al #20), mostrando tanto los anuncios activos (`AdCard.vue`) como los puestos libres (`AdEmptyCard.vue`).
+  - Al hacer click sobre un puesto libre en la marquesina, se abre de inmediato el modal de compra (`AddAdModal.vue`) con ese puesto preseleccionado a $1 USD.
+  - Al hacer click sobre un anuncio activo en la marquesina, redirige a la URL del anunciante (`target="_blank"`).
+- **Listado y Subasta en "Anúnciate aquí" (`AdAuctionListModal.vue`)**:
+  - Al hacer click en "Anúnciate aquí" (`AdCtaCard.vue`), se abre un modal con el listado completo de las 20 startups del primero al último puesto (#1 al #20).
+  - Permite explorar quién ocupa cada puesto, cuánto pagó y pulsar **RECLAMAR** para superar la puja anterior u **OCUPAR** para tomar un puesto libre.
+- **Modal de Compra Directa (`AddAdModal.vue`)**:
+  - Diseño limpio y minimalista con métricas, precio en tipografía grande y botón directo para pagar en Whop sin pasos innecesarios.
+- **Herramienta Admin para Afiliados (`/admin/ads`)**:
+  - Accesible para administradores autenticados con `x-admin-key`.
+  - Permite inyectar empresas afiliadas o patrocinadores directamente en cualquiera de los 20 cupos sin pasar por Whop, estableciendo el precio base simulado y enlace de afiliado.
 
 ### Validación
-- **Happy Path Webhook**: Usuario paga, se recibe webhook, `whop_memberships` registra el pago. El usuario va a `/ads/setup`, escribe su correo y el sistema lo valida. Llena el formulario, envía y se crea su cuenta y su Ad.
-- **Error - Email Inválido**: En `/ads/setup`, el usuario ingresa un email que no existe en `whop_memberships` o que ya tiene `used: true`. El sistema lanza 404/403.
-- **Happy Path Admin**: Un admin hace el POST a `/api/admin/ads/create` con el header `x-admin-key` correcto. El Ad se inserta directamente.
-- **Error - Admin Inválido**: Una petición a `/api/admin/ads/create` con un `x-admin-key` incorrecto es bloqueada por el middleware con 401 Unauthorized.
+- **Happy Path Subasta**: Un nuevo anunciante hace click en un puesto libre (#3) en la marquesina a $1 USD o pulsa "RECLAMAR" en el modal de "Anúnciate aquí" para superar un puesto ocupado (#1) a $5 USD. Se abre el modal con el precio grande y botón directo a Whop. Realiza el pago, configura sus datos y logo en `AddAdModal.vue`, y el usuario es redirigido a `/dashboard/ads` con su anuncio activo.
+- **Toggle Ad-Free**: Un anunciante activa el toggle de ocultar anuncios. Las secciones `AdsBandSection` y `AdsBandBottomSection` desaparecen inmediatamente en todas las páginas.
+- **Compra de Pase Ad-Free ($1 USD)**: Usuario sin anuncios hace click en "Quitar anuncios ($1 USD)" en `/dashboard/ads`, paga en Whop, regresa y los anuncios se ocultan permanentemente con persistencia en `localStorage`.
+- **Notificación de Outbid**: El dueño del anuncio reemplazado recibe un email con diseño Facto indicando el nombre de su anuncio, el puesto que perdió y el monto necesario para recuperarlo.
+- **Bypass Admin Afiliados**: El administrador accede a `/admin/ads`, asigna un afiliado en el Puesto #1; el puesto queda inmediatamente ocupado y visible en la marquesina sin requerir membresía de Whop.
+
+---
+
+## Autenticación Directa desde Footer
+
+Permite a cualquier fundador o patrocinador autenticarse en su cuenta desde el pie de página global ("Plataforma") sin necesidad de navegar a la página de edición de su startup.
+
+### Contrato
+- **Endpoints**:
+  - `POST /api/auth/send-otp` (acepta `{ email: string, saasId?: string }`).
+  - `POST /api/auth/verify-otp` (acepta `{ email: string, code: string }`).
+- **Componentes**:
+  - `components/LoginModal.vue`
+  - `composables/useLoginModal.ts`
+  - Botón en `ui/sections/GlobalFooter.vue`
+
+### Dominio
+- "Al pulsar '¿Tienes una cuenta? Inicia sesión aquí.' en el footer, si el usuario ya está autenticado es redirigido a `/dashboard`. Si no, se abre el modal de login."
+- "El usuario ingresa su correo. El backend verifica si existe en `founders`, `saas_entries` o `ads` y despacha un código OTP de 6 dígitos por email."
+- "Al ingresar el código correcto, se genera la sesión en `founder_sessions` y se redirige a `/dashboard`."
+
+---
+
+## Notificación por Email al Registrar Startup
+
+### Contrato
+- **Módulo**: `modules/add-saas/server/services/founderEmail.ts`
+- **Invocación**: Automática en `modules/add-saas/server/api/publish.post.ts`.
+
+### Dominio
+- "Al registrar una startup exitosamente, si se proporcionó `founderEmail`, el servidor despacha un correo de bienvenida transaccional con la plantilla de diseño Facto (`facto-email-design`)."
+- "El correo incluye el nombre de la startup, enlace para reclamarla / editarla y botón directo a `/dashboard`."
+
+---
+
+## Carga Resiliente de Actividad GitHub
+
+### Contrato
+- `server/api/github/activity.get.ts`
+- `modules/visuals/components/BentoGithubHeatmap.vue`
+
+### Dominio
+- "Si la API de GitHub devuelve HTTP 202 Accepted (estadísticas en proceso de cálculo), el servidor reintenta hasta 3 veces con intervalos de 1200ms."
+- "Si continúa en 202, el endpoint responde con `status: 'computing'`. El componente en el frontend mantiene el spinner de carga y ejecuta un sondeo automático tras 2 segundos (hasta 3 intentos)."
+- "En caso de falla o repositorio sin actividad, la interfaz ofrece un botón manual para 'Reintentar' sin forzar la recarga completa del navegador."
 
 ---
 
@@ -534,5 +615,70 @@ interface FeedbackSubmission {
 
 - **Happy Path**: Usuario rellena texto e imagen, presiona Enviar. Recibe feedback visual de éxito y se crea el registro en Supabase.
 - **Sin imagen**: Usuario envía solo texto. Se guarda en BD con `image_url: null`.
-- **Sin texto**: El frontend bloquea el formulario si falta el detalle (es requerido).
 - **Admin**: Acceso a `/admin/reportes` requiere verificación exitosa. Si no tiene acceso, es redirigido o bloqueado. Muestra la tabla de reportes correctamente.
+
+---
+
+## Bot de Telegram (Hitos, Resumen Diario y Oportunidades)
+
+Sistema automatizado desacoplado mediante arquitectura Outbox y Snapshots para publicar cambios en el ranking, hitos de facturación, récords por país, visitas y oportunidades curadas de inversión/crecimiento sin spam y con idempotencia garantizada.
+
+### Contrato
+
+**Ubicación arquitectónica:**
+- `modules/notifier/types/index.ts` — tipos de eventos, snapshots, payloads y estados
+- `modules/notifier/const/config.ts` — umbrales, límites de tasa, horario de silencio y configuración centralizada
+- `modules/notifier/server/db/schema.sql` — esquema DDL aditivo para tablas `notification_events`, `notification_snapshots` y `notification_locks`
+- `modules/notifier/server/db/storage.interface.ts` — interfaz de persistencia
+- `modules/notifier/server/db/supabase.storage.ts` — implementación en Supabase con fallback resiliente
+- `modules/notifier/server/db/memory.storage.ts` — almacenamiento en memoria para pruebas
+- `modules/notifier/server/services/telegram.client.ts` — cliente nativo de Telegram Bot API con rate limit, retry_after, backoff exponencial y soporte dry-run
+- `modules/notifier/server/services/visits.provider.ts` — interfaz y proveedor desacoplado de visitas agregadas
+- `modules/notifier/server/services/anti-spam.service.ts` — control de horario de silencio (23:00 a 07:00) y tope diario de hitos
+- `modules/notifier/server/services/formatters/html.formatter.ts` — escape HTML, formato numérico ($1K, $12.4K, $1.2M), UTM links y división de mensajes largos (<4096 caracteres)
+- `modules/notifier/server/services/formatters/message.templates.ts` — plantillas de mensajes en español neutro
+- `modules/notifier/server/services/detectors/` — detectores puros:
+  - `new-startups.detector.ts` — detección y batching de startups nuevas
+  - `country-records.detector.ts` — nuevos récords históricos de facturación y cantidad por país (+5% margen)
+  - `ranking-moves.detector.ts` — cambios de orden en Top 10 / Top 3 y adelantamientos
+  - `visits-records.detector.ts` — récords de visitas diarias (1 por día)
+  - `opportunities.detector.ts` — scoring determinista y cooldown de 14 días
+  - `digest.detector.ts` — generador del resumen diario con fallback honesto ("día tranquilo")
+- `modules/notifier/server/services/outbox.service.ts` — procesador de cola con lock distribuido y despacho ordenado por prioridad
+- `modules/notifier/server/services/snapshot.service.ts` — captura de estado de la plataforma y baseline
+- `modules/notifier/server/services/notifier.orchestrator.ts` — orquestador central de los flujos de ejecución
+- `modules/notifier/server/api/notifier/run.post.ts` — endpoint para ciclo de hitos
+- `modules/notifier/server/api/notifier/digest.post.ts` — endpoint para resumen diario
+- `modules/notifier/server/api/notifier/status.get.ts` — endpoint de estado y diagnóstico
+
+**Variables de Entorno:**
+```env
+TELEGRAM_BOT_TOKEN=...
+TELEGRAM_CHANNEL_ID=...
+TELEGRAM_ADMIN_CHAT_ID=...
+NOTIFIER_ENABLED=false
+NOTIFIER_DRY_RUN=true
+NOTIFIER_TIMEZONE=America/Bogota
+DIGEST_HOUR=18
+NOTIFIER_MAX_DAILY_MILESTONES=8
+```
+
+### Dominio
+
+- **Idempotencia Estricta**: Cada evento tiene una `dedupe_key` única. Dos ciclos seguidos nunca duplican mensajes.
+- **Primera Ejecución / Línea Base**: Si no existe snapshot previo, se inicializa la línea base y **no** se emiten eventos históricos.
+- **Detectores Puros**: Son funciones deterministas sin llamadas a Telegram ni efectos secundarios externos.
+- **Scoring de Oportunidades Verificable**: Prohibido inventar cifras o proyecciones. El score se basa únicamente en: crecimiento real de MRR (+40 pts para >50%), hitos absolutos de MRR, facturación verificada por pasarela (+15 pts), novedad de lanzamiento (+15 pts) y tracción. Cooldown de 14 días salvo salto significativo de MRR (>= +30%).
+- **Anti-Spam y Horario de Silencio**: Máximo 8 mensajes de hitos al día; horario de silencio entre 23:00 y 07:00 en `NOTIFIER_TIMEZONE` (los hitos se postergan o agrupan en el resumen diario).
+- **Seguridad en Telegram**: Modo `parse_mode=HTML` con escape estricto de `&`, `<`, `>`. Límite de 4096 caracteres con división por bloques enteros. Rate limit de ~1 msg/s. Manejo de 429 con `retry_after`, 5xx con backoff exponencial y 400/403 marcados como fallas definitivas con alerta inmediata al admin.
+
+### Validación
+
+- **Happy Path Hitos**: Nuevas startups agregadas -> Detectadas y agrupadas en la cola con dedupe key -> Despachadas al canal.
+- **Happy Path Resumen Diario**: Ejecución a la hora configurada -> Genera resumen con startups nuevas, delta de facturación global, top países, visitas y oportunidades curadas con disclaimer financiero.
+- **Día Tranquilo**: Sin cambios en métricas -> Resumen honesto indicando día tranquilo.
+- **Línea Base Segura**: Primera ejecución -> Guarda snapshot sin generar eventos.
+- **Idempotencia**: Dos ejecuciones sucesivas -> La segunda encuentra 0 eventos nuevos.
+- **Dry-Run**: `NOTIFIER_DRY_RUN=true` -> Simula todo el ciclo en consola sin realizar peticiones a Telegram.
+- **Fallas de Red / 429**: Telegram responde 429 -> El cliente espera `retry_after` y reintenta exitosamente.
+- **Fallas Fatales / 403**: Token o permisos inválidos -> El evento se marca como fallido y se envía alerta al chat admin sin reintentos infinitos.

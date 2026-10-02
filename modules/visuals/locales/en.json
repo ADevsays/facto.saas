@@ -1,0 +1,248 @@
+{
+  "home_header": {
+    "title_start": "The Revenue",
+    "title_highlight": "Ranking",
+    "title_end": "of Top Startups",
+    "description": "Up to 30,000 visits from startup founders, digital services, investors and buyers - 4,000 monthly recurring users.",
+    "explore_ranking": "Explore ranking →"
+  },
+  "list_header": {
+    "title_start": "Explore all",
+    "title_highlight": "Startups",
+    "category_title_start": "Startups in",
+    "country_title_start": "Top Startups in",
+    "combined_title_start": "Startups in {category} in",
+    "description": "The global ranking of startups ordered by revenue and validated in real time.",
+    "country_description": "The most successful software companies and startups founded in {country} with verified real-time MRR.",
+    "combined_description": "Top {category} startups founded in {country} with real verified metrics.",
+    "seo_category_title": "Startups in {category} — Verified MRR | Facto",
+    "seo_country_title": "Top Startups in {country} — Verified MRR & Revenue | Facto",
+    "seo_default_title": "SaaS Startups Directory — Verified MRR & Revenue | Facto",
+    "category_descriptions": {
+      "restaurantes": "Software, apps, and restaurant management tools built to streamline orders and operations.",
+      "marketing": "Customer acquisition, funnel automation, and growth tools with real verified revenue.",
+      "ai": "Innovative startups powered by artificial intelligence, automation, and machine learning.",
+      "finanzas": "Fintech platforms, invoicing, accounting, and investment tools with verified MRR metrics.",
+      "ventas": "Prospecting, sales pipeline, and deal closing software designed for modern B2B teams.",
+      "gestion": "Productivity tools, internal workflows, and resource management software for companies.",
+      "salud": "Health tech, fitness, physical wellness, and clinic management software with real impact.",
+      "productividad": "Apps designed to save time, organize daily tasks, and boost overall team performance.",
+      "crm": "Systems to manage customer relationships, retain clients, and drive recurring sales.",
+      "design": "Platforms for designers, graphic editors, rapid prototyping, and visual asset generation.",
+      "dev-tools": "Tools for developers, API infrastructure, debugging, and continuous deployment.",
+      "analytics": "Analytics platforms, traffic tracking, and real-time user behavior measurement.",
+      "negocios": "Comprehensive software for businesses, SMBs, and creators seeking scale and profitability.",
+      "seguridad": "Data protection, secure authentication, vulnerability prevention, and user privacy.",
+      "payments": "Billing gateways, recurring subscriptions, and global payment processing systems.",
+      "video": "Recording tools, cloud video editing, transcription, and audiovisual production.",
+      "musica": "Platforms for audio creators, music distribution, and digital audio production.",
+      "mensajes": "Live chat solutions, automated bots, and omnichannel communication for customers.",
+      "envios": "Modern logistics, parcel tracking, and automated dispatch management for commerce.",
+      "animales": "Software for veterinary clinics, pet care, and animal care communities.",
+      "big-data": "High-volume data processing, data engineering pipelines, and predictive models.",
+      "infrastructure": "Cloud servers, resilient databases, and scalable software architecture.",
+      "other": "Discover startups in unique niches and emerging industries with transparent revenue.",
+      "fallback": "Explore top SaaS startups in {category} with verified MRR, annual revenue, and live growth."
+    }
+  },
+  "gem_card": {
+    "incognito": "— Anonymous —",
+    "no_name": "No name",
+    "category_fallback": "Category",
+    "views": "Views",
+    "mrr": "MRR",
+    "arr_est": "ARR (Est.)"
+  },
+  "best_section": {
+    "title": "Top SaaS",
+    "view_all": "View all"
+  },
+  "recently_section": {
+    "title": "Recently added",
+    "view_all": "View all"
+  },
+  "country_cards_section": {
+    "title": "Countries"
+  },
+  "tools_teaser_section": {
+    "title": "Tools"
+  },
+  "list_view": {
+    "loading": "Loading startups...",
+    "empty": "No startups registered"
+  },
+  "category_grid": {
+    "title_start": "Explore by",
+    "title_highlight": "Category",
+    "description": "Find the perfect SaaS for every need in our startup collection.",
+    "seo_title": "SaaS Startups in {category} — Verified Ranking | Facto",
+    "seo_description": "Discover the best startups in {category}."
+  },
+  "country_grid": {
+    "title_start": "Explore by",
+    "title_highlight": "Country",
+    "description": "Discover which startups are the most profitable in every region of the world.",
+    "seo_title": "SaaS Startups in {country} — Verified Ranking | Facto",
+    "seo_description": "Discover the best startups in {country}."
+  },
+  "filters": {
+    "sort_latest": "Latest added",
+    "sort_mrr": "Highest MRR",
+    "sort_views": "Most views",
+    "all_categories": "All categories",
+    "sort_fallback": "Sort",
+    "categories_fallback": "Categories"
+  },
+  "profile": {
+    "header": {
+      "share": "Share",
+      "visit": "Visit",
+      "edit": "Edit",
+      "anonymous": "— Anonymous —",
+      "default_desc": "Powering the future of technology with innovative solutions."
+    },
+    "bento": {
+      "value_prop_title": "Value Proposition",
+      "problem_title": "The Problem It Solves",
+      "github_title": "Latest GitHub Activity",
+      "github_no_commits": "No recent commits or private repository",
+      "github_view_repo": "View repository →",
+      "tech_stack_title": "Tech Stack",
+      "acquisition_title": "Acquisition Channels",
+      "facto_message_title": "Message for the Facto Community",
+      "faq_title": "Frequently Asked Questions"
+    },
+    "metrics": {
+      "mrr_label": "MRR",
+      "mrr_tooltip": "The fixed money the startup earns per month from subscribers. Excludes one-off payments.",
+      "mrr_desc": "Monthly revenue",
+      "revenue_label": "Total Revenue",
+      "revenue_tooltip": "All the money the startup has earned in total since day one.",
+      "revenue_desc": "Accumulated revenue",
+      "claim_tooltip": "Claim this startup",
+      "founder_label": "Founder",
+      "founder_desc": "Owner / CEO",
+      "founded_label": "Founded",
+      "founded_desc": "Published date",
+      "country_label": "Country",
+      "hq_default": "Headquarters"
+    },
+    "chart": {
+      "owner_question": "Are you the owner?",
+      "edit_startup": "Edit startup",
+      "claim_startup": "Claim this startup",
+      "founder_circle": "Founder circle",
+      "verify_identity": "Verify identity to manage",
+      "probable_rank_title": "Verify your MRR and reach",
+      "probable_rank_sub_desktop_prefix": "Verified startups receive",
+      "probable_rank_multiplier": "5.4x more views",
+      "verify_mrr_cta": "Verify my MRR →"
+    },
+    "share_modal": {
+      "title": "Share on Social Networks",
+      "real_views": "real views",
+      "total_revenue": "billed",
+      "mrr_verified": "MRR verified",
+      "mrr_unverified": "MRR unverified",
+      "preview_label": "Message preview:",
+      "copied": "Copied!"
+    },
+    "more": {
+      "title_start": "See more",
+      "title_highlight": "startups",
+      "view_all": "View startups"
+    },
+    "claim_modal": {
+      "verify_mrr": "Verify your MRR",
+      "verify_identity": "Verify your identity",
+      "claim_startup": "Claim your startup",
+      "verify_desc": "Verify your identity as owner",
+      "registered_email": "Registered email",
+      "your_email": "Your email address",
+      "email_placeholder": "founder@yourstartup.com",
+      "send_code": "Send code",
+      "sending": "Sending...",
+      "enter_code": "Enter your code",
+      "code_sent": "We sent a 6-digit code to your email",
+      "verify": "Verify",
+      "verifying": "Verifying...",
+      "resend_code": "Resend code",
+      "resend_wait": "Resend code ({seconds}s)",
+      "lost_access": "Lost access to this email?",
+      "lost_access_desc": "Contact <span class=\"text-[#00D4FF]\">adevsaysinfo@gmail.com</span> with proof of ownership of your startup domain.",
+      "connect_mrr": "Connect your MRR",
+      "complete_profile": "Complete your profile",
+      "select_gateway": "Select your payment gateway",
+      "data_public": "This data will appear on your startup page",
+      "name_label": "Name",
+      "name_placeholder": "Your full name",
+      "country_label": "Country",
+      "twitter_label": "X (Twitter)",
+      "twitter_placeholder": "https://x.com/your-handle",
+      "instagram_label": "Instagram (Optional)",
+      "instagram_placeholder": "https://instagram.com/your-profile",
+      "linkedin_label": "LinkedIn",
+      "linkedin_placeholder": "https://linkedin.com/in/your-profile",
+      "save": "Save",
+      "saving": "Saving...",
+      "change_data": "Want to change any startup data?",
+      "err_name": "You must enter your name.",
+      "err_api": "You must enter an API Key or connect your account.",
+      "err_send": "Error sending code. Please try again.",
+      "err_resend": "Error resending code.",
+      "err_expired": "Expired code",
+      "err_invalid": "Invalid code",
+      "err_wrong": "Wrong code",
+      "err_save": "Error saving. Please try again."
+    },
+    "verification": {
+      "verified_with": "Verified with {provider} API Key. Last updated: {date}"
+    },
+    "overlay": {
+      "unverified_mrr": "Unverified MRR",
+      "unverified_desc": "If you are the owner of this startup, click here to verify your identity and add your MRR.",
+      "verify_ownership": "Verify ownership →"
+    }
+  },
+  "country_leaderboard": {
+    "title_start": "World Ranking by",
+    "title_highlight": "Country",
+    "description": "Generated revenue and registered startups in each region of the world.",
+    "seo_title": "World SaaS Ranking | Facto",
+    "seo_description": "Discover the world ranking of revenue and billings by country on Facto.",
+    "startup_single": "Registered startup",
+    "startup_plural": "Registered startups",
+    "total_billed": "Total Billed",
+    "revenue": "Revenue"
+  },
+  "founder_profile": {
+    "badge": "Founder Profile",
+    "total_revenue": "Total Revenue",
+    "saas_single": "Active SaaS",
+    "saas_plural": "Active SaaS",
+    "portfolio_title": "SaaS Portfolio",
+    "in_total": "in total",
+    "founder_fallback": "Founder",
+    "not_found": "Founder not found",
+    "back_to_ranking": "Back to Leaderboard",
+    "seo_title": "{name} — Founder Profile | Facto",
+    "seo_title_fallback": "Founder Profile | Facto",
+    "seo_description": "Portfolio and startups created by {name} on Facto.",
+    "seo_description_fallback": "Discover startups and revenue from founders on Facto."
+  },
+  "share_achievement": {
+    "title": "Milestone Unlocked",
+    "subtitle": "Share it while it's hot",
+    "billed": "billed",
+    "real_views": "real visits",
+    "top_percent": "Top 5% of founders on Factosaas",
+    "share_x": "Share on X",
+    "share_linkedin": "Share on LinkedIn",
+    "share_facebook": "Share on Facebook",
+    "preview_title": "Message preview",
+    "copied": "Copied!",
+    "fomo": "23 founders shared their milestone this week",
+    "close_modal": "Close modal",
+    "preview_stats": "{revenue} billed - {views} visits - factosaas.com"
+  }
+}

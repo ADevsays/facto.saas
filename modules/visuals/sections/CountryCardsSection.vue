@@ -1,29 +1,42 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
-import { useRouter } from '#app'
-import { useCountries } from '~/composables/useCountries'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { ROUTES } from '~/utils/routes'
 
-const router = useRouter()
-const { countries, fetchCountries } = useCountries()
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+
+const { t } = useLanguage({ es, en })
+const localePath = useLocalePath()
 
 const COUNT = 3
 
-const visibleCountries = ref<{ name: string; slug: string; iso_code: string; flag: string }[]>([])
+interface ActiveCountry {
+  name: string
+  slug: string
+  isoCode?: string
+  iso_code?: string
+  flag: string
+  startupsCount?: number
+}
+
+const activeCountries = ref<ActiveCountry[]>([])
+const visibleCountries = ref<ActiveCountry[]>([])
 const phase = ref<'idle' | 'out'>('idle')
 let shuffleInterval: any = null
-let initialized = false
 
 function getRandomPool() {
-  const pool = countries.value.filter(c => c.slug !== 'global')
-  for (let i = pool.length - 1; i > 0; i--) {
+  const pool = activeCountries.value.filter(c => c.slug !== 'global' && (c.startupsCount === undefined || c.startupsCount > 0))
+  if (pool.length === 0) return []
+  const cloned = [...pool]
+  for (let i = cloned.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]]
+    [cloned[i], cloned[j]] = [cloned[j], cloned[i]]
   }
-  return pool.slice(0, COUNT)
+  return cloned.slice(0, Math.min(COUNT, cloned.length))
 }
 
 function shuffleCountries() {
+  if (activeCountries.value.length <= COUNT) return
   phase.value = 'out'
 
   setTimeout(() => {
@@ -32,23 +45,28 @@ function shuffleCountries() {
   }, 500)
 }
 
-watch(countries, (val) => {
-  if (!val.length || initialized) return
-  initialized = true
-  visibleCountries.value = getRandomPool()
+async function loadCountries() {
+  try {
+    const data = await $fetch<any[]>('/api/countries/leaderboard')
+    if (Array.isArray(data)) {
+      activeCountries.value = data.filter(c => c.slug !== 'global' && c.startupsCount > 0)
+      visibleCountries.value = getRandomPool()
+    }
+  } catch (e) {
+    console.error('Failed to fetch country leaderboard for country cards', e)
+  }
+}
 
-  shuffleInterval = setInterval(shuffleCountries, 12000)
-}, { immediate: true })
-
-onMounted(fetchCountries)
+onMounted(async () => {
+  await loadCountries()
+  if (activeCountries.value.length > COUNT && !shuffleInterval) {
+    shuffleInterval = setInterval(shuffleCountries, 12000)
+  }
+})
 
 onUnmounted(() => {
   if (shuffleInterval) clearInterval(shuffleInterval)
 })
-
-function goToCountry(slug: string) {
-  router.push(`${ROUTES.COUNTRY}/${slug}`)
-}
 
 const PARTICLES_PER_CARD = 14
 function generateParticles() {
@@ -69,21 +87,20 @@ const cardParticles = Array.from({ length: COUNT }).map(() => generateParticles(
 </script>
 
 <template>
-  <section class="w-full max-w-5xl mx-auto pt-10 pb-24">
-
+  <section v-if="visibleCountries.length > 0" class="w-full max-w-5xl mx-auto pt-10 pb-24">
     <NuxtLink 
-      to="/saas/pais"
+      :to="localePath('/saas/pais')"
       class="block mb-6 shrink-0 text-xs font-sans font-extralight tracking-[0.15em] text-neutral-500 hover:text-neutral-300 transition-all duration-300 uppercase"
     >
-      Países
+      {{ t.country_cards_section.title }}
     </NuxtLink>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <button
+      <NuxtLink
         v-for="(country, idx) in visibleCountries"
-        :key="idx"
-        @click="goToCountry(country.slug)"
-        class="country-card group relative bg-white/[0.02] border border-white/5 rounded-2xl py-6 px-5 flex items-center justify-center gap-4 text-center transition-all duration-500 hover:bg-white/[0.06] hover:border-white/15 hover:shadow-[0_0_20px_rgba(0,212,255,0.06)] outline-none cursor-pointer overflow-hidden"
+        :key="country.slug || idx"
+        :to="localePath(`${ROUTES.COUNTRY}/${country.slug}`)"
+        class="country-card group relative bg-white/[0.02] border border-white/5 rounded-2xl py-6 px-5 flex items-center justify-center gap-4 text-center transition-all duration-500 hover:bg-white/[0.06] hover:border-white/15 hover:shadow-[0_0_20px_rgba(0,212,255,0.06)] outline-none cursor-pointer overflow-hidden block"
       >
         <!-- Card content wrapper -->
         <div 
@@ -92,8 +109,8 @@ const cardParticles = Array.from({ length: COUNT }).map(() => generateParticles(
         >
           <div class="shrink-0 w-9 h-7 flex items-center justify-center">
             <img 
-              v-if="country.iso_code" 
-              :src="`https://flagcdn.com/w80/${country.iso_code}.png`" 
+              v-if="country.isoCode || country.iso_code" 
+              :src="`https://flagcdn.com/w80/${(country.isoCode || country.iso_code).toLowerCase()}.png`" 
               :alt="country.name"
               class="w-9 rounded-[3px] shadow-sm opacity-85 group-hover:opacity-100 transition-opacity duration-500"
             />
@@ -108,7 +125,7 @@ const cardParticles = Array.from({ length: COUNT }).map(() => generateParticles(
         <!-- Particles layer -->
         <div class="particles-layer" :class="phase">
           <span 
-            v-for="p in cardParticles[idx]" 
+            v-for="p in (cardParticles[idx] || [])" 
             :key="p.id" 
             class="particle"
             :style="{
@@ -121,7 +138,7 @@ const cardParticles = Array.from({ length: COUNT }).map(() => generateParticles(
         </div>
 
         <div class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none bg-gradient-to-r from-[#00D4FF]/[0.02] to-transparent"></div>
-      </button>
+      </NuxtLink>
     </div>
   </section>
 </template>

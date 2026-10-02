@@ -1,0 +1,21 @@
+{
+  "breadcrumb": "feedback",
+  "title": {
+    "line1": "Report",
+    "line2": "Bug"
+  },
+  "description": "Help us polish every detail. Describe the issue and attach a screenshot if possible.",
+  "form": {
+    "detailsLabel": "Error Details",
+    "detailsPlaceholder": "What were you doing? What error occurred?",
+    "screenshotLabel": "Screenshot (Optional)",
+    "dragDrop": "Click to upload or drag an image",
+    "processing": "Processing",
+    "submit": "Submit Report"
+  },
+  "success": {
+    "title": "Thank you for your report!",
+    "description": "Our team will review the details shortly.",
+    "button": "Submit another"
+  }
+}

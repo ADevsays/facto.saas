@@ -1,0 +1,83 @@
+{
+  "seo": {
+    "title": "Generador de Facturas y Comprobantes PDF | Facto",
+    "description": "Crea y descarga documentos comerciales en PDF al instante. Multidivisa, cálculo de impuestos, sin registro. El maquetador de invoices gratuito para founders de SaaS.",
+    "ogTitle": "Generador de Comprobantes PDF para Founders | Facto",
+    "ogDescription": "Maqueta comprobantes y \"invoices\" en PDF para tus clientes globales en segundos. Sin registro, multidivisa, con IVA/VAT. 100% gratuito para siempre.",
+    "twitterTitle": "Generador de Comprobantes PDF Gratis | Facto",
+    "twitterDescription": "Documentos comerciales en PDF para tu SaaS. Gratis, sin registro, multidivisa."
+  },
+  "schema": {
+    "name": "Generador de Facturas y Comprobantes PDF",
+    "description": "Herramienta web gratuita para maquetar, personalizar y descargar documentos comerciales en PDF. Multidivisa, cálculo visual de IVA/VAT, sin registro ni instalación."
+  },
+  "breadcrumb": {
+    "tools": "herramientas",
+    "invoiceGenerator": "emisor de facturas",
+    "newInvoice": "nueva factura",
+    "editInvoice": "editar factura"
+  },
+  "hero": {
+    "badge": "Herramienta gratuita",
+    "title1": "Facturas para",
+    "title2": "Founders",
+    "description": "Facturas en PDF. Sin cuenta, sin límites, sin que tus datos salgan del navegador.",
+    "yourData": "Tus datos"
+  },
+  "history": {
+    "title": "Tus Facturas Guardadas",
+    "emptyState": "No tienes facturas guardadas. Crea la primera.",
+    "newInvoice": "Nueva Factura",
+    "delete": "Eliminar",
+    "edit": "Editar"
+  },
+  "editor": {
+    "mobilePreviewEdit": "Editar",
+    "mobilePreviewView": "Ver factura",
+    "metaTitle": "Datos de la Factura",
+    "invoiceNumber": "Nº Factura",
+    "date": "Fecha",
+    "dueDate": "Vencimiento",
+    "currency": "Divisa",
+    "clientTitle": "Cliente",
+    "clientName": "Nombre / Razón Social",
+    "clientTaxId": "NIF / RFC / Tax ID",
+    "clientEmail": "Email",
+    "clientAddress": "Dirección",
+    "itemsTitle": "Conceptos",
+    "addItem": "Agregar concepto",
+    "notesTitle": "Notas y Pago",
+    "paymentInfo": "Datos de Pago",
+    "paymentInfoPlaceholder": "Banco, IBAN, SWIFT...",
+    "notes": "Notas",
+    "notesPlaceholder": "Términos, observaciones...",
+    "total": "Total",
+    "preview": "Vista previa",
+    "update": "Actualizar",
+    "save": "Guardar"
+  },
+  "items": {
+    "description": "Descripción",
+    "qty": "Cant.",
+    "price": "Precio",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "tax": "Impuesto"
+  },
+  "settings": {
+    "title": "Tus Datos (Emisor)",
+    "description": "Configura tus datos para que aparezcan en todas tus facturas.",
+    "taxRate": "Tasa de Impuesto (%)",
+    "defaultCurrency": "Divisa por defecto",
+    "save": "Guardar Datos",
+    "close": "Cerrar"
+  },
+  "preview": {
+    "invoiceTo": "Factura a",
+    "exportPdf": "Exportar PDF",
+    "close": "Cerrar"
+  },
+  "mrr": {
+    "prompt": "¿Ya tienes MRR? Descubre tu valoración"
+  }
+}

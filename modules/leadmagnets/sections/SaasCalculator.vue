@@ -4,9 +4,7 @@ import { useSaasCalculator } from '../composables/useSaasCalculator';
 import CalcHeader from '../components/CalcHeader.vue';
 import CalcInputsPanel from '../components/CalcInputsPanel.vue';
 import CalcValuationCard from '../components/CalcValuationCard.vue';
-import CalcHealthCard from '../components/CalcHealthCard.vue';
-import CalcInsightsCard from '../components/CalcInsightsCard.vue';
-import CalcRankTeaser from '../components/CalcRankTeaser.vue';
+import CalcBragCard from '../components/CalcBragCard.vue';
 import es from '../locales/es.json';
 import en from '../locales/en.json';
 import { useLanguage } from '@/composables/useLanguage';
@@ -25,8 +23,6 @@ const {
     formatMultiplier,
 } = useSaasCalculator();
 
-
-// Animación de números
 const displayValuation = ref(0);
 const displayMultiplier = ref(0);
 
@@ -47,7 +43,7 @@ const animateNumber = (target: number, current: any, duration = 600) => {
 onMounted(() => {
     displayValuation.value = valuation.value;
     displayMultiplier.value = adjustedMultiple.value;
-    
+
     watch(valuation, (val) => animateNumber(val, displayValuation));
     watch(adjustedMultiple, (val) => animateNumber(val, displayMultiplier, 400));
 });
@@ -74,13 +70,12 @@ const translatedSegment = computed(() => {
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
-                <!-- Grupo 1: Se queda en la izquierda en desktop, pero se intercala en mobile -->
+                <!-- Izquierda: inputs -->
                 <div class="contents lg:flex lg:flex-col gap-6">
                     <CalcInputsPanel class="order-1" />
-                    <CalcInsightsCard class="order-5" />
                 </div>
 
-                <!-- Grupo 2: Se queda en la derecha en desktop, pero se intercala en mobile -->
+                <!-- Derecha: valoración + salud/posición unificadas -->
                 <div class="contents lg:flex lg:flex-col gap-6">
                     <CalcValuationCard
                         class="order-2"
@@ -95,14 +90,12 @@ const translatedSegment = computed(() => {
                         :format-currency="formatCurrency"
                         :format-multiplier="formatMultiplier"
                     />
-                    
-                    <CalcHealthCard class="order-3" />
-                    <CalcRankTeaser class="order-4" />
+
+                    <CalcBragCard class="order-3" />
                 </div>
 
             </div>
 
         </div>
-
     </section>
 </template>

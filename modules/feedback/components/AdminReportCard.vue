@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FeedbackReport } from '~/modules/feedback/types'
 import { useAdminReports } from '~/modules/feedback/composables/useAdminReports'
+import { ImageOff, Clock } from 'lucide-vue-next'
 
 const props = defineProps<{
   report: FeedbackReport
@@ -17,7 +18,7 @@ const { formatDate } = useAdminReports()
       <div class="absolute inset-0 bg-gradient-to-t from-[#030305] to-transparent pointer-events-none"></div>
     </div>
     <div v-else class="h-20 w-full bg-white/[0.01] border-b border-white/[0.05] flex items-center justify-center text-neutral-700">
-      <Icon name="lucide:image-off" size="20" />
+      <ImageOff :size="20" />
     </div>
     
     <!-- Content -->
@@ -35,7 +36,7 @@ const { formatDate } = useAdminReports()
       </p>
       
       <div class="flex items-center gap-2 text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-600 mt-auto pt-6 border-t border-white/[0.03]">
-        <Icon name="lucide:clock" size="12" />
+        <Clock :size="12" />
         {{ formatDate(report.created_at) }}
       </div>
     </div>

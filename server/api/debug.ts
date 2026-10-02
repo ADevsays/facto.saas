@@ -1,7 +1,7 @@
 import { supabase } from '~/server/lib/supabase'
 import { decryptProviderKey } from '~/server/utils/encryption'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<Record<string, any>> => {
   const { data: dbEntry } = await supabase
     .from('saas_entries')
     .select('provider_key_encrypted')
@@ -12,9 +12,9 @@ export default defineEventHandler(async (event) => {
 
   const apiKey = decryptProviderKey(dbEntry.provider_key_encrypted)
 
-  const res = await $fetch<any>('https://api.stripe.com/v1/subscriptions?status=all&limit=10', {
+  const res: any = await $fetch('https://api.stripe.com/v1/subscriptions?status=all&limit=10', {
     headers: { Authorization: `Bearer ${apiKey}` }
-  }).catch(e => ({ error: e.message }))
+  }).catch((e: any) => ({ error: (e as Error).message }))
 
   return { rawStripe: res }
 })

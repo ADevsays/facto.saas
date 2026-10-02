@@ -3,52 +3,38 @@ const props = defineProps<{
   provider: 'stripe' | 'mercadopago' | 'whop' | 'none' | null
 }>()
 
-const tutorials = {
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+const { t } = useLanguage({ es, en })
+
+const tutorials = computed(() => ({
   stripe: {
-    title: 'Stripe (Solo Lectura)',
-    steps: [
-      'Dale click a "Ir al dashboard" para crear una API key de sólo lectura.',
-      'Cópiala sin cambiar los permisos.',
-      'Pégala aquí y no la borres.'
-    ],
-    linkText: 'Ir al Dashboard',
+    title: t.value.tutorial.stripeTitle,
+    steps: t.value.tutorial.stripeSteps,
+    linkText: t.value.tutorial.stripeLink,
     link: 'https://dashboard.stripe.com/apikeys/create?name=Facto.saas&permissions%5B%5D=rak_charge_read&permissions%5B%5D=rak_subscription_read&permissions%5B%5D=rak_plan_read&permissions%5B%5D=rak_product_read&permissions%5B%5D=rak_invoice_read&permissions%5B%5D=rak_credit_note_read'
   },
   mercadopago: {
-    title: 'Mercado Pago (Conexión Segura)',
-    steps: [
-      'Haz clic en "Conectar Mercado Pago"',
-      'Inicia sesión y autoriza a Facto',
-      'Verifica permisos de "Solo Lectura"',
-      'El MRR se detectará automáticamente'
-    ],
+    title: t.value.tutorial.mpTitle,
+    steps: t.value.tutorial.mpSteps,
     linkText: null,
     link: null
   },
   whop: {
-    title: 'Whop (Conexión Segura)',
-    steps: [
-      'Crea una nueva Company API key.',
-      'Hereda los permisos de Admin para seguridad.',
-      'Copia tu company ID (empieza con biz_ en la URL)',
-      'Pega ambos valores aquí.'
-    ],
-    linkText: 'Abrir Dashboard de Developer',
+    title: t.value.tutorial.whopTitle,
+    steps: t.value.tutorial.whopSteps,
+    linkText: t.value.tutorial.whopLink,
     link: 'https://whop.com/dashboard/developer'
   },
   none: {
-    title: 'Verificación Posterior',
-    steps: [
-      'Puedes publicar ahora sin MRR',
-      'Usa tu email privado para validar después',
-      'Las startups verificadas tienen prioridad'
-    ],
+    title: t.value.tutorial.noneTitle,
+    steps: t.value.tutorial.noneSteps,
     linkText: null,
     link: null
   }
-}
+}))
 
-const current = computed(() => props.provider ? tutorials[props.provider] : null)
+const current = computed(() => props.provider ? tutorials.value[props.provider] : null)
 </script>
 
 <template>
@@ -77,7 +63,7 @@ const current = computed(() => props.provider ? tutorials[props.provider] : null
       
       <ul class="flex flex-col gap-1.5">
         <li v-for="(step, i) in current.steps" :key="i" class="flex items-start gap-2.5">
-          <span class="text-[10px] font-sans font-bold text-[#00D4FF] mt-0.5 opacity-60">{{ i + 1 }}.</span>
+          <span class="text-[10px] font-sans font-bold text-[#00D4FF] mt-0.5 opacity-60">{{ Number(i) + 1 }}.</span>
           <p class="text-sm font-sans font-light text-neutral-300 leading-tight">
             {{ step }}
           </p>

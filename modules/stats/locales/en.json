@@ -1,0 +1,42 @@
+{
+  "seo_title": "Facto Statistics Today: Verified Revenue, Startups & Traffic",
+  "seo_description": "Consolidated metrics on Stripe-verified revenue, launch velocity, and real-time profile visits across SaaS startups listed on Facto.",
+  "breadcrumb": "Statistics",
+  "title_start": "Statistics of",
+  "title_highlight": "Facto Today",
+  "description": "Consolidated metrics on Stripe-verified revenue, launch velocity, and real-time profile visits across SaaS startups listed on Facto.",
+  "kpis": {
+    "today_startups": "Startups Today",
+    "today_startups_sub": "in global catalog",
+    "today_revenue": "Revenue Today",
+    "today_revenue_sub": "active annualized revenue",
+    "today_views": "Visits Today",
+    "today_views_sub": "cumulative traffic",
+    "total_mrr": "Verified MRR",
+    "total_mrr_sub": "per verified startup",
+    "countries_count": "Active Countries",
+    "countries_sub": "across Ibero-America & world"
+  },
+  "bento": {
+    "startups_title": "Cumulative Total Growth",
+    "startups_badge": "Historical Catalog",
+    "startups_sub": "Total published startups in Facto over time",
+    "mrr_title": "Verified Monthly MRR",
+    "mrr_badge": "Stripe & Revenue",
+    "mrr_sub": "Verified recurring monthly revenue",
+    "daily_additions_title": "Daily Onboarding Velocity",
+    "daily_additions_badge": "Daily Launches",
+    "daily_additions_sub": "New startups published per day (daily activity spikes)",
+    "daily_views_title": "Daily Profile Visits",
+    "daily_views_badge": "Daily Traffic",
+    "daily_views_sub": "Volume of visits received per day (traffic spikes)",
+    "cumulative_views_title": "Cumulative Profile Visits",
+    "cumulative_views_badge": "Total Cumulative",
+    "cumulative_views_sub": "Total lifetime traction generated across startup profiles",
+    "categories_title": "Category Breakdown",
+    "countries_title": "Country Leaderboard",
+    "range_all": "All",
+    "range_90d": "90d",
+    "range_30d": "30d"
+  }
+}

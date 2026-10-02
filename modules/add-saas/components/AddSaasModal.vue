@@ -10,6 +10,11 @@ import AddSaasConnectionArea from './AddSaasConnectionArea.vue'
 import AddSaasFormFields from './AddSaasFormFields.vue'
 import AddSaasFooter from './AddSaasFooter.vue'
 
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+
+const { t } = useLanguage({ es, en })
+
 const { isOpen, close, editMode, fromClaimModal } = useAddSaasModal()
 const showClaimModal = useState('claim-founder-modal-open', () => false)
 
@@ -85,7 +90,7 @@ function handleGoBack() {
         <div class="flex-1 overflow-y-auto px-8 py-6 flex flex-col gap-7 custom-scrollbar">
           <div v-if="!editMode" class="bg-white/[0.03] border border-white/5 rounded-xl p-3.5">
             <p class="text-sm font-sans font-light text-neutral-400 leading-relaxed">
-              <span class="text-white font-semibold">¿Tu startup es invisible?</span> Verifica tu MRR para destacar frente al mercado.
+              <span class="text-white font-semibold">{{ t.info.invisible }}</span> {{ t.info.verifyDesc }}
             </p>
           </div>
 

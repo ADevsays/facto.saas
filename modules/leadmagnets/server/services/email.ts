@@ -5,15 +5,6 @@ const port = parseInt(process.env.BREVO_PORT || '587')
 const user = (process.env.BREVO_USER || '').trim()
 const pass = (process.env.BREVO_PASS || '').trim()
 
-console.log('[Email Service] Diagnostic:', {
-    host,
-    port,
-    userLength: user.length,
-    passLength: pass.length,
-    hasUser: !!user,
-    hasPass: !!pass
-})
-
 const transporter = nodemailer.createTransport({
     host,
     port,
@@ -22,26 +13,11 @@ const transporter = nodemailer.createTransport({
         user,
         pass,
     },
-    debug: true,
-    logger: true,
     tls: {
         rejectUnauthorized: true,
         checkServerIdentity: () => undefined
     }
 })
-
-// Verificar conexión al inicio
-if (process.env.BREVO_USER && process.env.BREVO_PASS) {
-    transporter.verify((error) => {
-        if (error) {
-            console.error('[Email Service] SMTP Connection Error:', error)
-        } else {
-            console.log('[Email Service] SMTP Server is ready')
-        }
-    })
-} else {
-    console.warn('[Email Service] Warning: SMTP credentials (BREVO_USER/PASS) are missing.')
-}
 
 export interface SendEmailParams {
     to: string
@@ -64,7 +40,6 @@ export const sendFoundersReport = async (params: SendEmailParams) => {
             }
         })
         
-        console.log('[Email Service] Email sent successfully via SMTP:', info.messageId)
         return info
     } catch (err) {
         console.error('[Email Service] Error sending via SMTP:', err)

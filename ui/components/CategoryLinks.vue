@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ROUTES } from '~/utils/routes'
+
 interface CategoryItem {
   id: string
   name: string
@@ -9,28 +11,26 @@ defineProps<{
   categories: CategoryItem[]
 }>()
 
-const emit = defineEmits<{
-  (e: 'select', slug: string): void
-  (e: 'select-all'): void
-}>()
+const localePath = useLocalePath()
+const { locale } = useI18n()
 </script>
 
 <template>
   <nav class="flex flex-wrap gap-x-8 gap-y-3.5 w-full justify-center items-center">
-    <button
-      @click="emit('select-all')"
+    <NuxtLink
+      :to="localePath('/saas')"
       class="shrink-0 text-xs font-sans font-extralight tracking-[0.15em] text-neutral-500 hover:text-neutral-300 transition-all duration-300 pb-0.5 uppercase"
     >
-      Todas
-    </button>
-    <button
+      {{ locale === 'en' ? 'All' : 'Todas' }}
+    </NuxtLink>
+    <NuxtLink
       v-for="cat in categories"
       :key="cat.id"
-      @click="emit('select', cat.slug)"
+      :to="localePath(`${ROUTES.CATEGORY}/${cat.slug}`)"
       class="shrink-0 text-xs font-sans font-extralight tracking-[0.15em] text-neutral-500 hover:text-neutral-300 transition-all duration-300 pb-0.5 uppercase"
     >
       {{ cat.name }}
-    </button>
+    </NuxtLink>
   </nav>
 </template>
 

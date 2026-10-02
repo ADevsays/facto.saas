@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" fill="#030305"/>
+  <defs>
+    <filter id="a" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1" result="b"/>
+    </filter>
+  </defs>
+  <!-- Main Triangle -->
+  <path d="M16 6L27 25H5L16 6Z" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- Glow -->
+  <path d="M16 6L27 25H5L16 6Z" fill="none" stroke="rgba(0,212,255,0.4)" stroke-width="2" filter="url(#a)"/>
+  <!-- Inner Glass -->
+  <path d="M16 8L25 24H7L16 8Z" fill="rgba(255,255,255,0.05)"/>
+</svg>

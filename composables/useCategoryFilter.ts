@@ -5,9 +5,10 @@ import { ROUTES } from '~/utils/routes'
 export function useCategoryFilter() {
   const route = useRoute()
   const router = useRouter()
+  const localePath = useLocalePath()
 
-  const isOnCategoryRoute = computed(() => route.path.includes(ROUTES.CATEGORY))
-  const isOnCountryRoute = computed(() => route.path.includes(ROUTES.COUNTRY))
+  const isOnCategoryRoute = computed(() => route.path.includes('/saas/categoria') || route.path.includes('/saas/category'))
+  const isOnCountryRoute = computed(() => route.path.includes('/saas/pais') || route.path.includes('/saas/country'))
 
   const category = computed(() => {
     if (isOnCategoryRoute.value) {
@@ -26,9 +27,9 @@ export function useCategoryFilter() {
       }
     } else {
       if (value === 'all' || !value) {
-        router.push('/saas')
+        router.push(localePath('/saas'))
       } else {
-        router.push(`${ROUTES.CATEGORY}/${value}`)
+        router.push(localePath(`${ROUTES.CATEGORY}/${value}`))
       }
     }
   }

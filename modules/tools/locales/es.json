@@ -1,0 +1,25 @@
+{
+  "seo": {
+    "title": "Herramientas Gratuitas para Founders y Startups | Facto",
+    "description": "Suite de utilidades web gratuitas para founders: calcula cuánto vale tu SaaS, genera facturas PDF y descarga miniaturas de YouTube. Sin registro, 100% gratis.",
+    "ogTitle": "Herramientas Gratis para Founders de SaaS | Facto",
+    "ogDescription": "Calculadora de valoración SaaS, generador de facturas PDF y descargador de miniaturas YouTube. Todo gratis, sin registro, para founders y creadores.",
+    "twitterTitle": "Herramientas Gratuitas para Founders | Facto",
+    "twitterDescription": "Calculadora SaaS, facturas PDF y más. Suite de utilidades gratis para founders."
+  },
+  "schema": {
+    "name": "Herramientas Gratuitas para Founders de SaaS",
+    "description": "Suite de utilidades web gratuitas para founders y startups: calculadora de valoración SaaS, generador de facturas PDF y descargador de miniaturas de YouTube.",
+    "home": "Inicio",
+    "tools": "Herramientas"
+  },
+  "hero": {
+    "title1": "Herramientas para",
+    "title2": "fundadores y compradores",
+    "description": "Calculadoras, generadores y recursos prácticos para analizar, valorar y hacer crecer tu negocio.",
+    "imgAlt": "Herramientas para Founders"
+  },
+  "breadcrumb": {
+    "label": "herramientas"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "seo": {
+    "title": "Free Tools for Founders and Startups | Facto",
+    "description": "Free web utilities suite for founders: calculate your SaaS valuation, generate PDF invoices, and download YouTube thumbnails. No sign up required, 100% free.",
+    "ogTitle": "Free Tools for SaaS Founders | Facto",
+    "ogDescription": "SaaS valuation calculator, PDF invoice generator, and YouTube thumbnail downloader. All free, no sign up required, for founders and creators.",
+    "twitterTitle": "Free Tools for Founders | Facto",
+    "twitterDescription": "SaaS calculator, PDF invoices and more. Free utilities suite for founders."
+  },
+  "schema": {
+    "name": "Free Tools for SaaS Founders",
+    "description": "Free web utilities suite for founders and startups: SaaS valuation calculator, PDF invoice generator, and YouTube thumbnail downloader.",
+    "home": "Home",
+    "tools": "Tools"
+  },
+  "hero": {
+    "title1": "Tools for",
+    "title2": "founders and buyers",
+    "description": "Calculators, generators, and practical resources to analyze, value, and grow your business.",
+    "imgAlt": "Tools for Founders"
+  },
+  "breadcrumb": {
+    "label": "tools"
+  }
+}

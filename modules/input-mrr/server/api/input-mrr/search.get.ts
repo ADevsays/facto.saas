@@ -69,6 +69,7 @@ export default defineEventHandler(async (event) => {
         categories ( name, slug )
       `)
       .gte('mrr', mrrValue)
+      .eq('status', 'published')
       .limit(20)
 
     if (error) throw createError({ statusCode: 500, message: error.message })
@@ -106,6 +107,7 @@ export default defineEventHandler(async (event) => {
         categories ( name, slug )
       `)
       .or(orConditions.join(','))
+      .eq('status', 'published')
       .limit(20)
 
     if (error) throw createError({ statusCode: 500, message: error.message })

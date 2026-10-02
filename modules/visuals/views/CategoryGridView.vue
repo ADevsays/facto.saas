@@ -7,6 +7,12 @@ import SaasBreadcrumb from '../components/SaasBreadcrumb.vue'
 import InputMrrView from '../../input-mrr/views/InputMrrView.vue'
 import CategoryCardSkeleton from '../components/CategoryCardSkeleton.vue'
 
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+
+const { t } = useLanguage({ es, en })
+const localePath = useLocalePath()
+
 import {
   Megaphone,
   Sparkles,
@@ -34,7 +40,7 @@ const { categories, fetchCategories, loading } = useCategories()
 onMounted(fetchCategories)
 
 function goToCategory(slug: string) {
-  router.push(`${ROUTES.CATEGORY}/${slug}`)
+  router.push(localePath(`${ROUTES.CATEGORY}/${slug}`))
 }
 
 function getIconComponent(slug: string) {
@@ -65,6 +71,11 @@ const mappedCategories = computed(() => {
     iconComponent: getIconComponent(cat.slug)
   }))
 })
+
+useAppSeo({
+  title: () => t.value.category_grid.seo_title.replace('{category}', ''),
+  description: () => t.value.category_grid.seo_description.replace('{category}', '')
+})
 </script>
 
 <template>
@@ -79,10 +90,10 @@ const mappedCategories = computed(() => {
 
       <div class="mt-10 mb-12 flex flex-col items-start border-b border-white/5 pb-8">
         <h1 class="font-serif text-4xl md:text-5xl font-normal leading-tight tracking-tight text-white">
-          Explora por <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00D4FF]/70 drop-shadow-[0_0_15px_rgba(0,212,255,0.4)]">Categoría</span>
+          {{ t.category_grid.title_start }} <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00D4FF]/70 drop-shadow-[0_0_15px_rgba(0,212,255,0.4)]">{{ t.category_grid.title_highlight }}</span>
         </h1>
         <p class="mt-6 font-sans font-extralight text-sm text-neutral-400">
-          Encuentra el SaaS perfecto para cada necesidad en nuestra colección de startups.
+          {{ t.category_grid.description }}
         </p>
       </div>
 
@@ -91,11 +102,11 @@ const mappedCategories = computed(() => {
       </div>
 
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 relative z-10">
-        <button
+        <NuxtLink
           v-for="cat in mappedCategories"
           :key="cat.slug"
-          @click="goToCategory(cat.slug)"
-          class="group relative bg-white/[0.02] border border-white/5 rounded-2xl p-5 flex flex-col items-start text-left transition-colors duration-300 hover:bg-white/[0.04] hover:border-white/10 outline-none"
+          :to="localePath(`${ROUTES.CATEGORY}/${cat.slug}`)"
+          class="group relative bg-white/[0.02] border border-white/5 rounded-2xl p-5 flex flex-col items-start text-left transition-colors duration-300 hover:bg-white/[0.04] hover:border-white/10 outline-none block"
         >
           <div class="flex items-center gap-3 w-full">
             <component :is="cat.iconComponent" :size="20" class="text-neutral-400 group-hover:text-[#00D4FF] transition-colors duration-300 shrink-0" />
@@ -106,7 +117,7 @@ const mappedCategories = computed(() => {
           <p v-if="cat.description" class="hidden mt-2 text-xs font-sans text-neutral-500 font-light line-clamp-2 leading-relaxed">
             {{ cat.description }}
           </p>
-        </button>
+        </NuxtLink>
       </div>
 
       <!-- Add MRR Component -->

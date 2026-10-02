@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { getCategoryDisplayName } from '~/utils/categories'
 
 interface Category {
   id: string
@@ -8,13 +9,15 @@ interface Category {
   icon?: string
 }
 
-const categories = ref<Category[]>([])
+const rawCategories = ref<Category[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 
 export function useCategories() {
+  const { locale } = useI18n()
+
   async function fetchCategories(force = false) {
-    if (categories.value.length > 0 && !force) {
+    if (rawCategories.value.length > 0 && !force) {
       loading.value = false
       return
     }
@@ -24,7 +27,7 @@ export function useCategories() {
 
     try {
       const data = await $fetch<Category[]>('/api/categories')
-      categories.value = data || []
+      rawCategories.value = data || []
     } catch (e: any) {
       error.value = e.message || 'Error loading categories'
     } finally {
@@ -32,8 +35,15 @@ export function useCategories() {
     }
   }
 
+  const categories = computed(() => {
+    return rawCategories.value.map(cat => ({
+      ...cat,
+      name: getCategoryDisplayName(cat.slug, cat.name, locale.value)
+    }))
+  })
+
   return {
-    categories: computed(() => categories.value),
+    categories,
     loading: computed(() => loading.value),
     error: computed(() => error.value),
     fetchCategories,

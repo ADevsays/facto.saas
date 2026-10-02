@@ -44,5 +44,28 @@ export default defineEventHandler(async (event) => {
 
   await supabase.from('otp_codes').delete().eq('email', email)
 
-  return { verified: true, email }
+  // Crear sesión real en base de datos
+  const sessionToken = crypto.randomBytes(32).toString('hex')
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 días
+
+  const userAgent = getHeader(event, 'user-agent') || ''
+  const ipAddress = getHeader(event, 'x-forwarded-for') || ''
+
+  await supabase.from('founder_sessions').insert({
+    founder_email: email,
+    token: sessionToken,
+    user_agent: userAgent,
+    ip_address: ipAddress,
+    expires_at: expiresAt
+  })
+
+  setCookie(event, 'facto_founder_token', sessionToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 30 * 24 * 60 * 60,
+    path: '/'
+  })
+
+  return { verified: true, email, token: sessionToken }
 })

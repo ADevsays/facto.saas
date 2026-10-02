@@ -12,6 +12,10 @@ const props = defineProps<{
 
 const apiKey = defineModel<string>('apiKey', { default: '' })
 
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+const { t } = useLanguage({ es, en })
+
 const rawApiKey = ref('')
 const companyId = ref('')
 const stripeProductId = ref('')
@@ -83,25 +87,25 @@ watch(rawApiKey, (newVal) => {
     <div v-if="provider === 'stripe'" class="flex flex-col gap-2">
       <AddSaasInput
         v-model="rawApiKey"
-        label="2. Stripe Restricted Key"
+        :label="t.connection.stripeRk"
         type="password"
         placeholder="rk_live_..."
       />
       
       <div v-if="isLoadingStripeProducts" class="text-[10px] text-[#00D4FF] font-sans animate-pulse px-1 mt-1">
-        Buscando productos...
+        {{ t.connection.searchingProducts }}
       </div>
       
       <div v-else-if="stripeProducts.length > 1" class="flex flex-col gap-1.5 mt-2 animate-in fade-in slide-in-from-top-2">
         <label class="text-[10px] uppercase font-bold text-[#00D4FF] ml-1 tracking-widest opacity-80">
-          3. Selecciona tu Producto
+          {{ t.connection.selectProduct }}
         </label>
         <div class="relative">
           <select 
             v-model="stripeProductId"
             class="w-full bg-[#111111] border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white font-sans focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition-all duration-300 appearance-none"
           >
-            <option value="" disabled>Selecciona el producto de esta startup...</option>
+            <option value="" disabled>{{ t.connection.selectProductPlaceholder }}</option>
             <option v-for="p in stripeProducts" :key="p.id" :value="p.id">
               {{ p.name }}
             </option>
@@ -112,20 +116,20 @@ watch(rawApiKey, (newVal) => {
             </svg>
           </div>
         </div>
-        <p class="text-[10px] text-white/40 ml-1">Hemos detectado múltiples proyectos en esta cuenta.</p>
+        <p class="text-[10px] text-white/40 ml-1">{{ t.connection.multipleProjects }}</p>
       </div>
     </div>
 
     <div v-else-if="provider === 'whop'" class="flex flex-col gap-2">
       <AddSaasInput
         v-model="companyId"
-        label="2. Company ID (biz_...)"
+        :label="t.connection.whopCompanyId"
         type="text"
         placeholder="biz_..."
       />
       <AddSaasInput
         v-model="rawApiKey"
-        label="3. Whop API Key"
+        :label="t.connection.whopApiKey"
         type="password"
         placeholder="whop_..."
       />
@@ -134,7 +138,7 @@ watch(rawApiKey, (newVal) => {
     <div v-else-if="provider === 'mercadopago'" class="flex flex-col gap-4">
       <div v-if="detectedMrr !== null" class="bg-[#00D4FF]/10 border border-[#00D4FF]/20 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 animate-in zoom-in duration-300">
         <div class="flex flex-col gap-0.5">
-          <span class="text-[10px] uppercase font-bold text-[#00D4FF]">MRR Detectado</span>
+          <span class="text-[10px] uppercase font-bold text-[#00D4FF]">{{ t.connection.detectedMrr }}</span>
           <span class="text-sm font-serif text-white">${{ detectedMrr.toLocaleString() }}</span>
         </div>
         <div class="w-8 h-8 rounded-full bg-[#00D4FF]/20 flex items-center justify-center">
@@ -144,7 +148,6 @@ watch(rawApiKey, (newVal) => {
         </div>
       </div>
       <button
-        v-else
         type="button"
         @click="openMpAuth"
         :disabled="isMpConnecting"
@@ -154,7 +157,7 @@ watch(rawApiKey, (newVal) => {
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
         </svg>
-        {{ isMpConnecting ? 'Conectando...' : 'Conectar Mercado Pago' }}
+        {{ isMpConnecting ? t.connection.connecting : (detectedMrr !== null ? t.connection.reconnectMp : t.connection.connectMp) }}
       </button>
     </div>
   </div>

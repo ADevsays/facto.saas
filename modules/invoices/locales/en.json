@@ -1,0 +1,83 @@
+{
+  "seo": {
+    "title": "PDF Invoice and Receipt Generator | Facto",
+    "description": "Create and download commercial PDF documents instantly. Multi-currency, tax calculation, no registration. The free invoice maker for SaaS founders.",
+    "ogTitle": "PDF Receipt Generator for Founders | Facto",
+    "ogDescription": "Format receipts and PDF invoices for your global clients in seconds. No sign up, multi-currency, with VAT/GST. 100% free forever.",
+    "twitterTitle": "Free PDF Receipt Generator | Facto",
+    "twitterDescription": "Commercial PDF documents for your SaaS. Free, no registration, multi-currency."
+  },
+  "schema": {
+    "name": "PDF Invoice and Receipt Generator",
+    "description": "Free web tool to format, customize, and download commercial PDF documents. Multi-currency, visual VAT/GST calculation, no registration or installation."
+  },
+  "breadcrumb": {
+    "tools": "tools",
+    "invoiceGenerator": "invoice maker",
+    "newInvoice": "new invoice",
+    "editInvoice": "edit invoice"
+  },
+  "hero": {
+    "badge": "Free tool",
+    "title1": "Invoices for",
+    "title2": "Founders",
+    "description": "PDF Invoices. No account, no limits, without your data leaving the browser.",
+    "yourData": "Your data"
+  },
+  "history": {
+    "title": "Your Saved Invoices",
+    "emptyState": "You have no saved invoices. Create your first one.",
+    "newInvoice": "New Invoice",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "editor": {
+    "mobilePreviewEdit": "Edit",
+    "mobilePreviewView": "View invoice",
+    "metaTitle": "Invoice Details",
+    "invoiceNumber": "Invoice Nº",
+    "date": "Date",
+    "dueDate": "Due Date",
+    "currency": "Currency",
+    "clientTitle": "Client",
+    "clientName": "Name / Company",
+    "clientTaxId": "Tax ID / VAT",
+    "clientEmail": "Email",
+    "clientAddress": "Address",
+    "itemsTitle": "Items",
+    "addItem": "Add item",
+    "notesTitle": "Notes and Payment",
+    "paymentInfo": "Payment Details",
+    "paymentInfoPlaceholder": "Bank, IBAN, SWIFT...",
+    "notes": "Notes",
+    "notesPlaceholder": "Terms, observations...",
+    "total": "Total",
+    "preview": "Preview",
+    "update": "Update",
+    "save": "Save"
+  },
+  "items": {
+    "description": "Description",
+    "qty": "Qty",
+    "price": "Price",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "tax": "Tax"
+  },
+  "settings": {
+    "title": "Your Details (Issuer)",
+    "description": "Configure your details to appear on all your invoices.",
+    "taxRate": "Tax Rate (%)",
+    "defaultCurrency": "Default Currency",
+    "save": "Save Details",
+    "close": "Close"
+  },
+  "preview": {
+    "invoiceTo": "Invoice to",
+    "exportPdf": "Export PDF",
+    "close": "Close"
+  },
+  "mrr": {
+    "prompt": "Already have MRR? Discover your valuation"
+  }
+}

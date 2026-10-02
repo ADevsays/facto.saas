@@ -1,0 +1,6 @@
+Facturas/**
+videos/**
+UI Examples/**
+scratch/**
+.agents/**
+**/*.test.ts

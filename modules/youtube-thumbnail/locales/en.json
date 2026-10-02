@@ -1,0 +1,61 @@
+{
+  "seo": {
+    "title": "Download YouTube Video Thumbnail for Free | Facto",
+    "description": "Download any YouTube thumbnail in high resolution (1280×720 MaxRes) in one click. Free, no sign up, no limits. Ideal for founders and content creators.",
+    "ogTitle": "Free YouTube Thumbnail Downloader — High Res | Facto",
+    "ogDescription": "Extract the thumbnail of any YouTube video in 1280×720 HD. No sign up, no limits, directly to your browser. Free tool for founders and content creators.",
+    "twitterTitle": "Download YouTube Thumbnail for Free | Facto",
+    "twitterDescription": "Download YouTube thumbnails in HD without sign up. Free forever."
+  },
+  "schema": {
+    "name": "YouTube Thumbnail Downloader",
+    "description": "Free web tool to download and inspect YouTube thumbnails in all available resolutions (MaxRes 1280x720, SD, HQ). No registration, no installation."
+  },
+  "breadcrumb": {
+    "tools": "tools",
+    "thumbnails": "youtube thumbnails"
+  },
+  "hero": {
+    "badge": "Free tool",
+    "title1": "Thumbnails for",
+    "title2": "Founders",
+    "description": "Extract thumbnails of any YouTube video in real-time in HD, SD, and HQ. No sign up and no limits."
+  },
+  "downloader": {
+    "label": "Paste YouTube video or Shorts URL",
+    "paste": "Paste from clipboard",
+    "placeholder": "Ex: https://www.youtube.com/watch?v=...",
+    "tryExample": "Try example:"
+  },
+  "results": {
+    "title": "Extracted Thumbnail",
+    "videoId": "Video ID:",
+    "viewOriginal": "View Original Video",
+    "clear": "Clear",
+    "zoom": "Zoom in",
+    "downloading": "Downloading...",
+    "downloadMain": "Download Thumbnail",
+    "lightVersion": "Light Version",
+    "downloadLight": "Download Light Version"
+  },
+  "card": {
+    "preview": "Preview",
+    "recommended": "Recommended",
+    "description": "Original resolution extracted directly from YouTube servers.",
+    "download": "Download",
+    "copied": "Copied!",
+    "copyUrl": "Copy URL"
+  },
+  "tips": {
+    "badge": "💡 Content Strategy for Founders",
+    "title": "How to optimize your YouTube thumbnails CTR",
+    "description": "If you are building your SaaS and acquiring users through YouTube content, these tactical rules will maximize your views."
+  },
+  "modal": {
+    "title": "Full Screen Preview",
+    "close": "Close"
+  },
+  "mrr": {
+    "prompt": "Already have MRR? Discover your valuation"
+  }
+}

@@ -20,8 +20,9 @@ const selected = computed(() => {
     <button 
       type="button"
       @click="$emit('toggle')" 
-      class="flex items-center justify-center bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-xl h-[38px] w-[50px] transition-all duration-300 cursor-pointer min-w-[50px]"
+      class="flex items-center justify-center bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-xl h-[38px] w-[46px] sm:w-[50px] transition-all duration-300 cursor-pointer min-w-[46px] sm:min-w-[50px] shrink-0"
       :class="isOpen ? 'border-[#00D4FF]/40 bg-white/[0.08] country-btn-glow' : ''"
+      title="Filtrar por país"
     >
       <div v-if="selected?.slug === 'global'" class="text-neutral-400 opacity-90 transition-opacity hover:opacity-100">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
@@ -40,7 +41,7 @@ const selected = computed(() => {
     
     <div 
       v-if="isOpen" 
-      class="absolute left-0 mt-2 w-[220px] bg-[#0c0c10]/95 border border-white/10 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md z-40 flex flex-col py-1 max-h-60 overflow-y-auto no-scrollbar animate-fade-in"
+      class="absolute right-0 mt-2 w-[220px] bg-[#0c0c10] border border-white/15 rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.95)] z-50 flex flex-col py-1 max-h-60 overflow-y-auto no-scrollbar animate-fade-in"
     >
       <button 
         @click="$emit('select', 'all')"

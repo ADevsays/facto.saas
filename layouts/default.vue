@@ -1,30 +1,61 @@
 <script setup lang="ts">
 import { Analytics } from '@vercel/analytics/nuxt'
 import AdsBandSection from '~/modules/ads/sections/AdsBandSection.vue'
+import AdsBandBottomSection from '~/modules/ads/sections/AdsBandBottomSection.vue'
 import AddSaasModal from '~/modules/add-saas/components/AddSaasModal.vue'
 import AddAdModal from '~/modules/ads/components/AddAdModal.vue'
+import AdAuctionListModal from '~/modules/ads/components/AdAuctionListModal.vue'
+import AdFreeModal from '~/modules/ads/components/AdFreeModal.vue'
+import LoginModal from '~/components/LoginModal.vue'
+import TelegramPopup from '~/components/TelegramPopup.vue'
 import GlobalFooter from '~/ui/sections/GlobalFooter.vue'
 import { useAddAdModal } from '~/composables/useAddAdModal'
+import { useLanguage } from '~/composables/useLanguage'
+import { useAdPreferences } from '~/composables/useAdPreferences'
+import { useFounderSession } from '~/composables/useFounderSession'
 
 const route = useRoute()
 const isInfoPage = computed(() => route.path === '/info')
 
 const { openForSetup } = useAddAdModal()
+const { detectLanguage } = useLanguage()
+const { showAds, checkPreferences } = useAdPreferences()
+const { checkSession } = useFounderSession()
 
-onMounted(() => {
+onMounted(async () => {
+  await Promise.all([
+    checkSession(),
+    checkPreferences()
+  ])
+
+  if (route.path === '/') {
+    await detectLanguage()
+  }
+
   if (route.query.ad_setup === 'true') {
-    openForSetup()
+    const slot = route.query.slot ? Number(route.query.slot) : undefined
+    const token = typeof route.query.token === 'string' ? route.query.token : undefined
+    openForSetup(slot, token)
+
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
   }
 })
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#030305] text-white font-sans selection:bg-cyan-500/30">
-    <!-- <AdsBandSection v-if="!isInfoPage" />  -->
+  <div class="min-h-screen bg-[#030305] text-white font-sans selection:bg-cyan-500/30 pb-16 md:pb-0">
+    <AdsBandSection v-if="!isInfoPage && showAds" />
     <slot />
     <Analytics />
     <AddSaasModal />
     <AddAdModal />
+    <AdAuctionListModal />
+    <LoginModal />
+    <AdFreeModal />
+    <TelegramPopup />
+    <AdsBandBottomSection v-if="!isInfoPage && showAds" />
     <GlobalFooter v-if="!isInfoPage" />
   </div>
 </template>

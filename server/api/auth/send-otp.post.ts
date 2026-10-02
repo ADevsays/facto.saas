@@ -38,26 +38,43 @@ function buildOtpEmailHtml(code: string): string {
 }
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody<{ email: string; saasId: string }>(event)
+  const body = await readBody<{ email: string; saasId?: string }>(event)
 
-  if (!body.email || !body.saasId) {
-    throw createError({ statusCode: 400, message: 'email and saasId are required' })
+  if (!body?.email) {
+    throw createError({ statusCode: 400, message: 'email is required' })
   }
 
   const email = body.email.trim().toLowerCase()
 
-  const { data: entry, error: entryError } = await supabase
-    .from('saas_entries')
-    .select('id, founder_email')
-    .eq('id', body.saasId)
-    .single()
+  if (body.saasId) {
+    const { data: entry, error: entryError } = await supabase
+      .from('saas_entries')
+      .select('id, founder_email')
+      .eq('id', body.saasId)
+      .single()
 
-  if (entryError || !entry) {
-    throw createError({ statusCode: 404, message: 'Startup not found' })
-  }
+    if (entryError || !entry) {
+      throw createError({ statusCode: 404, message: 'Startup not found' })
+    }
 
-  if (!entry.founder_email || entry.founder_email.trim().toLowerCase() !== email) {
-    throw createError({ statusCode: 403, message: 'Ese no es el email del fundador. 🤔' })
+    if (!entry.founder_email || entry.founder_email.trim().toLowerCase() !== email) {
+      throw createError({ statusCode: 403, message: 'Ese no es el email del fundador. 🤔' })
+    }
+    const [founderRes, saasRes, adsRes, whopRes] = await Promise.all([
+      supabase.from('founders').select('id').eq('email', email).maybeSingle(),
+      supabase.from('saas_entries').select('id').ilike('founder_email', email).limit(1),
+      supabase.from('ads').select('id, description').ilike('description', `%${email}%`).limit(1),
+      supabase.from('whop_memberships').select('id').ilike('email', email).limit(1)
+    ])
+
+    const exists = !!founderRes.data || (saasRes.data && saasRes.data.length > 0) || (adsRes.data && adsRes.data.length > 0) || (whopRes.data && whopRes.data.length > 0)
+
+    if (!exists) {
+      throw createError({
+        statusCode: 404,
+        message: 'No encontramos ninguna cuenta, startup o anuncio asociado a este correo. 🤔'
+      })
+    }
   }
 
   const code = generateOtpCode()

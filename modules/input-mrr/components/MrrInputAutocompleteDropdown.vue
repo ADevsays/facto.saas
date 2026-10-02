@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+
+const { t } = useLanguage({ es, en })
+const localePath = useLocalePath()
+
 defineProps<{
   isOpen: boolean
   loading: boolean
@@ -9,6 +15,8 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'clickItem', item: any): void
 }>()
+
+import SaasLogo from '~/ui/components/SaasLogo.vue'
 </script>
 
 <template>
@@ -18,7 +26,7 @@ const emit = defineEmits<{
   >
     <!-- Subtitle "Startups" at the very top -->
     <div class="px-4 py-2 border-b border-white/10 flex items-center justify-center shrink-0">
-      <span class="text-[9px] font-sans font-extralight tracking-[0.15em] text-neutral-300 uppercase">Startups</span>
+      <span class="text-[9px] font-sans font-extralight tracking-[0.15em] text-neutral-300 uppercase">{{ t.dropdown.subtitle }}</span>
     </div>
 
     <!-- Loading state -->
@@ -34,7 +42,7 @@ const emit = defineEmits<{
 
     <!-- Empty state -->
     <div v-else-if="results.length === 0" class="p-6 text-center text-neutral-500 text-xs font-sans tracking-wider uppercase">
-      No se encontraron startups
+      {{ t.dropdown.empty }}
     </div>
 
     <!-- Results list -->
@@ -55,7 +63,7 @@ const emit = defineEmits<{
           <!-- Details -->
           <div class="flex-1 min-w-0">
             <span class="text-white font-sans text-sm font-medium truncate block">
-              — Anónimo —
+              {{ t.dropdown.incognito }}
             </span>
             <p class="text-neutral-400 font-sans text-xs truncate mt-0.5 font-light">
               {{ item.description }}
@@ -66,17 +74,19 @@ const emit = defineEmits<{
         <!-- Clickable item -->
         <NuxtLink
           v-else
-          :to="`/saas/${item.slug}`"
+          :to="localePath(`/saas/${item.slug}`)"
           @click="emit('clickItem', item)"
           class="flex items-center gap-3 px-4 py-3 text-left transition-all duration-300 hover:bg-white/5 cursor-pointer"
         >
           <!-- Logo -->
-          <div class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
-            <img v-if="item.logoUrl" :src="item.logoUrl" alt="logo" class="w-full h-full object-cover" />
-            <div v-else class="text-xs font-bold font-sans text-[#00D4FF] select-none">
-              {{ item.name.charAt(0).toUpperCase() }}
-            </div>
-          </div>
+          <SaasLogo
+            :src="item.logoUrl"
+            :alt="item.name"
+            :initial="item.name.charAt(0).toUpperCase()"
+            size="custom"
+            class="w-10 h-10 shrink-0"
+            :websiteUrl="item.websiteUrl"
+          />
 
           <!-- Details -->
           <div class="flex-1 min-w-0">
