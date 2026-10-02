@@ -45,7 +45,7 @@ export class SnapshotService {
     let globalRevenue = 0
     let rank = 1
 
-    for (const row of (saasRows || [])) {
+    for (const row of ((saasRows as any[]) || [])) {
       const isIncognito = Boolean(row.is_incognito)
       const mrrVal = row.mrr !== null && row.mrr !== undefined ? Number(row.mrr) : null
 

@@ -110,7 +110,7 @@ const cardParticles = Array.from({ length: COUNT }).map(() => generateParticles(
           <div class="shrink-0 w-9 h-7 flex items-center justify-center">
             <img 
               v-if="country.isoCode || country.iso_code" 
-              :src="`https://flagcdn.com/w80/${(country.isoCode || country.iso_code).toLowerCase()}.png`" 
+              :src="`https://flagcdn.com/w80/${(country.isoCode || country.iso_code || '').toLowerCase()}.png`" 
               :alt="country.name"
               class="w-9 rounded-[3px] shadow-sm opacity-85 group-hover:opacity-100 transition-opacity duration-500"
             />

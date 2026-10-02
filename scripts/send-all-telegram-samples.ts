@@ -32,7 +32,9 @@ async function main() {
             country: 'España',
             countryFlag: '🇪🇸',
             mrr: 3450,
-            isIncognito: false
+            currency: 'USD',
+            isIncognito: false,
+            description: 'Plataforma líder para creación y automatización de videos para SaaS'
           }
         ]
       })
@@ -49,7 +51,9 @@ async function main() {
             country: 'México',
             countryFlag: '🇲🇽',
             mrr: 1200,
-            isIncognito: false
+            currency: 'USD',
+            isIncognito: false,
+            description: 'Métricas y telemetría de producto en tiempo real'
           },
           {
             id: 'demo-2b',
@@ -59,7 +63,9 @@ async function main() {
             country: 'Colombia',
             countryFlag: '🇨🇴',
             mrr: null,
-            isIncognito: true
+            currency: 'USD',
+            isIncognito: true,
+            description: 'Gestión y firma de contratos legales con IA'
           },
           {
             id: 'demo-2c',
@@ -69,7 +75,9 @@ async function main() {
             country: 'Argentina',
             countryFlag: '🇦🇷',
             mrr: 5800,
-            isIncognito: false
+            currency: 'USD',
+            isIncognito: false,
+            description: 'Automatización de prospección B2B multicanal'
           }
         ]
       })
@@ -83,6 +91,7 @@ async function main() {
         metric: 'revenue',
         previousValue: 85000,
         newValue: 102500,
+        formattedValue: '$102.5K',
         growthPercentage: 20.6
       })
     },
@@ -97,7 +106,10 @@ async function main() {
             countryFlag: '🇲🇽',
             previousRank: 6,
             newRank: 3,
-            overtookName: 'InvoiceFlow'
+            overtookName: 'InvoiceFlow',
+            isNewTop10: true,
+            isNewTop3: true,
+            isNewCountryInTop: false
           },
           {
             startupId: 'demo-move-2',
@@ -105,7 +117,10 @@ async function main() {
             slug: 'leadrocket',
             countryFlag: '🇨🇱',
             previousRank: 14,
-            newRank: 7
+            newRank: 7,
+            isNewTop10: true,
+            isNewTop3: false,
+            isNewCountryInTop: false
           }
         ]
       })
@@ -115,7 +130,8 @@ async function main() {
       rendered: renderVisitsRecordMessage({
         totalVisits: 18450,
         previousRecord: 14200,
-        growthPercentage: 29.9
+        growthPercentage: 29.9,
+        date: '2026-10-02'
       })
     },
     {
@@ -129,13 +145,17 @@ async function main() {
           country: 'Colombia',
           countryFlag: '🇨🇴',
           currentMrr: 4800,
+          currency: 'USD',
+          isVerified: true,
+          publishedAt: '2026-09-01T00:00:00Z',
           reasons: [
             '+185% de crecimiento en MRR en los últimos 30 días',
             'Tasa de retención superior al 94% en su categoría',
             'Validación de pagos Stripe verificada en tiempo real'
           ],
           score: 94
-        }
+        },
+        isExceptionalStandalone: true
       })
     },
     {
@@ -144,20 +164,22 @@ async function main() {
         dateStr: '2 de Octubre, 2026',
         newStartupsCount: 3,
         newStartupsSummary: [
-          { name: 'PulseMetrics', country: 'México' },
-          { name: 'DocuSigner AI', country: 'Colombia' },
-          { name: 'Facto Studio', country: 'España' }
+          { name: 'PulseMetrics', country: 'México', category: 'Analytics', mrr: 1200 },
+          { name: 'DocuSigner AI', country: 'Colombia', category: 'LegalTech', mrr: null },
+          { name: 'Facto Studio', country: 'España', category: 'AI Video', mrr: 3450 }
         ],
         globalRevenue: 428500,
         globalRevenueFormatted: '$428,500/mes',
         globalRevenueChange: 14200,
+        globalRevenueChangeFormatted: '+$14.2K',
         topCountryMovers: [
-          { country: 'España', countryFlag: '🇪🇸', revenueChangeFormatted: '+$8,400' },
-          { country: 'México', countryFlag: '🇲🇽', revenueChangeFormatted: '+$5,800' }
+          { country: 'España', countryFlag: '🇪🇸', revenueChange: 8400, revenueChangeFormatted: '+$8,400', startupsCount: 12 },
+          { country: 'México', countryFlag: '🇲🇽', revenueChange: 5800, revenueChangeFormatted: '+$5,800', startupsCount: 9 }
         ],
+        rankingHighlights: [],
         visitsSummary: {
           todayVisits: 18450,
-          sevenDayAverage: 12100,
+          sevenDayAvg: 12100,
           changePercentage: 52.4
         },
         opportunities: [
@@ -168,6 +190,10 @@ async function main() {
             category: 'Marketing',
             country: 'Colombia',
             countryFlag: '🇨🇴',
+            currentMrr: 4800,
+            currency: 'USD',
+            isVerified: true,
+            publishedAt: '2026-09-01T00:00:00Z',
             reasons: ['+185% de crecimiento acelerado en 30 días'],
             score: 94
           }
@@ -189,10 +215,10 @@ async function main() {
         chatId: channelId,
         text: item.rendered.text,
         parseMode: 'HTML',
-        disableWebPagePreview: true
+        disableWebPagePreview: false,
+        preferLargeMedia: true
       })
-      console.log(`✅ Enviado con éxito! Telegram Message ID: ${result.messageId}`)
-      // Esperar 1.2s entre mensajes para respetar el rate limit de Telegram
+      console.log(`✅ Enviado con éxito! Telegram Message ID: ${result.message_id}`)
       await new Promise(r => setTimeout(r, 1200))
     } catch (err: any) {
       console.error(`❌ Error enviando ${item.name}:`, err.message)

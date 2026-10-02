@@ -88,7 +88,7 @@ export function buildUtmLink(path: string, campaign: string, label: string): str
  * Splits a long HTML message into valid chunks <= maxLength (4096)
  * splitting along section/line boundaries without breaking tags.
  */
-export function splitMessageIntoChunks(text: string, maxLength = NOTIFIER_CONFIG.maxMessageLength): string[] {
+export function splitMessageIntoChunks(text: string, maxLength: number = NOTIFIER_CONFIG.maxMessageLength): string[] {
   if (text.length <= maxLength) return [text]
 
   const chunks: string[] = []
