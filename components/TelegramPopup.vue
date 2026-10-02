@@ -2,11 +2,12 @@
 import { ref, onMounted } from 'vue'
 
 const { t } = useI18n()
+const route = useRoute()
 
 const isOpen = ref(false)
 const TELEGRAM_URL = 'https://t.me/factosaas'
-const STORAGE_KEY = 'facto_telegram_popup_seen_v4'
-const DISMISS_DAYS = 7
+const STORAGE_KEY = 'facto_telegram_popup_seen_v5'
+const DISMISS_DAYS = 1
 
 function closePopup() {
   isOpen.value = false
@@ -25,12 +26,15 @@ function handleJoin() {
 onMounted(() => {
   if (typeof window === 'undefined') return
 
-  const lastClosed = localStorage.getItem(STORAGE_KEY)
-  if (lastClosed) {
-    const elapsedMs = Date.now() - Number(lastClosed)
-    const elapsedDays = elapsedMs / (1000 * 60 * 60 * 24)
-    if (elapsedDays < DISMISS_DAYS) {
-      return
+  const forceOpen = route.query.telegram_popup === '1' || route.query.popup === '1'
+  if (!forceOpen) {
+    const lastClosed = localStorage.getItem(STORAGE_KEY)
+    if (lastClosed) {
+      const elapsedMs = Date.now() - Number(lastClosed)
+      const elapsedDays = elapsedMs / (1000 * 60 * 60 * 24)
+      if (elapsedDays < DISMISS_DAYS) {
+        return
+      }
     }
   }
 
@@ -45,7 +49,7 @@ onMounted(() => {
   <Transition name="popup-fade">
     <div
       v-if="isOpen"
-      class="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[100] max-w-[390px] w-[calc(100%-2.5rem)]"
+      class="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-[100] max-w-[390px] w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]"
     >
       <div class="bg-surface-elevated border border-white/10 hover:border-white/20 rounded-3xl p-6 sm:p-7 text-left relative overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.92),0_0_35px_rgba(0,212,255,0.12)] transition-all duration-300">
         
