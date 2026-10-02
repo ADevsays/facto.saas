@@ -56,9 +56,13 @@ const {
 
 const {
   step,
+  subStep,
   email,
   isValidatingToken,
-  isChecking,
+  isSendingOtp,
+  isVerifyingOtp,
+  otpDigits,
+  resendCountdown,
   isSubmitting,
   setupSuccess,
   setupError,
@@ -67,7 +71,9 @@ const {
   form,
   resetSetup,
   validateToken,
-  checkEmail,
+  sendOtp,
+  verifyOtp,
+  backToEmail,
   handleFileUpload,
   submitSetup
 } = useAdSetupForm({
@@ -86,8 +92,12 @@ function onSelectSlot(pos: number) {
   isSlotDropdownOpen.value = false
 }
 
-function handleCheckEmail() {
-  checkEmail(t.value.modal?.setup?.no_payment_found)
+function handleSendOtp() {
+  sendOtp(t.value.modal?.setup?.no_payment_found)
+}
+
+function handleVerifyOtp() {
+  verifyOtp('Código incorrecto o expirado.')
 }
 
 function handleSubmitSetup() {
@@ -266,17 +276,23 @@ watch(minPrice, (newMin) => {
             <AddAdSetupForm
               v-else
               :step="step"
+              :sub-step="subStep"
               :email="email"
               :selected-slot="selectedSlot"
               :is-validating-token="isValidatingToken"
-              :is-checking="isChecking"
+              :is-sending-otp="isSendingOtp"
+              :is-verifying-otp="isVerifyingOtp"
+              :otp-digits="otpDigits"
+              :resend-countdown="resendCountdown"
               :is-submitting="isSubmitting"
               :is-uploading-image="isUploadingImage"
               :upload-error="uploadError"
               :error-msg="setupError"
               :form="form"
               @update:email="email = $event"
-              @check-email="handleCheckEmail"
+              @send-otp="handleSendOtp"
+              @verify-otp="handleVerifyOtp"
+              @back-to-email="backToEmail"
               @upload-file="handleFileUpload"
               @submit-setup="handleSubmitSetup"
             />

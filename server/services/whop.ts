@@ -63,10 +63,17 @@ export const whopService = {
     return data as WhopMembership
   },
 
-  async markMembershipAsUsed(id: string) {
-    return supabase
+  async markMembershipAsUsed(id: string): Promise<boolean> {
+    const { data, error } = await supabase
       .from('whop_memberships')
       .update({ used: true })
       .eq('id', id)
+      .eq('used', false)
+      .select('id')
+
+    if (error || !data || data.length === 0) {
+      return false
+    }
+    return true
   }
 }

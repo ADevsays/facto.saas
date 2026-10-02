@@ -2,6 +2,7 @@ import type { AdSetupPayload } from '../../../types'
 import { whopService } from '~/server/services/whop'
 import { adsService } from '~/modules/ads/server/services/ads'
 import { authService } from '~/server/services/auth'
+import { supabase } from '~/server/lib/supabase'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<AdSetupPayload>(event)
@@ -10,12 +11,18 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Missing required fields' })
   }
 
-  // 1. Verificar la membresía
+  // 1. Verificar la membresía y validar que sea de un solo uso
   let membership = null
   if (body.token) {
     membership = await whopService.getActiveUnusedMembershipById(body.token)
-  }
-  if (!membership && body.email) {
+    if (!membership) {
+      const existing = await whopService.getMembershipById(body.token)
+      if (existing && existing.used) {
+        throw createError({ statusCode: 409, statusMessage: 'Este cupo ya fue configurado con éxito y el token fue consumido.' })
+      }
+      throw createError({ statusCode: 403, statusMessage: 'Token inválido o expirado.' })
+    }
+  } else if (body.email) {
     membership = await whopService.getActiveUnusedMembershipByEmail(body.email.trim().toLowerCase())
   }
 
@@ -23,7 +30,19 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: 'No valid active unused membership found' })
   }
 
-  const targetEmail = (body.email || membership.email).trim().toLowerCase()
+  // El correo asociado al token tiene precedencia estricta para evitar suplantaciones
+  if (membership.email && (!body.email || membership.email.toLowerCase() !== body.email.trim().toLowerCase())) {
+    throw createError({ statusCode: 403, statusMessage: 'El correo proporcionado no coincide con el correo verificado del pago.' })
+  }
+
+  const targetEmail = (membership.email || body.email || '').trim().toLowerCase()
+  if (!targetEmail) {
+    throw createError({ statusCode: 400, statusMessage: 'El correo electrónico es obligatorio para vincular tu cuenta.' })
+  }
+
+  if (!membership.email && targetEmail) {
+    await supabase.from('whop_memberships').update({ email: targetEmail }).eq('id', membership.id)
+  }
 
   // 2. Crear o recuperar el usuario
   let userId: string
@@ -65,8 +84,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: error.message })
   }
 
-  // 5. Marcar usada
-  await whopService.markMembershipAsUsed(membership.id)
+  // 5. Quemar token de forma atómica (un solo uso garantizado)
+  const wasMarked = await whopService.markMembershipAsUsed(membership.id)
+  if (!wasMarked) {
+    throw createError({ statusCode: 409, statusMessage: 'Este token ya ha sido utilizado para configurar un anuncio.' })
+  }
 
   return { ok: true, ad: adData }
 })

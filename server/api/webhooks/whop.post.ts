@@ -68,11 +68,30 @@ export default defineEventHandler(async (event) => {
 
   const eventType = payload.type || payload.action || payload.event || ''
 
-  if (eventType === 'membership.activated' || eventType === 'payment.succeeded') {
+  if (eventType === 'membership.activated' || eventType === 'payment.succeeded' || eventType === 'payment.created') {
     const data = payload.data || {}
-    const email = data.user?.email || data.member?.email || data.email || data.metadata?.email
-    const id = data.user?.id || data.user_id || data.member?.id || data.id || `usr_test_${Date.now()}`
-    const membershipId = data.id || data.member?.id || `mem_test_${Date.now()}`
+    const email = data.member?.user?.email
+      || data.user?.email
+      || data.member?.email
+      || data.customer?.email
+      || data.email
+      || data.metadata?.email
+      || data.checkout_configuration?.metadata?.email
+      || ''
+
+    const id = data.member?.user?.id
+      || data.user?.id
+      || data.user_id
+      || data.member?.id
+      || data.customer?.id
+      || data.id
+      || `usr_${Date.now()}`
+
+    const membershipId = data.id
+      || data.payment_id
+      || data.membership?.id
+      || data.member?.id
+      || `pay_${Date.now()}`
 
     const setupToken = data.metadata?.setup_token
       || data.checkout_configuration?.metadata?.setup_token
@@ -96,27 +115,27 @@ export default defineEventHandler(async (event) => {
       || 0
     )
 
-    if (email && id && membershipId) {
-      const cleanEmail = email.trim().toLowerCase()
+    if (setupToken) {
+      const cleanEmail = email ? email.trim().toLowerCase() : ''
       await whopService.activateMembership({ id, email: cleanEmail }, membershipId, setupToken)
 
-      try {
-        const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://www.factosaas.com'
-        const normalizedUrl = siteUrl.startsWith('http')
-          ? siteUrl
-          : (siteUrl.includes('localhost') ? `http://${siteUrl}` : `https://${siteUrl}`)
-        const priceParam = price > 0 ? `&price=${price}` : ''
-        const setupUrl = setupToken
-          ? `${normalizedUrl}/dashboard/ads?ad_setup=true&slot=${slot}&token=${setupToken}${priceParam}`
-          : `${normalizedUrl}/dashboard/ads?ad_setup=true&slot=${slot}${priceParam}`
+      if (cleanEmail) {
+        try {
+          const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://www.factosaas.com'
+          const normalizedUrl = siteUrl.startsWith('http')
+            ? siteUrl
+            : (siteUrl.includes('localhost') ? `http://${siteUrl}` : `https://${siteUrl}`)
+          const priceParam = price > 0 ? `&price=${price}` : ''
+          const setupUrl = `${normalizedUrl}/dashboard/ads?ad_setup=true&slot=${slot}&token=${setupToken}${priceParam}`
 
-        await sendAdSetupConfirmationEmail({
-          to: cleanEmail,
-          slot,
-          setupUrl
-        })
-      } catch (mailErr) {
-        console.error('[Whop Webhook] Failed to send setup confirmation email:', mailErr)
+          await sendAdSetupConfirmationEmail({
+            to: cleanEmail,
+            slot,
+            setupUrl
+          })
+        } catch (mailErr) {
+          console.error('[Whop Webhook] Failed to send setup confirmation email:', mailErr)
+        }
       }
     }
   }

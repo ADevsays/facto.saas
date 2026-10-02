@@ -25,16 +25,44 @@ export function useAdSetupForm(options: {
     image_url: ''
   })
 
+  const subStep = ref<'email' | 'otp'>('email')
+  const otpDigits = ref<string[]>(['', '', '', '', '', ''])
+  const resendCountdown = ref(0)
+  let resendTimer: any = null
+  const isSendingOtp = ref(false)
+  const isVerifyingOtp = ref(false)
+
+  function startResendCountdown() {
+    resendCountdown.value = 60
+    if (resendTimer) clearInterval(resendTimer)
+    resendTimer = setInterval(() => {
+      resendCountdown.value--
+      if (resendCountdown.value <= 0 && resendTimer) {
+        clearInterval(resendTimer)
+        resendTimer = null
+      }
+    }, 1000)
+  }
+
   function resetSetup() {
     step.value = 1
+    subStep.value = 'email'
     email.value = ''
     activeToken.value = null
     isValidatingToken.value = false
     isChecking.value = false
     isSubmitting.value = false
+    isSendingOtp.value = false
+    isVerifyingOtp.value = false
     setupSuccess.value = false
     setupError.value = ''
     uploadError.value = ''
+    otpDigits.value = ['', '', '', '', '', '']
+    resendCountdown.value = 0
+    if (resendTimer) {
+      clearInterval(resendTimer)
+      resendTimer = null
+    }
     form.value = { name: '', description: '', url: '', image_url: '' }
   }
 
@@ -45,10 +73,12 @@ export function useAdSetupForm(options: {
       const res = await $fetch<any>('/api/ads/session', {
         params: { token }
       })
-      if (res?.ok && res.membership) {
-        email.value = res.membership.email
+      if (res?.ok) {
         activeToken.value = token
-        step.value = 2
+        // Keep step at 1 so the user is strictly required to verify their email
+        step.value = 1
+        subStep.value = 'email'
+        email.value = ''
       }
     } catch (err: any) {
       setupError.value = err.data?.statusMessage || 'No se encontró un pago activo para este token o ya fue utilizado.'
@@ -58,24 +88,75 @@ export function useAdSetupForm(options: {
     }
   }
 
-  async function checkEmail(noPaymentMsg = 'No se encontró un pago activo') {
-    if (!email.value) return
-    isChecking.value = true
+  async function sendOtp(noPaymentMsg = 'No se encontró un pago activo') {
+    if (!email.value?.trim()) return
+    isSendingOtp.value = true
     setupError.value = ''
 
     try {
-      const res = await $fetch<any>('/api/ads/session', {
-        params: { email: email.value }
+      const cleanEmail = email.value.trim().toLowerCase()
+      // 1. Validar que el email pertenezca a la membresía / token
+      const sessionRes = await $fetch<any>('/api/ads/session', {
+        params: {
+          email: cleanEmail,
+          token: activeToken.value || undefined
+        }
       })
 
-      if (res?.ok) {
-        step.value = 2
+      if (!sessionRes?.ok) {
+        throw new Error(noPaymentMsg)
       }
+
+      // 2. Enviar código OTP único al email
+      await $fetch('/api/auth/send-otp', {
+        method: 'POST',
+        body: { email: cleanEmail }
+      })
+
+      subStep.value = 'otp'
+      startResendCountdown()
     } catch (err: any) {
-      setupError.value = err.data?.statusMessage || noPaymentMsg
+      setupError.value = err.data?.statusMessage || err.data?.message || err.message || noPaymentMsg
     } finally {
-      isChecking.value = false
+      isSendingOtp.value = false
     }
+  }
+
+  async function verifyOtp(invalidCodeMsg = 'Código incorrecto o expirado') {
+    const code = otpDigits.value.join('').trim()
+    if (code.length < 6) {
+      setupError.value = 'Por favor ingresa los 6 dígitos del código.'
+      return
+    }
+
+    isVerifyingOtp.value = true
+    setupError.value = ''
+
+    try {
+      const cleanEmail = email.value.trim().toLowerCase()
+      await $fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        body: {
+          email: cleanEmail,
+          code
+        }
+      })
+
+      // Correo verificado con código único: avanzar al formulario de anuncio
+      step.value = 2
+      subStep.value = 'email'
+    } catch (err: any) {
+      setupError.value = err.data?.message || err.data?.statusMessage || invalidCodeMsg
+      otpDigits.value = ['', '', '', '', '', '']
+    } finally {
+      isVerifyingOtp.value = false
+    }
+  }
+
+  function backToEmail() {
+    subStep.value = 'email'
+    setupError.value = ''
+    otpDigits.value = ['', '', '', '', '', '']
   }
 
   async function handleFileUpload(file: File) {
@@ -156,19 +237,27 @@ export function useAdSetupForm(options: {
 
   return {
     step,
+    subStep,
     email,
     activeToken,
     isValidatingToken,
     isChecking,
     isSubmitting,
+    isSendingOtp,
+    isVerifyingOtp,
+    otpDigits,
+    resendCountdown,
     setupSuccess,
     setupError,
-    isUploadingImage,
     uploadError,
+    isUploadingImage,
     form,
     resetSetup,
     validateToken,
-    checkEmail,
+    sendOtp,
+    verifyOtp,
+    backToEmail,
+    checkEmail: sendOtp,
     handleFileUpload,
     submitSetup
   }

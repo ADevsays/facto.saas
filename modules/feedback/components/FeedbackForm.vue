@@ -41,13 +41,13 @@ const { t } = useLanguage({ es, en })
 
     <div class="flex flex-col gap-3">
       <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">
-        {{ t.value.form.detailsLabel }} <span class="text-[#00D4FF]">*</span>
+        {{ t?.form.detailsLabel }} <span class="text-[#00D4FF]">*</span>
       </label>
       <textarea 
         :value="details"
         @input="handleDetailsInput"
         rows="5"
-        :placeholder="t.value.form.detailsPlaceholder"
+        :placeholder="t?.form.detailsPlaceholder"
         class="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-5 text-white text-sm font-sans font-light placeholder:text-neutral-600 focus:outline-none focus:border-[#00D4FF]/50 transition-all duration-500 resize-none"
         :disabled="isSubmitting"
       ></textarea>
@@ -55,7 +55,7 @@ const { t } = useLanguage({ es, en })
 
     <div class="flex flex-col gap-3">
       <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500">
-        {{ t.value.form.screenshotLabel }}
+        {{ t?.form.screenshotLabel }}
       </label>
       
       <div v-if="selectedFileUrl" class="relative group rounded-2xl overflow-hidden border border-white/10 bg-white/[0.02]">
@@ -85,7 +85,7 @@ const { t } = useLanguage({ es, en })
         />
         <ImagePlus class="text-neutral-600 group-hover:text-[#00D4FF] transition-colors duration-500 w-10 h-10 mb-4 mx-auto drop-shadow-sm" />
         <p class="font-extralight tracking-wide text-sm text-neutral-500 group-hover:text-neutral-300 transition-colors duration-500 relative z-10">
-          {{ t.value.form.dragDrop }}
+          {{ t?.form.dragDrop }}
         </p>
       </div>
     </div>
@@ -98,10 +98,10 @@ const { t } = useLanguage({ es, en })
         style="box-shadow: 0 0 15px rgba(255, 255, 255, 0.4), 0 0 30px rgba(0, 212, 255, 0.2), 0 0 45px rgba(0, 212, 255, 0.1);"
       >
         <span v-if="isSubmitting" class="flex items-center gap-3">
-          <Loader2 class="animate-spin w-4 h-4" /> {{ t.value.form.processing }}
+          <Loader2 class="animate-spin w-4 h-4" /> {{ t?.form.processing }}
         </span>
         <span v-else class="flex items-center gap-3">
-          {{ t.value.form.submit }}
+          {{ t?.form.submit }}
           <ArrowRight class="w-4 h-4 transition-transform duration-500 group-hover:translate-x-1" />
         </span>
       </button>
