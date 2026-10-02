@@ -2,7 +2,11 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   let raw = (query.target as string || query.repo as string || '').trim()
 
-  raw = raw.replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/$/, '')
+  raw = raw
+    .replace(/^https?:\/\//i, '')
+    .replace(/^(www\.)?github\.com\//i, '')
+    .replace(/\.git$/i, '')
+    .replace(/^\/+|\/+$/g, '')
 
   if (!raw) {
     throw createError({ statusCode: 400, message: 'GitHub target (repo or username) is required' })
@@ -28,144 +32,84 @@ export default defineEventHandler(async (event) => {
 
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-  try {
-    if (isRepo) {
-      const parts = raw.split('/')
-      const owner = parts[0].trim()
-      const repo = parts[1].trim()
-      const target = `${owner}/${repo}`
+  function buildWeeksFromDailyCounts(dailyMap: Map<string, number>) {
+    const now = new Date()
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+    const dayOfWeek = today.getUTCDay()
+    const endDay = new Date(today)
+    endDay.setUTCDate(today.getUTCDate() + (6 - dayOfWeek))
 
-      let res: Response | null = null
-      for (let attempt = 0; attempt < 3; attempt++) {
-        res = await fetch(`https://api.github.com/repos/${target}/stats/commit_activity`, {
-          headers,
-          signal: AbortSignal.timeout(8000)
-        })
-        if (res.status !== 202) {
-          break
-        }
-        if (attempt < 2) {
-          await new Promise((resolve) => setTimeout(resolve, 1200))
-        }
-      }
+    const totalDays = 52 * 7
+    const startDay = new Date(endDay)
+    startDay.setUTCDate(endDay.getUTCDate() - totalDays + 1)
 
-      if (!res || res.status === 202) {
-        return {
-          target,
-          type: 'repo',
-          status: 'computing',
-          message: 'GitHub is currently generating commit activity statistics.',
-          totalContributions: 0,
-          weeks: [],
-          months: []
-        }
-      }
+    let maxCount = 1
+    for (const count of dailyMap.values()) {
+      if (count > maxCount) maxCount = count
+    }
 
-      if (!res.ok) {
-        return {
-          target,
-          type: 'repo',
-          status: res.status === 404 ? 'not_found' : (res.status === 401 || res.status === 403 ? 'unauthorized' : 'error'),
-          message: res.status === 404
-            ? 'Repositorio no encontrado o privado. GitHub bloquea la lectura de repositorios privados sin autenticación.'
-            : 'Error al consultar la actividad en GitHub.',
-          totalContributions: 0,
-          weeks: [],
-          months: []
-        }
-      }
+    let totalContributions = 0
+    const weeks: any[] = []
+    const months: { name: string; weekIndex: number }[] = []
+    let lastMonth = -1
 
-      const data = await res.json()
-      if (!Array.isArray(data) || data.length === 0) {
-        return {
-          target,
-          type: 'repo',
-          status: 'empty',
-          totalContributions: 0,
-          weeks: [],
-          months: []
-        }
-      }
+    for (let w = 0; w < 52; w++) {
+      const days: any[] = []
+      let weekTotal = 0
+      let weekStartTimestamp = 0
 
-      let totalContributions = 0
-      let maxCount = 1
-      for (const w of data) {
-        totalContributions += Number(w.total) || 0
-        if (Array.isArray(w.days)) {
-          for (const d of w.days) {
-            if (d > maxCount) maxCount = d
+      for (let d = 0; d < 7; d++) {
+        const current = new Date(startDay)
+        current.setUTCDate(startDay.getUTCDate() + (w * 7 + d))
+        const dateStr = current.toISOString().split('T')[0]
+        if (d === 0) {
+          weekStartTimestamp = Math.floor(current.getTime() / 1000)
+          const m = current.getUTCMonth()
+          if (m !== lastMonth) {
+            months.push({ name: monthNames[m], weekIndex: w })
+            lastMonth = m
           }
         }
+
+        const isFuture = current.getTime() > today.getTime()
+        const count = isFuture ? 0 : (dailyMap.get(dateStr) || 0)
+        weekTotal += count
+        totalContributions += count
+
+        let level: 0 | 1 | 2 | 3 | 4 = 0
+        if (count > 0) {
+          if (count >= 10 || count >= maxCount * 0.75) level = 4
+          else if (count >= 6 || count >= maxCount * 0.5) level = 3
+          else if (count >= 3 || count >= maxCount * 0.25) level = 2
+          else level = 1
+        }
+
+        days.push({ date: dateStr, count, level })
       }
 
-      const months: { name: string; weekIndex: number }[] = []
-      let lastMonth = -1
-
-      const weeks = data.map((w: any, weekIdx: number) => {
-        const weekDate = new Date(w.week * 1000)
-        const m = weekDate.getUTCMonth()
-        if (m !== lastMonth) {
-          months.push({ name: monthNames[m], weekIndex: weekIdx })
-          lastMonth = m
-        }
-
-        const days = (w.days || []).map((count: number, dayIdx: number) => {
-          const dayDate = new Date(w.week * 1000 + dayIdx * 86400000)
-          const dateStr = dayDate.toISOString().split('T')[0]
-          let level: 0 | 1 | 2 | 3 | 4 = 0
-          if (count > 0) {
-            if (count >= 10 || count >= maxCount * 0.75) level = 4
-            else if (count >= 6 || count >= maxCount * 0.5) level = 3
-            else if (count >= 3 || count >= maxCount * 0.25) level = 2
-            else level = 1
-          }
-          return {
-            date: dateStr,
-            count,
-            level
-          }
-        })
-
-        return {
-          week: w.week,
-          total: w.total || 0,
-          days
-        }
+      weeks.push({
+        week: weekStartTimestamp,
+        total: weekTotal,
+        days
       })
+    }
 
-      const result = {
-        target,
-        type: 'repo',
-        status: 'synced',
-        totalContributions,
-        weeks,
-        months
-      }
+    return { totalContributions, weeks, months }
+  }
 
-      await storage.setItem(cacheKey, { data: result, timestamp: Date.now() })
-      return result
-    } else {
-      // User profile mode
-      const username = raw
+  async function fetchUserFallback(username: string) {
+    try {
       const res = await fetch(`https://github-contributions-api.jogruber.de/v4/${encodeURIComponent(username)}?y=last`, {
         signal: AbortSignal.timeout(8000)
       })
 
-      if (!res.ok) {
-        return {
-          target: username,
-          type: 'user',
-          status: res.status === 404 ? 'not_found' : 'error',
-          message: 'Usuario de GitHub no encontrado',
-          totalContributions: 0,
-          weeks: [],
-          months: []
-        }
-      }
+      if (!res.ok) return null
 
       const data = await res.json()
-      const totalContributions = data.total?.lastYear || data.total?.[Object.keys(data.total)[0]] || 0
+      const totalContributions = data.total?.lastYear || data.total?.[Object.keys(data.total || {})[0]] || 0
       const contributions: any[] = data.contributions || []
+
+      if (!contributions.length) return null
 
       const weeks: any[] = []
       const months: { name: string; weekIndex: number }[] = []
@@ -183,7 +127,7 @@ export default defineEventHandler(async (event) => {
           }
         }
         weeks.push({
-          week: new Date(weekSlice[0]?.date || Date.now()).getTime() / 1000,
+          week: Math.floor(new Date(weekSlice[0]?.date || Date.now()).getTime() / 1000),
           total: weekSlice.reduce((sum: number, item: any) => sum + (item.count || 0), 0),
           days: weekSlice.map((item: any) => ({
             date: item.date,
@@ -193,7 +137,7 @@ export default defineEventHandler(async (event) => {
         })
       }
 
-      const result = {
+      return {
         target: username,
         type: 'user',
         status: 'synced',
@@ -201,9 +145,159 @@ export default defineEventHandler(async (event) => {
         weeks,
         months
       }
+    } catch {
+      return null
+    }
+  }
 
-      await storage.setItem(cacheKey, { data: result, timestamp: Date.now() })
-      return result
+  try {
+    if (isRepo) {
+      const parts = raw.split('/')
+      const owner = parts[0].trim()
+      const repo = parts[1].trim()
+      const target = `${owner}/${repo}`
+
+      // 1. Try GitHub commit activity stats endpoint
+      let statsRes: Response | null = null
+      try {
+        statsRes = await fetch(`https://api.github.com/repos/${target}/stats/commit_activity`, {
+          headers,
+          signal: AbortSignal.timeout(5000)
+        })
+      } catch {}
+
+      if (statsRes && statsRes.status === 200) {
+        const data = await statsRes.json().catch(() => null)
+        if (Array.isArray(data) && data.length > 0) {
+          let totalContributions = 0
+          let maxCount = 1
+          for (const w of data) {
+            totalContributions += Number(w.total) || 0
+            if (Array.isArray(w.days)) {
+              for (const d of w.days) {
+                if (d > maxCount) maxCount = d
+              }
+            }
+          }
+
+          const months: { name: string; weekIndex: number }[] = []
+          let lastMonth = -1
+
+          const weeks = data.map((w: any, weekIdx: number) => {
+            const weekDate = new Date(w.week * 1000)
+            const m = weekDate.getUTCMonth()
+            if (m !== lastMonth) {
+              months.push({ name: monthNames[m], weekIndex: weekIdx })
+              lastMonth = m
+            }
+
+            const days = (w.days || []).map((count: number, dayIdx: number) => {
+              const dayDate = new Date(w.week * 1000 + dayIdx * 86400000)
+              const dateStr = dayDate.toISOString().split('T')[0]
+              let level: 0 | 1 | 2 | 3 | 4 = 0
+              if (count > 0) {
+                if (count >= 10 || count >= maxCount * 0.75) level = 4
+                else if (count >= 6 || count >= maxCount * 0.5) level = 3
+                else if (count >= 3 || count >= maxCount * 0.25) level = 2
+                else level = 1
+              }
+              return { date: dateStr, count, level }
+            })
+
+            return {
+              week: w.week,
+              total: w.total || 0,
+              days
+            }
+          })
+
+          const result = {
+            target,
+            type: 'repo',
+            status: 'synced',
+            totalContributions,
+            weeks,
+            months
+          }
+
+          await storage.setItem(cacheKey, { data: result, timestamp: Date.now() })
+          return result
+        }
+      }
+
+      // 2. Fallback: Query commits directly if stats are 202 (computing) or empty
+      try {
+        const commitsRes = await fetch(`https://api.github.com/repos/${target}/commits?per_page=100`, {
+          headers,
+          signal: AbortSignal.timeout(6000)
+        })
+
+        if (commitsRes.ok) {
+          const commits = await commitsRes.json().catch(() => null)
+          if (Array.isArray(commits) && commits.length > 0) {
+            const dailyMap = new Map<string, number>()
+            for (const c of commits) {
+              const dateStr = (c.commit?.author?.date || c.commit?.committer?.date || '').split('T')[0]
+              if (dateStr) {
+                dailyMap.set(dateStr, (dailyMap.get(dateStr) || 0) + 1)
+              }
+            }
+
+            const { totalContributions, weeks, months } = buildWeeksFromDailyCounts(dailyMap)
+            const result = {
+              target,
+              type: 'repo',
+              status: 'synced',
+              totalContributions,
+              weeks,
+              months
+            }
+
+            await storage.setItem(cacheKey, { data: result, timestamp: Date.now() })
+            return result
+          }
+        }
+      } catch {}
+
+      // 3. Fallback: Use owner's public contributions if repo endpoints are rate limited (403) or private
+      const ownerActivity = await fetchUserFallback(owner)
+      if (ownerActivity) {
+        const result = {
+          ...ownerActivity,
+          target,
+          type: 'repo'
+        }
+        await storage.setItem(cacheKey, { data: result, timestamp: Date.now() })
+        return result
+      }
+
+      return {
+        target,
+        type: 'repo',
+        status: 'error',
+        message: 'No se pudo obtener la actividad del repositorio.',
+        totalContributions: 0,
+        weeks: [],
+        months: []
+      }
+    } else {
+      // User profile mode
+      const username = raw
+      const userActivity = await fetchUserFallback(username)
+      if (userActivity) {
+        await storage.setItem(cacheKey, { data: userActivity, timestamp: Date.now() })
+        return userActivity
+      }
+
+      return {
+        target: username,
+        type: 'user',
+        status: 'not_found',
+        message: 'Usuario de GitHub no encontrado',
+        totalContributions: 0,
+        weeks: [],
+        months: []
+      }
     }
   } catch (err: any) {
     return {

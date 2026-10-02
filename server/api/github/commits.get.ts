@@ -3,7 +3,11 @@ export default defineEventHandler(async (event) => {
   let rawRepo = (query.repo as string || '').trim()
   
   // Limpiar URL completa si el usuario la pegó
-  rawRepo = rawRepo.replace(/^https?:\/\/github\.com\//i, '').replace(/\/$/, '')
+  rawRepo = rawRepo
+    .replace(/^https?:\/\//i, '')
+    .replace(/^(www\.)?github\.com\//i, '')
+    .replace(/\.git$/i, '')
+    .replace(/^\/+|\/+$/g, '')
 
   const parts = rawRepo.split('/')
   if (parts.length < 2 || !parts[0] || !parts[1]) {
