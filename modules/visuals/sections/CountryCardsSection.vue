@@ -100,7 +100,7 @@ const cardParticles = Array.from({ length: COUNT }).map(() => generateParticles(
         v-for="(country, idx) in visibleCountries"
         :key="country.slug || idx"
         :to="localePath(`${ROUTES.COUNTRY}/${country.slug}`)"
-        class="country-card group relative bg-white/[0.02] border border-white/5 rounded-2xl py-6 px-5 flex items-center justify-center gap-4 text-center transition-all duration-500 hover:bg-white/[0.06] hover:border-white/15 hover:shadow-[0_0_20px_rgba(0,212,255,0.06)] outline-none cursor-pointer overflow-hidden block"
+        class="country-card group relative bg-white/[0.02] border border-white/5 rounded-2xl py-6 px-5 flex items-center justify-center gap-4 text-center transition-all duration-500 hover:bg-white/[0.06] hover:border-white/15 hover:shadow-[0_0_20px_rgba(0,212,255,0.06)] outline-none cursor-pointer overflow-hidden"
       >
         <!-- Card content wrapper -->
         <div 
