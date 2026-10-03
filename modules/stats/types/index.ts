@@ -5,8 +5,10 @@ export interface StatDayPoint {
   startupsAdded: number
   cumulativeStartups: number
   mrr: number
+  revenue: number
   views: number
   mrrAdded: number
+  revenueAdded: number
   viewsAdded: number
 }
 

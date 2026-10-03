@@ -32,7 +32,7 @@ export function useSaasList() {
     state.error = null
 
     try {
-      const data = await $fetch<SaasListItem[]>('/api/ranking/list')
+      const data = await $fetch<SaasListItem[]>(`/api/ranking/list?limit=1000&_t=${Date.now()}`)
       state.items = data
     } catch (e: unknown) {
       state.error = e instanceof Error ? e.message : 'Error cargando el ranking'

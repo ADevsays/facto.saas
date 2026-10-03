@@ -117,7 +117,7 @@ export class OutboxService {
         for (const chunk of chunks) {
           try {
             const res = await this.telegramClient.sendMessage({
-              chatId: process.env.TELEGRAM_CHANNEL_ID || '',
+              chatId: this.telegramClient.getDefaultChannelId(),
               text: chunk,
               parseMode: 'HTML'
             })

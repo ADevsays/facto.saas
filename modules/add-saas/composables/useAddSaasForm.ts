@@ -1,4 +1,5 @@
 import { useAddSaasModal } from '~/composables/useAddSaasModal'
+import { useSaasList } from '~/composables/useSaasList'
 
 export function useAddSaasForm() {
   const { close, prefillData } = useAddSaasModal()
@@ -70,6 +71,9 @@ export function useAddSaasForm() {
 
       publishedData.value = response
       const wasUpdate = !!form.value.id
+
+      const { fetchAll } = useSaasList()
+      fetchAll(true).catch(() => {})
 
       close()
 

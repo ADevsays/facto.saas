@@ -3,6 +3,7 @@ import { stripeService } from '~/modules/add-saas/server/services/stripe.service
 import { mercadopagoService } from '~/modules/add-saas/server/services/mercadopago.service'
 import { whopService } from '~/modules/add-saas/server/services/whop.service'
 import { checkAndNotifyAchievement } from '~/modules/achievements/server/services/achievements'
+import { recordDailyView } from '~/server/lib/dailyViews'
  
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
@@ -58,6 +59,8 @@ export default defineEventHandler(async (event) => {
       .update({ views: nextViews })
       .eq('id', dbEntry.id)
       .then(() => {})
+
+    recordDailyView().catch(() => {})
 
     const referer = getHeader(event, 'referer') || ''
     const isEn = referer.includes('/en/') || (getHeader(event, 'accept-language')?.toLowerCase().startsWith('en') ?? false)

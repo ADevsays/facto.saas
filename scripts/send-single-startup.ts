@@ -4,7 +4,7 @@ import { renderNewStartupMessage } from '../modules/notifier/server/services/for
 
 async function main() {
   const client = new TelegramClient({ dryRun: false })
-  const channelId = process.env.TELEGRAM_CHANNEL_ID || '@factosaas'
+  const channelId = client.getDefaultChannelId()
 
   const rendered = renderNewStartupMessage({
     startups: [

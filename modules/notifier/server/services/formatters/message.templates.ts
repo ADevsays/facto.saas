@@ -62,9 +62,31 @@ export function renderNewStartupMessage(payload: NewStartupPayload): RenderResul
       mrrLine = `\n💵 MRR verificado: <b>${formatCurrency(s.mrr)} / mes</b>`
     }
 
-    const saasUrl = buildUtmUrl(`/saas/${s.slug}`, 'new_startup')
-    const ctaLink = `<a href="${saasUrl}">Conoce todas sus métricas y evolución aquí →</a>`
-    const text = `¡Nueva startup en Facto! <b>${name}</b> acaba de sumarse a la plataforma.${descLine}${metaLine}${mrrLine}\n\n👉 ${ctaLink}`
+    let rankLine = ''
+    if (s.rank) {
+      if (s.rank === 1) {
+        rankLine = '\n🥇 <b>#1 en el ranking global de Facto</b>'
+      } else if (s.rank <= 3) {
+        rankLine = `\n🏆 <b>#${s.rank} en el ranking global</b> (¡Top 3!)`
+      } else if (s.rank <= 10) {
+        rankLine = `\n🔥 <b>#${s.rank} en el ranking global</b> (¡Top 10!)`
+      } else {
+        rankLine = `\n📊 Posición en el ranking: <b>#${s.rank}</b>${s.totalRanked ? ` de ${s.totalRanked}` : ''}`
+      }
+    }
+
+    const saasUrl = s.isIncognito
+      ? buildUtmUrl('/ranking', 'new_startup')
+      : buildUtmUrl(`/saas/${s.slug}`, 'new_startup')
+    const ctaLink = s.isIncognito
+      ? `<a href="${saasUrl}">Explora el ranking en vivo →</a>`
+      : `<a href="${saasUrl}">Conoce todas sus métricas y evolución aquí →</a>`
+
+    const titlePrefix = s.isIncognito
+      ? '¡Nueva startup en Facto! Un nuevo proyecto acaba de sumarse a la plataforma en modo privado.'
+      : `¡Nueva startup en Facto! <b>${name}</b> acaba de sumarse a la plataforma.`
+
+    const text = `${titlePrefix}${descLine}${metaLine}${mrrLine}${rankLine}\n\n👉 ${ctaLink}`
 
     return { text, valid: true }
   }
@@ -85,6 +107,8 @@ export function renderNewStartupMessage(payload: NewStartupPayload): RenderResul
       mrrStr = ` • MRR: ${formatCurrency(s.mrr)}`
     }
 
+    const rankStr = s.rank ? ` • #${s.rank}` : ''
+
     let snippet = ''
     if (s.description && s.description.trim()) {
       const clean = s.description.trim().replace(/\s+/g, ' ')
@@ -93,7 +117,7 @@ export function renderNewStartupMessage(payload: NewStartupPayload): RenderResul
     }
 
     const link = buildUtmLink(`/saas/${s.slug}`, 'new_startup', name)
-    return `• ${link} (${metaParts}${mrrStr})${snippet}`
+    return `• ${link} (${metaParts}${mrrStr}${rankStr})${snippet}`
   })
 
   const rankingUrl = buildUtmUrl('/ranking', 'new_startup')
@@ -229,7 +253,8 @@ export function renderDailyDigestMessage(payload: DailyDigestPayload): RenderRes
     const totalRev = payload.globalRevenue > 0
       ? `\n• Facturación global activa: <b>${payload.globalRevenueFormatted}</b>`
       : ''
-    const cta = buildUtmLink('/ranking', 'daily_digest', 'Ver ranking actualizado')
+    const statsUrl = buildUtmUrl('/stats', 'daily_digest')
+    const cta = `<a href="${statsUrl}">Ver estadísticas actualizadas →</a>`
     const text = `${header}\n\n${quietBody}${totalRev}\n\n👉 ${cta}`
     return { text, valid: true }
   }
@@ -292,7 +317,8 @@ export function renderDailyDigestMessage(payload: DailyDigestPayload): RenderRes
     oppsBlock = `\n\n💡 <b>Oportunidades del día</b>\n${oppItems.join('\n')}\n<i>${escapeHtml(NOTIFIER_CONFIG.financialDisclaimer)}</i>`
   }
 
-  const cta = buildUtmLink('/ranking', 'daily_digest', 'Explorar el ranking en vivo')
+  const statsUrl = buildUtmUrl('/stats', 'daily_digest')
+  const cta = `<a href="${statsUrl}">Ver todas las estadísticas y métricas del ecosistema →</a>`
   const text = `${header}\n\n${sections.join('\n')}${oppsBlock}\n\n👉 ${cta}`
 
   return { text, valid: true }

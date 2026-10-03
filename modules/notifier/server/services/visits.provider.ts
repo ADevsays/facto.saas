@@ -1,4 +1,5 @@
 import { supabase } from '~/server/lib/supabase'
+import { getDailyViewsMap, getTodayDateString } from '~/server/lib/dailyViews'
 
 export interface VisitsDataSource {
   getSourceName(): string
@@ -28,16 +29,21 @@ export class PlatformVisitsProvider implements VisitsDataSource {
   }
 
   /**
-   * Returns current aggregate platform views sum.
+   * Returns current aggregate platform views for the specified date.
    */
-  async getTodayVisits(_dateStr: string): Promise<number> {
+  async getTodayVisits(dateStr?: string): Promise<number> {
     try {
+      const targetDate = dateStr || getTodayDateString()
+      const viewsMap = await getDailyViewsMap()
+      if (viewsMap.has(targetDate)) {
+        return viewsMap.get(targetDate) || 0
+      }
+
       const { data, error } = await supabase
         .from('saas_entries')
         .select('views')
 
       if (error || !data) return 0
-
       return data.reduce((sum, item) => sum + (Number(item.views) || 0), 0)
     } catch {
       return 0
@@ -45,8 +51,16 @@ export class PlatformVisitsProvider implements VisitsDataSource {
   }
 
   async getVisitsHistory(_days = 7): Promise<Record<string, number>> {
-    // History is tracked and accumulated across snapshots to maintain true historical records.
-    return {}
+    try {
+      const viewsMap = await getDailyViewsMap()
+      const history: Record<string, number> = {}
+      for (const [date, views] of viewsMap.entries()) {
+        history[date] = views
+      }
+      return history
+    } catch {
+      return {}
+    }
   }
 
   getSevenDayAverage(history: Record<string, number>): number {

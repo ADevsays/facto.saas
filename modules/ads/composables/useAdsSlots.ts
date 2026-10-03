@@ -1,17 +1,50 @@
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import type { AdSlot } from '../types'
+
+let syncChannel: BroadcastChannel | null = null
+let activeListeners = 0
+let hasRefreshedClient = false
 
 export function useAdsSlots() {
   const { data: slots, refresh, pending } = useFetch<AdSlot[]>('/api/ads/slots', {
     key: 'ads-slots-list'
   })
 
-  const clientReady = useState('ads-client-ready', () => false)
+  if (import.meta.client) {
+    onMounted(() => {
+      activeListeners++
 
-  onMounted(async () => {
-    await refresh()
-    clientReady.value = true
-  })
+      if (!hasRefreshedClient) {
+        hasRefreshedClient = true
+        refresh()
+      }
+
+      if (!syncChannel && typeof BroadcastChannel !== 'undefined') {
+        try {
+          syncChannel = new BroadcastChannel('facto_ads_sync')
+          syncChannel.onmessage = (event) => {
+            if (event.data?.type === 'AD_UPDATED') {
+              refresh()
+            }
+          }
+        } catch {}
+      }
+
+      const onFocus = () => {
+        refresh()
+      }
+      window.addEventListener('focus', onFocus)
+
+      onUnmounted(() => {
+        activeListeners--
+        window.removeEventListener('focus', onFocus)
+        if (activeListeners <= 0 && syncChannel) {
+          syncChannel.close()
+          syncChannel = null
+        }
+      })
+    })
+  }
 
   const safeSlots = computed<AdSlot[]>(() => {
     if (slots.value && slots.value.length === 20) {
@@ -42,7 +75,6 @@ export function useAdsSlots() {
     bottomSlots,
     freeSlotsCount,
     refresh,
-    pending,
-    clientReady
+    pending
   }
 }

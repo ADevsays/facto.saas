@@ -1,11 +1,12 @@
 import { NotifierOrchestrator } from '../../services/notifier.orchestrator'
 
 export default defineEventHandler(async (event) => {
+  const isVercelCron = getHeader(event, 'x-vercel-cron') === '1'
   const authHeader = getHeader(event, 'authorization')?.replace(/^Bearer\s+/i, '')
   const adminKey = getHeader(event, 'x-admin-key') || authHeader || getQuery(event).secret
   const expectedSecret = process.env.CRON_SECRET || process.env.ADMIN_SECRET_KEY
 
-  if (expectedSecret && adminKey !== expectedSecret) {
+  if (!isVercelCron && expectedSecret && adminKey !== expectedSecret) {
     throw createError({ statusCode: 401, message: 'Unauthorized: Invalid admin or cron key' })
   }
 

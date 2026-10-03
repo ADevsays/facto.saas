@@ -2,7 +2,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import AdCard from '../components/AdCard.vue'
 import AdEmptyCard from '../components/AdEmptyCard.vue'
-import AdSkeletonCard from '../components/AdSkeletonCard.vue'
 import AdCtaCard from '../components/AdCtaCard.vue'
 import { useAdsSlots } from '../composables/useAdsSlots'
 import { useAddAdModal } from '~/composables/useAddAdModal'
@@ -11,9 +10,7 @@ import type { AdSlot } from '../types'
 const route = useRoute()
 const isDashboard = computed(() => route.path.includes('/dashboard'))
 const { openBuy, openAuctionList } = useAddAdModal()
-const { safeSlots, topSlots, freeSlotsCount, clientReady } = useAdsSlots()
-
-const isLoading = computed(() => !clientReady.value)
+const { safeSlots, topSlots, freeSlotsCount } = useAdsSlots()
 
 // Desktop track: full 20 slots tripled
 const trackDesktop = computed<AdSlot[]>(() => [
@@ -192,20 +189,17 @@ onUnmounted(() => {
     <div class="hidden md:block relative w-full overflow-hidden">
       <div ref="trackDesktopRef" class="ads-track">
         <template v-for="(slot, i) in trackDesktop" :key="`desktop-${slot.position}-${slot.ad?.id || 'empty'}-${slot.ad?.name || ''}-${i}`">
-          <AdSkeletonCard v-if="isLoading" />
-          <template v-else>
-            <AdCard
-              v-if="!slot.isAvailable && slot.ad"
-              v-bind="slot.ad"
-              :position="slot.position"
-            />
-            <AdEmptyCard
-              v-else
-              :position="slot.position"
-              :price="slot.currentPrice"
-              @click="onEmptySlotClick"
-            />
-          </template>
+          <AdCard
+            v-if="!slot.isAvailable && slot.ad"
+            v-bind="slot.ad"
+            :position="slot.position"
+          />
+          <AdEmptyCard
+            v-else
+            :position="slot.position"
+            :price="slot.currentPrice"
+            @click="onEmptySlotClick"
+          />
         </template>
       </div>
 
@@ -226,20 +220,17 @@ onUnmounted(() => {
     <div class="block md:hidden overflow-hidden w-full relative">
       <div ref="trackMobileRef" class="ads-track-mobile">
         <template v-for="(slot, i) in trackMobile" :key="`mobile-${slot.position}-${slot.ad?.id || 'empty'}-${slot.ad?.name || ''}-${i}`">
-          <AdSkeletonCard v-if="isLoading" />
-          <template v-else>
-            <AdCard
-              v-if="!slot.isAvailable && slot.ad"
-              v-bind="slot.ad"
-              :position="slot.position"
-            />
-            <AdEmptyCard
-              v-else
-              :position="slot.position"
-              :price="slot.currentPrice"
-              @click="onEmptySlotClick"
-            />
-          </template>
+          <AdCard
+            v-if="!slot.isAvailable && slot.ad"
+            v-bind="slot.ad"
+            :position="slot.position"
+          />
+          <AdEmptyCard
+            v-else
+            :position="slot.position"
+            :price="slot.currentPrice"
+            @click="onEmptySlotClick"
+          />
         </template>
       </div>
     </div>

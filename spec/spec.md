@@ -619,45 +619,40 @@ interface FeedbackSubmission {
 
 ---
 
-## Bot de Telegram (Hitos, Resumen Diario y Oportunidades)
+### Bot de Telegram (Hitos, Notificación Reactiva y Resumen Diario)
 
-Sistema automatizado desacoplado mediante arquitectura Outbox y Snapshots para publicar cambios en el ranking, hitos de facturación, récords por país, visitas y oportunidades curadas de inversión/crecimiento sin spam y con idempotencia garantizada.
+Sistema automatizado desacoplado para el canal de Telegram (@factosaas) enfocado en dos funcionalidades principales:
+1. **Notificación Reactiva de Nuevas Startups con Posición en Ranking**: Cada vez que se publica una startup (o es aprobada en revisión admin), se notifica de inmediato al canal calculando su posición exacta en el ranking global (#1, Top 3, Top 10 o puesto general) e incluyendo enlace directo a su perfil o al ranking con UTMs.
+2. **Resumen Diario de Métricas (Daily Digest)**: Al finalizar el día (18:00 Colombia / 23:00 UTC), se envía un resumen con startups agregadas, facturación global, visitas registradas hoy y enlace directo a la vista pública de estadísticas (`/stats`).
 
 ### Contrato
 
 **Ubicación arquitectónica:**
-- `modules/notifier/types/index.ts` — tipos de eventos, snapshots, payloads y estados
-- `modules/notifier/const/config.ts` — umbrales, límites de tasa, horario de silencio y configuración centralizada
+- `modules/notifier/types/index.ts` — tipos de eventos, snapshots, payloads y estados (incluye `rank` y `totalRanked` en `NewStartupPayload`)
+- `modules/notifier/const/config.ts` — umbrales, límites de tasa y configuración centralizada
 - `modules/notifier/server/db/schema.sql` — esquema DDL aditivo para tablas `notification_events`, `notification_snapshots` y `notification_locks`
 - `modules/notifier/server/db/storage.interface.ts` — interfaz de persistencia
 - `modules/notifier/server/db/supabase.storage.ts` — implementación en Supabase con fallback resiliente
 - `modules/notifier/server/db/memory.storage.ts` — almacenamiento en memoria para pruebas
 - `modules/notifier/server/services/telegram.client.ts` — cliente nativo de Telegram Bot API con rate limit, retry_after, backoff exponencial y soporte dry-run
-- `modules/notifier/server/services/visits.provider.ts` — interfaz y proveedor desacoplado de visitas agregadas
+- `modules/notifier/server/services/visits.provider.ts` — proveedor de visitas conectado a `dailyViews.ts`
 - `modules/notifier/server/services/anti-spam.service.ts` — control de horario de silencio (23:00 a 07:00) y tope diario de hitos
 - `modules/notifier/server/services/formatters/html.formatter.ts` — escape HTML, formato numérico ($1K, $12.4K, $1.2M), UTM links y división de mensajes largos (<4096 caracteres)
-- `modules/notifier/server/services/formatters/message.templates.ts` — plantillas de mensajes en español neutro
-- `modules/notifier/server/services/detectors/` — detectores puros:
-  - `new-startups.detector.ts` — detección y batching de startups nuevas
-  - `country-records.detector.ts` — nuevos récords históricos de facturación y cantidad por país (+5% margen)
-  - `ranking-moves.detector.ts` — cambios de orden en Top 10 / Top 3 y adelantamientos
-  - `visits-records.detector.ts` — récords de visitas diarias (1 por día)
-  - `opportunities.detector.ts` — scoring determinista y cooldown de 14 días
-  - `digest.detector.ts` — generador del resumen diario con fallback honesto ("día tranquilo")
-- `modules/notifier/server/services/outbox.service.ts` — procesador de cola con lock distribuido y despacho ordenado por prioridad
-- `modules/notifier/server/services/snapshot.service.ts` — captura de estado de la plataforma y baseline
-- `modules/notifier/server/services/notifier.orchestrator.ts` — orquestador central de los flujos de ejecución
-- `modules/notifier/server/api/notifier/run.post.ts` — endpoint para ciclo de hitos
-- `modules/notifier/server/api/notifier/digest.post.ts` — endpoint para resumen diario
+- `modules/notifier/server/services/formatters/message.templates.ts` — plantillas con posición en ranking y CTA directo a `/stats`
+- `modules/notifier/server/services/notifier.orchestrator.ts` — orquestador central con método reactivo `notifyNewStartupReactive(startupId)`
+- `modules/notifier/server/api/notifier/digest.ts` — endpoint para resumen diario compatible con Vercel Cron (`x-vercel-cron`)
 - `modules/notifier/server/api/notifier/status.get.ts` — endpoint de estado y diagnóstico
+- `vercel.json` — cron diario a las 23:00 UTC para `/api/notifier/digest`
+- `.github/workflows/daily-digest.yml` — workflow de respaldo y disparo manual para el resumen diario
 
 **Variables de Entorno:**
 ```env
 TELEGRAM_BOT_TOKEN=...
 TELEGRAM_CHANNEL_ID=...
 TELEGRAM_ADMIN_CHAT_ID=...
-NOTIFIER_ENABLED=false
-NOTIFIER_DRY_RUN=true
+TELEGRAM_CHANNEL_TEST=...
+NOTIFIER_ENABLED=true
+NOTIFIER_DRY_RUN=false
 NOTIFIER_TIMEZONE=America/Bogota
 DIGEST_HOUR=18
 NOTIFIER_MAX_DAILY_MILESTONES=8
@@ -665,20 +660,15 @@ NOTIFIER_MAX_DAILY_MILESTONES=8
 
 ### Dominio
 
-- **Idempotencia Estricta**: Cada evento tiene una `dedupe_key` única. Dos ciclos seguidos nunca duplican mensajes.
-- **Primera Ejecución / Línea Base**: Si no existe snapshot previo, se inicializa la línea base y **no** se emiten eventos históricos.
-- **Detectores Puros**: Son funciones deterministas sin llamadas a Telegram ni efectos secundarios externos.
-- **Scoring de Oportunidades Verificable**: Prohibido inventar cifras o proyecciones. El score se basa únicamente en: crecimiento real de MRR (+40 pts para >50%), hitos absolutos de MRR, facturación verificada por pasarela (+15 pts), novedad de lanzamiento (+15 pts) y tracción. Cooldown de 14 días salvo salto significativo de MRR (>= +30%).
-- **Anti-Spam y Horario de Silencio**: Máximo 8 mensajes de hitos al día; horario de silencio entre 23:00 y 07:00 en `NOTIFIER_TIMEZONE` (los hitos se postergan o agrupan en el resumen diario).
-- **Seguridad en Telegram**: Modo `parse_mode=HTML` con escape estricto de `&`, `<`, `>`. Límite de 4096 caracteres con división por bloques enteros. Rate limit de ~1 msg/s. Manejo de 429 con `retry_after`, 5xx con backoff exponencial y 400/403 marcados como fallas definitivas con alerta inmediata al admin.
+- **Notificación Reactiva Inmediata**: Al completarse la inserción en `publish.post.ts` (cuando `status === 'published'`) o aprobación en `review.post.ts`, se dispara `notifyNewStartupReactive(id)` sin bloquear la respuesta HTTP.
+- **Cálculo de Ranking Preciso**: Se calcula la posición exacta del SaaS dentro del listado publicado ordenado por MRR desc y `published_at` asc.
+- **Idempotencia Estricta**: Cada evento tiene `dedupeKey: new_startup:<id>`. Si se edita o re-publica, no duplica el mensaje.
+- **Enlace a Estadísticas**: El Daily Digest incluye métricas clave del día y un CTA directo a `/stats` (`buildUtmUrl('/stats', 'daily_digest')`).
+- **Seguridad en Telegram**: Modo `parse_mode=HTML` con escape estricto de `&`, `<`, `>`. Límite de 4096 caracteres. Rate limit de ~1 msg/s. Manejo de 429 con `retry_after`.
 
 ### Validación
 
-- **Happy Path Hitos**: Nuevas startups agregadas -> Detectadas y agrupadas en la cola con dedupe key -> Despachadas al canal.
-- **Happy Path Resumen Diario**: Ejecución a la hora configurada -> Genera resumen con startups nuevas, delta de facturación global, top países, visitas y oportunidades curadas con disclaimer financiero.
-- **Día Tranquilo**: Sin cambios en métricas -> Resumen honesto indicando día tranquilo.
-- **Línea Base Segura**: Primera ejecución -> Guarda snapshot sin generar eventos.
-- **Idempotencia**: Dos ejecuciones sucesivas -> La segunda encuentra 0 eventos nuevos.
-- **Dry-Run**: `NOTIFIER_DRY_RUN=true` -> Simula todo el ciclo en consola sin realizar peticiones a Telegram.
-- **Fallas de Red / 429**: Telegram responde 429 -> El cliente espera `retry_after` y reintenta exitosamente.
-- **Fallas Fatales / 403**: Token o permisos inválidos -> El evento se marca como fallido y se envía alerta al chat admin sin reintentos infinitos.
+- **Happy Path Reactivo**: Nueva startup agregada -> Notificada reactivamente al canal con posición de ranking.
+- **Happy Path Resumen Diario**: Ejecución al cierre del día -> Genera resumen con startups nuevas, facturación global, visitas y enlace directo a `/stats`.
+- **Idempotencia**: Dos ejecuciones con el mismo startupId -> La segunda encuentra 0 eventos nuevos.
+- **Dry-Run**: `NOTIFIER_DRY_RUN=true` -> Simula todo el ciclo en consola sin realizar peticiones a Telegram.

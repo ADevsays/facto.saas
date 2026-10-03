@@ -1,5 +1,10 @@
 # Changelog
 
+## Notificaciones en Telegram (@factosaas)
+- **Notificación Reactiva de Nuevas Startups con Posición en Ranking**: Se implementó el disparo reactivo e inmediato en `publish.post.ts` y en la aprobación manual de `review.post.ts` hacia el canal de Telegram, calculando en tiempo real la posición del SaaS en el ranking global (#1, Top 3, Top 10 o puesto general) con deduplicación idempotente (`new_startup:<id>`).
+- **Resumen Diario (Daily Digest) con Enlace a `/stats`**: Se reconfiguró la plantilla del resumen diario para apuntar al módulo de estadísticas `/stats` con parámetros UTM, conectando el cálculo de visitas diarias a `getDailyViewsMap()`.
+- **Automatización de Cron Diario en Vercel & GitHub Actions**: Se configuró `vercel.json` con la ejecución programada una vez al día a las 23:00 UTC (18:00 Colombia), con soporte para la cabecera `x-vercel-cron` y workflow de respaldo en `.github/workflows/daily-digest.yml`.
+
 ## Mejoras de UI & UX
 - **Efecto Sci-Fi de Partículas en Buscador:** Se creó el componente `ParticleText.vue` para las categorías debajo del input de MRR. Cada 15 segundos, las categorías cambian: el texto se desvanece y estalla en sutiles partículas grises (polvo estelar) que se contraen para formar la nueva palabra.
 - **Lógica de Rotación Garantizada:** Se actualizó `MrrInput.vue` para asegurar que las 3 categorías que rotan sean 100% distintas a las que se están mostrando actualmente, maximizando el dinamismo visual.

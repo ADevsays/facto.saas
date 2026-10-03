@@ -11,7 +11,11 @@ import { detectRankingMoves } from './detectors/ranking-moves.detector'
 import { detectVisitsRecord } from './detectors/visits-records.detector'
 import { evaluateOpportunities } from './detectors/opportunities.detector'
 import { generateDailyDigest } from './detectors/digest.detector'
-import type { SystemSnapshotState } from '../../types'
+import { supabase } from '~/server/lib/supabase'
+import { NOTIFIER_CONFIG } from '../../const/config'
+import { renderNewStartupMessage } from './formatters/message.templates'
+import { splitMessageIntoChunks } from './formatters/html.formatter'
+import type { SystemSnapshotState, NewStartupPayload } from '../../types'
 
 export interface OrchestratorOptions {
   storage?: StorageProvider
@@ -195,9 +199,9 @@ export class NotifierOrchestrator {
    * Sends a test diagnostic message directly to admin chat.
    */
   async sendTestMessage(adminChatId?: string | number): Promise<{ success: boolean; messageId?: number }> {
-    const targetChat = adminChatId || process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHANNEL_ID
+    const targetChat = adminChatId || this.telegramClient.getDefaultChannelId() || process.env.TELEGRAM_ADMIN_CHAT_ID
     if (!targetChat) {
-      throw new Error('Neither TELEGRAM_ADMIN_CHAT_ID nor TELEGRAM_CHANNEL_ID is configured')
+      throw new Error('Neither TELEGRAM_ADMIN_CHAT_ID nor target channel is configured')
     }
 
     const dateStr = new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' })
@@ -212,6 +216,131 @@ export class NotifierOrchestrator {
     return {
       success: true,
       messageId: res.message_id
+    }
+  }
+
+  /**
+   * Reactively notifies Telegram channel when a new startup is published,
+   * calculating its exact ranking position.
+   */
+  async notifyNewStartupReactive(startupId: string): Promise<{
+    success: boolean
+    eventId?: string
+    messageId?: number
+    skipReason?: string
+    rank?: number
+  }> {
+    try {
+      // 1. Fetch startup details
+      const { data: startup, error: startupError } = await supabase
+        .from('saas_entries')
+        .select(`
+          id, name, slug, status, mrr, currency, is_incognito, startup_type, published_at,
+          categories!saas_categories ( name, slug ),
+          countries!saas_countries ( name, slug, flag )
+        `)
+        .eq('id', startupId)
+        .single()
+
+      if (startupError || !startup) {
+        return { success: false, skipReason: `Startup not found: ${startupError?.message || startupId}` }
+      }
+
+      if (startup.status !== 'published') {
+        return { success: false, skipReason: `Startup is in '${startup.status}' status, not published` }
+      }
+
+      // 2. Calculate exact ranking position among all published startups
+      const { data: allRanked } = await supabase
+        .from('saas_entries')
+        .select('id, mrr, published_at')
+        .eq('status', 'published')
+        .order('mrr', { ascending: false, nullsFirst: false })
+        .order('published_at', { ascending: true })
+
+      const rankIndex = (allRanked || []).findIndex(s => s.id === startupId)
+      const rank = rankIndex >= 0 ? rankIndex + 1 : undefined
+      const totalRanked = allRanked?.length || 0
+
+      // 3. Prepare payload
+      const categories = (startup.categories as any[]) || []
+      const category = categories[0]?.name || 'Software'
+      const countries = (startup.countries as any[]) || []
+      const country = countries[0]?.name
+      const countryFlag = countries[0]?.flag
+
+      const payload: NewStartupPayload = {
+        startups: [{
+          id: startup.id,
+          name: startup.name || 'Startup',
+          slug: startup.slug || startup.id,
+          category,
+          country,
+          countryFlag,
+          mrr: startup.mrr !== null ? Number(startup.mrr) : null,
+          currency: startup.currency || 'USD',
+          isIncognito: Boolean(startup.is_incognito),
+          description: startup.startup_type || null,
+          rank,
+          totalRanked
+        }]
+      }
+
+      // 4. Enqueue event (idempotent deduplication)
+      const dedupeKey = `new_startup:${startup.id}`
+      const savedEvent = await this.storage.enqueueEvent({
+        eventType: 'new_startup',
+        dedupeKey,
+        payload,
+        priority: 'high',
+        status: 'pending',
+        maxAttempts: NOTIFIER_CONFIG.maxRetryAttempts,
+        scheduledFor: new Date().toISOString()
+      })
+
+      if (!savedEvent) {
+        return { success: true, skipReason: 'Already notified (idempotent)', rank }
+      }
+
+      // 5. Render message
+      const rendered = renderNewStartupMessage(payload)
+      if (!rendered.valid || !rendered.text.trim()) {
+        await this.storage.updateEventStatus(savedEvent.id, {
+          status: 'skipped',
+          skipReason: rendered.skipReason || 'Invalid template rendering'
+        })
+        return { success: false, eventId: savedEvent.id, skipReason: rendered.skipReason, rank }
+      }
+
+      // 6. Send to Telegram
+      const chunks = splitMessageIntoChunks(rendered.text, NOTIFIER_CONFIG.maxMessageLength)
+      let lastMessageId: number | null = null
+
+      for (const chunk of chunks) {
+        const res = await this.telegramClient.sendMessage({
+          chatId: this.telegramClient.getDefaultChannelId(),
+          text: chunk,
+          parseMode: 'HTML'
+        })
+        lastMessageId = res.message_id
+      }
+
+      // 7. Update status to sent
+      await this.storage.updateEventStatus(savedEvent.id, {
+        status: 'sent',
+        telegramMessageId: lastMessageId || undefined,
+        processedAt: new Date().toISOString()
+      })
+
+      return {
+        success: true,
+        eventId: savedEvent.id,
+        messageId: lastMessageId || undefined,
+        rank
+      }
+    } catch (err: any) {
+      console.error('[Notifier] Error in notifyNewStartupReactive:', err)
+      return { success: false, skipReason: err.message }
     }
   }
 }

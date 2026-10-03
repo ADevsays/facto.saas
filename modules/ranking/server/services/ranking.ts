@@ -40,7 +40,7 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
 }
 
 export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasListItem[]> {
-  const { sort = 'mrr', category, country, q, limit = 100, offset = 0 } = params
+  const { sort = 'mrr', category, country, q, limit, offset = 0 } = params
   const column = SORT_COLUMN[sort]
   const nullsFirst = sort === 'mrr' ? false : false
 
@@ -53,31 +53,59 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
     saas_metrics_cache ( history_cache )
   `
 
-  let query = supabase
-    .from('saas_entries')
-    .select(selectQuery)
-    .eq('status', 'published')
-    .order(column, { ascending: false, nullsFirst })
-    .range(offset, offset + limit - 1)
+  const isExplicitLimited = typeof limit === 'number' && limit < 1000
 
-  if (category) {
-    query = query.eq('categories.slug', category)
+  let rawData: any[] = []
+
+  if (isExplicitLimited) {
+    let query = supabase
+      .from('saas_entries')
+      .select(selectQuery)
+      .eq('status', 'published')
+      .order(column, { ascending: false, nullsFirst })
+      .range(offset, offset + limit - 1)
+
+    if (category) query = query.eq('categories.slug', category)
+    if (country) query = query.eq('countries.slug', country)
+    if (q?.trim()) {
+      const term = `%${q.trim()}%`
+      query = query.or(`name.ilike.${term},founder_name.ilike.${term}`)
+    }
+
+    const { data, error } = await query
+    if (error) throw createError({ statusCode: 500, message: error.message })
+    rawData = data ?? []
+  } else {
+    // Auto-paginate in 1000-row chunks to ensure no ceiling when catalog grows past 1,000
+    const CHUNK_SIZE = 1000
+    let currentFrom = offset
+
+    while (true) {
+      let query = supabase
+        .from('saas_entries')
+        .select(selectQuery)
+        .eq('status', 'published')
+        .order(column, { ascending: false, nullsFirst })
+        .range(currentFrom, currentFrom + CHUNK_SIZE - 1)
+
+      if (category) query = query.eq('categories.slug', category)
+      if (country) query = query.eq('countries.slug', country)
+      if (q?.trim()) {
+        const term = `%${q.trim()}%`
+        query = query.or(`name.ilike.${term},founder_name.ilike.${term}`)
+      }
+
+      const { data, error } = await query
+      if (error) throw createError({ statusCode: 500, message: error.message })
+
+      if (!data || data.length === 0) break
+      rawData.push(...data)
+      if (data.length < CHUNK_SIZE) break
+      currentFrom += CHUNK_SIZE
+    }
   }
 
-  if (country) {
-    query = query.eq('countries.slug', country)
-  }
-
-  if (q?.trim()) {
-    const term = `%${q.trim()}%`
-    query = query.or(`name.ilike.${term},founder_name.ilike.${term}`)
-  }
-
-  const { data, error } = await query
-
-  if (error) throw createError({ statusCode: 500, message: error.message })
-
-  const items = (data ?? []).map(row => {
+  const items = rawData.map(row => {
     const item = mapRow(row as unknown as Record<string, unknown>, category)
     const cacheData = (row as any).saas_metrics_cache
     if (cacheData) {

@@ -103,8 +103,13 @@ export async function upsertSaasEntry(
   if (body.id) {
     const { data: existing } = await supabase.from('saas_entries').select('status').eq('id', body.id).single()
     status = pData.hasProvider ? 'published' : (existing?.status || status)
+    const shouldSetPublishedAt = status === 'published' && (!existing || existing.status !== 'published')
     
-    const res = await supabase.from('saas_entries').update({ ...payload, status }).eq('id', body.id).select().single()
+    const res = await supabase.from('saas_entries').update({
+      ...payload,
+      status,
+      ...(shouldSetPublishedAt ? { published_at: new Date().toISOString() } : {})
+    }).eq('id', body.id).select().single()
     entry = res.data
     error = res.error
     
@@ -113,7 +118,12 @@ export async function upsertSaasEntry(
       await supabase.from('saas_countries').delete().eq('saas_id', entry.id)
     }
   } else {
-    const res = await supabase.from('saas_entries').insert({ ...payload, status, views: 0 }).select().single()
+    const res = await supabase.from('saas_entries').insert({
+      ...payload,
+      status,
+      views: 0,
+      ...(status === 'published' ? { published_at: new Date().toISOString() } : {})
+    }).select().single()
     entry = res.data
     error = res.error
   }

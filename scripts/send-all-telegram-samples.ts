@@ -16,7 +16,7 @@ async function main() {
     dryRun: false
   })
 
-  const channelId = process.env.TELEGRAM_CHANNEL_ID || '@factosaas'
+  const channelId = client.getDefaultChannelId()
   console.log(`Target Channel: ${channelId}`)
 
   const samples = [

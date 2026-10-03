@@ -41,8 +41,11 @@ async function fetchSlots() {
   loading.value = true
   error.value = ''
   try {
-    const data = await $fetch<AdSlot[]>('/api/ads/slots')
+    const data = await $fetch<AdSlot[]>(`/api/ads/slots?_t=${Date.now()}`)
     slots.value = data || []
+    if (typeof refreshNuxtData === 'function') {
+      refreshNuxtData('ads-slots-list')
+    }
   } catch (err: any) {
     error.value = 'Error al cargar los cupos de anuncios.'
   } finally {
@@ -108,6 +111,16 @@ async function handleFileUpload(e: Event) {
   }
 }
 
+function notifyAdsUpdate() {
+  if (typeof BroadcastChannel !== 'undefined') {
+    try {
+      const channel = new BroadcastChannel('facto_ads_sync')
+      channel.postMessage({ type: 'AD_UPDATED' })
+      channel.close()
+    } catch {}
+  }
+}
+
 async function submitAssignment() {
   if (!form.value.name || !form.value.url) {
     modalError.value = 'El nombre y la URL son obligatorios.'
@@ -133,6 +146,7 @@ async function submitAssignment() {
 
     isModalOpen.value = false
     await fetchSlots()
+    notifyAdsUpdate()
   } catch (err: any) {
     modalError.value = err.data?.statusMessage || err.message || 'Error al asignar el afiliado.'
   } finally {
@@ -150,6 +164,7 @@ async function removeAd(pos: number) {
       body: { position: pos }
     })
     await fetchSlots()
+    notifyAdsUpdate()
   } catch (err: any) {
     alert('Error al liberar el cupo: ' + (err.data?.statusMessage || err.message))
   }

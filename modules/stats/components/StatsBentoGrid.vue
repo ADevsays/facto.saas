@@ -2,6 +2,7 @@
 import type { StatsOverviewResponse } from '../types'
 import StatsStartupsCard from './cards/StatsStartupsCard.vue'
 import StatsMrrCard from './cards/StatsMrrCard.vue'
+import StatsRevenueCard from './cards/StatsRevenueCard.vue'
 import StatsVelocityCard from './cards/StatsVelocityCard.vue'
 import StatsDailyViewsCard from './cards/StatsDailyViewsCard.vue'
 import StatsCumulativeViewsCard from './cards/StatsCumulativeViewsCard.vue'
@@ -24,26 +25,26 @@ defineProps<{
       :total-startups="summary.totalStartups"
     />
 
-    <!-- 2. MRR Verificado (1 Col) -->
+    <!-- 2. Ritmo Diario de Incorporaciones (1 Col) -->
+    <StatsVelocityCard
+      :daily="timeline.daily"
+    />
+
+    <!-- 3. MRR Verificado (1 Col) -->
     <StatsMrrCard
       :daily="timeline.daily"
       :total-mrr="summary.totalMrr"
     />
 
-    <!-- 3. Ritmo Diario de Incorporaciones (1 Col) -->
-    <StatsVelocityCard
+    <!-- 4. Facturación Total Acumulada (2 Cols) -->
+    <StatsRevenueCard
       :daily="timeline.daily"
+      :total-revenue="summary.totalRevenue"
     />
 
-    <!-- 4. Visitas Diarias a Perfiles (2 Cols) -->
+    <!-- 5. Visitas Diarias a Perfiles (2 Cols) -->
     <StatsDailyViewsCard
       :daily="timeline.daily"
-    />
-
-    <!-- 5. Evolución de Visitas Acumuladas (2 Cols) -->
-    <StatsCumulativeViewsCard
-      :daily="timeline.daily"
-      :total-views="summary.totalViews"
     />
 
     <!-- 6. Top Categorías (1 Col) -->
@@ -51,7 +52,13 @@ defineProps<{
       :by-category="byCategory"
     />
 
-    <!-- 7. Liderazgo por Países (3 Cols) -->
+    <!-- 7. Evolución de Visitas Acumuladas (3 Cols) -->
+    <StatsCumulativeViewsCard
+      :daily="timeline.daily"
+      :total-views="summary.totalViews"
+    />
+
+    <!-- 8. Liderazgo por Países (3 Cols) -->
     <StatsCountriesCard
       :by-country="byCountry"
     />

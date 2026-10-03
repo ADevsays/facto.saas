@@ -19,12 +19,28 @@ export class TelegramClient {
 
   constructor(options: TelegramClientOptions = {}) {
     this.botToken = options.botToken || process.env.TELEGRAM_BOT_TOKEN || ''
-    this.defaultChannelId = options.channelId || process.env.TELEGRAM_CHANNEL_ID || ''
+
+    const isTestMode = process.env.NOTIFIER_ENABLED === 'false' && Boolean(process.env.TELEGRAM_CHANNEL_TEST)
+    const targetChannel = isTestMode
+      ? process.env.TELEGRAM_CHANNEL_TEST!
+      : (process.env.TELEGRAM_CHANNEL_ID || '')
+
+    this.defaultChannelId = options.channelId || targetChannel
     this.adminChatId = options.adminChatId || process.env.TELEGRAM_ADMIN_CHAT_ID || ''
-    this.dryRun = options.dryRun !== undefined
-      ? options.dryRun
-      : (process.env.NOTIFIER_DRY_RUN !== 'false' && process.env.NOTIFIER_ENABLED !== 'true')
+
+    if (options.dryRun !== undefined) {
+      this.dryRun = options.dryRun
+    } else if (isTestMode) {
+      this.dryRun = false
+    } else {
+      this.dryRun = process.env.NOTIFIER_DRY_RUN !== 'false' && process.env.NOTIFIER_ENABLED !== 'true'
+    }
+
     this.fetchFn = options.fetchFn || globalThis.fetch
+  }
+
+  getDefaultChannelId(): string | number {
+    return this.defaultChannelId
   }
 
   isConfigured(): boolean {

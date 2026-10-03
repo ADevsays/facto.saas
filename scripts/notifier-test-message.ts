@@ -6,7 +6,7 @@ async function main() {
   const orchestrator = new NotifierOrchestrator()
 
   try {
-    const channelId = process.env.TELEGRAM_CHANNEL_ID
+    const channelId = orchestrator.telegramClient.getDefaultChannelId()
     if (channelId) {
       console.log(`Sending test message to channel: ${channelId}`)
       const resChannel = await orchestrator.sendTestMessage(channelId)

@@ -1,0 +1,31 @@
+name: Daily Digest Notifier
+
+on:
+  schedule:
+    # 23:00 UTC = 18:00 America/Bogota (End of day)
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+
+jobs:
+  daily-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Daily Digest Endpoint
+        run: |
+          BASE_URL="${{ secrets.APP_URL || 'https://www.factosaas.com' }}"
+          SECRET="${{ secrets.CRON_SECRET || secrets.ADMIN_SECRET_KEY }}"
+          
+          echo "Triggering $BASE_URL/api/notifier/digest..."
+          
+          if [ -n "$SECRET" ]; then
+            HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $SECRET" "$BASE_URL/api/notifier/digest")
+          else
+            HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/notifier/digest")
+          fi
+          
+          echo "HTTP Response: $HTTP_RESPONSE"
+          if [ "$HTTP_RESPONSE" -ge 200 ] && [ "$HTTP_RESPONSE" -lt 300 ]; then
+            echo "Daily digest executed successfully."
+          else
+            echo "Warning: Received HTTP $HTTP_RESPONSE"
+          fi

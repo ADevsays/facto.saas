@@ -3,6 +3,7 @@ import type { SaasSubmission } from '~/modules/add-saas/types'
 import { processProviderInfo, upsertSaasEntry } from '../services/saas.service'
 import { sendFoundersReport } from '~/modules/leadmagnets/server/services/email'
 import { sendFounderWelcomeEmail } from '../services/founderEmail'
+import { NotifierOrchestrator } from '~/modules/notifier/server/services/notifier.orchestrator'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<SaasSubmission>(event)
@@ -81,6 +82,14 @@ export default defineEventHandler(async (event) => {
       startupSlug: finalEntry.slug || '',
       siteUrl
     }).catch(e => console.error('[Publish] Error notifying founder:', e))
+  }
+
+  // 5.6 Reactively notify Telegram channel if published
+  if (finalEntry && finalEntry.status === 'published') {
+    const orchestrator = new NotifierOrchestrator()
+    orchestrator.notifyNewStartupReactive(finalEntry.id).catch(e => {
+      console.error('[Publish] Error notifying Telegram channel:', e)
+    })
   }
 
   // 6. Notify admin if startup requires manual review

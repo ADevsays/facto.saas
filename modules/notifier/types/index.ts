@@ -39,6 +39,8 @@ export interface NewStartupPayload {
     isIncognito: boolean
     websiteUrl?: string | null
     description?: string | null
+    rank?: number
+    totalRanked?: number
   }>
 }
 

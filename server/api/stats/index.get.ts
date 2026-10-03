@@ -1,4 +1,5 @@
 import { supabase } from '~/server/lib/supabase'
+import { getDailyViewsMap } from '~/server/lib/dailyViews'
 import type {
   StatDayPoint,
   StatWeekPoint,
@@ -86,23 +87,44 @@ function getWeekKey(d: Date): { key: string; label: string } {
 }
 
 export default defineEventHandler(async (event): Promise<StatsOverviewResponse> => {
+  setResponseHeaders(event, {
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    'Surrogate-Control': 'no-store',
+    'CDN-Cache-Control': 'no-store',
+    'Vercel-CDN-Cache-Control': 'no-store'
+  })
+
   const query = getQuery(event)
   const headerTz = getHeader(event, 'x-timezone')
   const requestedTz = (typeof query.tz === 'string' ? query.tz : headerTz) || process.env.NOTIFIER_TIMEZONE || 'America/Bogota'
   const timeZone = isValidTimeZone(requestedTz) ? requestedTz : 'America/Bogota'
 
-  const { data: rawRows, error: dbError } = await supabase
-    .from('saas_entries')
-    .select(`
-      id, name, slug, mrr, revenue, currency, views, published_at, is_incognito,
-      categories!saas_categories ( name, slug ),
-      countries!saas_countries ( id, name, slug, flag, iso_code ),
-      saas_metrics_cache ( created_at, history_synced_at, history_cache )
-    `)
-    .eq('status', 'published')
+  const PAGE_SIZE = 1000
+  let rawRows: any[] = []
+  let from = 0
 
-  if (dbError) {
-    throw createError({ statusCode: 500, message: dbError.message })
+  while (true) {
+    const { data: chunk, error: dbError } = await supabase
+      .from('saas_entries')
+      .select(`
+        id, name, slug, mrr, revenue, currency, views, published_at, is_incognito,
+        categories!saas_categories ( name, slug ),
+        countries!saas_countries ( id, name, slug, flag, iso_code ),
+        saas_metrics_cache ( created_at, history_synced_at, history_cache )
+      `)
+      .eq('status', 'published')
+      .range(from, from + PAGE_SIZE - 1)
+
+    if (dbError) {
+      throw createError({ statusCode: 500, message: dbError.message })
+    }
+
+    if (!chunk || chunk.length === 0) break
+    rawRows.push(...chunk)
+    if (chunk.length < PAGE_SIZE) break
+    from += PAGE_SIZE
   }
 
   const rows = (rawRows || []).map((row: any) => {
@@ -158,7 +180,7 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
 
   const categoryMap = new Map<string, StatCategoryPoint>()
   const countryMap = new Map<string, StatCountryPoint>()
-  const dailyAdditionsMap = new Map<string, { startups: number; mrr: number; revenue: number; views: number }>()
+  const dailyAdditionsMap = new Map<string, { startups: number; mrr: number; revenue: number }>()
 
   for (const item of rows) {
     const isVerified = (item.mrr !== null && item.mrr > 0) || item.revenue > 0
@@ -203,22 +225,24 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
       countryMap.set(cSlug, existing)
     }
 
-    // Daily bucket for startup launches & views
+    // Daily bucket for startup launches
     const startupDayKey = formatDate(new Date(item.date), timeZone)
-    const startupDayEntry = dailyAdditionsMap.get(startupDayKey) || { startups: 0, mrr: 0, revenue: 0, views: 0 }
+    const startupDayEntry = dailyAdditionsMap.get(startupDayKey) || { startups: 0, mrr: 0, revenue: 0 }
     startupDayEntry.startups++
-    startupDayEntry.views += item.views
     dailyAdditionsMap.set(startupDayKey, startupDayEntry)
 
     // Daily bucket for MRR and Revenue additions
     if ((item.mrr && item.mrr > 0) || (item.revenue && item.revenue > 0)) {
       const revDayKey = item.mrrDate ? formatDate(new Date(item.mrrDate), timeZone) : startupDayKey
-      const revDayEntry = dailyAdditionsMap.get(revDayKey) || { startups: 0, mrr: 0, revenue: 0, views: 0 }
+      const revDayEntry = dailyAdditionsMap.get(revDayKey) || { startups: 0, mrr: 0, revenue: 0 }
       if (item.mrr) revDayEntry.mrr += item.mrr
       if (item.revenue) revDayEntry.revenue += item.revenue
       dailyAdditionsMap.set(revDayKey, revDayEntry)
     }
   }
+
+  // Fetch recorded daily views
+  const dailyViewsMap = await getDailyViewsMap()
 
   // Build a continuous daily timeline
   const now = new Date()
@@ -227,21 +251,72 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
   const startDate = new Date(Math.min(earliestDate.getTime(), now.getTime() - 14 * 86400000))
   startDate.setHours(0, 0, 0, 0)
 
+  const allDates: string[] = []
+  const dateCursor = new Date(startDate)
+  while (formatDate(dateCursor, timeZone) <= todayStr) {
+    allDates.push(formatDate(dateCursor, timeZone))
+    dateCursor.setDate(dateCursor.getDate() + 1)
+  }
+
+  // Pre-calculate cumulative startups by date to establish historical traffic weight
+  const startupsCumulativeByDate = new Map<string, number>()
+  let runningStartups = 0
+  for (const d of allDates) {
+    const data = dailyAdditionsMap.get(d)
+    runningStartups += data?.startups || 0
+    startupsCumulativeByDate.set(d, runningStartups)
+  }
+
+  // Distribute unrecorded historical views smoothly according to catalog traction
+  let recordedTotal = 0
+  for (const [date, count] of dailyViewsMap.entries()) {
+    if (allDates.includes(date)) {
+      recordedTotal += count
+    }
+  }
+
+  const unrecordedBudget = Math.max(0, totalViews - recordedTotal)
+  const unrecordedDates = allDates.filter(d => !dailyViewsMap.has(d))
+  const unrecordedWeights = unrecordedDates.map(d => {
+    const activeStartups = startupsCumulativeByDate.get(d) || 1
+    const added = dailyAdditionsMap.get(d)?.startups || 0
+    return activeStartups * 1.0 + added * 3.0 + 1.0
+  })
+  const totalWeight = unrecordedWeights.reduce((a, b) => a + b, 0) || 1
+
+  const computedDailyViewsMap = new Map<string, number>()
+  let allocated = 0
+
+  for (let i = 0; i < unrecordedDates.length; i++) {
+    const d = unrecordedDates[i]
+    const isLast = i === unrecordedDates.length - 1
+    const count = isLast
+      ? Math.max(0, unrecordedBudget - allocated)
+      : Math.round((unrecordedWeights[i] / totalWeight) * unrecordedBudget)
+    computedDailyViewsMap.set(d, count)
+    allocated += count
+  }
+
+  for (const [date, count] of dailyViewsMap.entries()) {
+    computedDailyViewsMap.set(date, count)
+  }
+
   const daily: StatDayPoint[] = []
   let cumulativeStartups = 0
   let cumulativeMrr = 0
+  let cumulativeRevenue = 0
   let cumulativeViews = 0
 
-  const cur = new Date(startDate)
-  while (formatDate(cur, timeZone) <= todayStr) {
-    const dayStr = formatDate(cur, timeZone)
+  for (const dayStr of allDates) {
     const dayData = dailyAdditionsMap.get(dayStr)
     const added = dayData?.startups || 0
     const mrrAdded = dayData?.mrr || 0
-    const viewsAdded = dayData?.views || 0
+    const revenueAdded = dayData?.revenue || 0
+    const viewsAdded = computedDailyViewsMap.get(dayStr) || 0
 
     cumulativeStartups += added
     cumulativeMrr += mrrAdded
+    cumulativeRevenue += revenueAdded
     cumulativeViews += viewsAdded
 
     daily.push({
@@ -249,12 +324,12 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
       startupsAdded: added,
       cumulativeStartups,
       mrr: cumulativeMrr,
+      revenue: cumulativeRevenue,
       views: cumulativeViews,
       mrrAdded,
+      revenueAdded,
       viewsAdded
     })
-
-    cur.setDate(cur.getDate() + 1)
   }
 
   // Build weekly timeline
@@ -289,7 +364,8 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
   const byCategory = Array.from(categoryMap.values()).sort((a, b) => b.totalMrr - a.totalMrr || b.count - a.count)
   const byCountry = Array.from(countryMap.values()).sort((a, b) => b.totalMrr - a.totalMrr || b.count - a.count)
 
-  const todayBucket = dailyAdditionsMap.get(todayStr) || { startups: 0, mrr: 0, revenue: 0, views: 0 }
+  const todayBucket = dailyAdditionsMap.get(todayStr) || { startups: 0, mrr: 0, revenue: 0 }
+  const todayViewsAdded = computedDailyViewsMap.get(todayStr) || 0
 
   return {
     summary: {
@@ -306,7 +382,7 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
         startupsAdded: todayBucket.startups,
         mrrAdded: todayBucket.mrr,
         revenueAdded: todayBucket.revenue || todayBucket.mrr,
-        viewsAdded: todayBucket.views
+        viewsAdded: todayViewsAdded
       },
       growth30d: {
         startups: startupsGrowth30d,

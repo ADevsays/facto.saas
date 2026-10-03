@@ -1,5 +1,6 @@
 import { supabase } from '~/server/lib/supabase'
 import { sendFoundersReport } from '~/modules/leadmagnets/server/services/email'
+import { NotifierOrchestrator } from '~/modules/notifier/server/services/notifier.orchestrator'
 
 function buildApprovalEmail(name: string, slug: string | null, siteUrl: string): string {
   const profileUrl = slug ? `${siteUrl}/saas/${slug}` : siteUrl
@@ -206,6 +207,11 @@ export default defineEventHandler(async (event) => {
         subject: `¡${saasName} ha sido aprobada en Facto!`,
         html: buildApprovalEmail(saasName, entry.slug, siteUrl)
       }).catch(e => console.error('[Review] Error sending approval email:', e))
+
+      const orchestrator = new NotifierOrchestrator()
+      orchestrator.notifyNewStartupReactive(body.saasId).catch(e => {
+        console.error('[Review] Error notifying Telegram channel:', e)
+      })
     } else {
       sendFoundersReport({
         to: entry.founder_email,
@@ -213,6 +219,11 @@ export default defineEventHandler(async (event) => {
         html: buildRejectionEmail(saasName, siteUrl)
       }).catch(e => console.error('[Review] Error sending rejection email:', e))
     }
+  } else if (body.action === 'approve') {
+    const orchestrator = new NotifierOrchestrator()
+    orchestrator.notifyNewStartupReactive(body.saasId).catch(e => {
+      console.error('[Review] Error notifying Telegram channel:', e)
+    })
   }
 
   return { success: true, saasId: body.saasId, status: newStatus }
