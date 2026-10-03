@@ -87,7 +87,7 @@ onUnmounted(() => {
   >
     <div class="overflow-hidden w-full relative">
       <div ref="trackRef" class="ads-track-mobile">
-        <template v-for="(slot, i) in track" :key="`bot-${slot.position}-${i}`">
+        <template v-for="(slot, i) in track" :key="`bot-${slot.position}-${slot.ad?.id || 'empty'}-${slot.ad?.name || ''}-${i}`">
           <AdCard
             v-if="!slot.isAvailable && slot.ad"
             v-bind="slot.ad"

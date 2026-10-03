@@ -113,6 +113,7 @@ async function handleSubmit() {
     })
 
     if (res?.ok && res.ad) {
+      await refreshNuxtData('ads-slots-list')
       emit('saved', res.ad)
       closeModal()
     }

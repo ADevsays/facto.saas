@@ -76,7 +76,7 @@ const todayViews = computed(() => {
           <span class="text-[0.8rem] font-sans font-normal text-neutral-400 leading-none">hoy</span>
         </div>
         <p class="text-[11px] font-sans text-neutral-400 font-extralight mt-1 truncate">
-          ${{ summary.totalRevenue.toLocaleString('en-US') }} {{ t?.kpis?.today_revenue_sub }}
+          ${{ summary.totalRevenue >= 1000000 ? (summary.totalRevenue / 1000000).toFixed(1) + 'M' : (summary.totalRevenue >= 1000 ? (summary.totalRevenue / 1000).toFixed(1) + 'K' : summary.totalRevenue.toLocaleString('en-US')) }} {{ t?.kpis?.today_revenue_sub }}
         </p>
       </div>
     </div>

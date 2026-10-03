@@ -45,8 +45,27 @@ const COUNTRY_ISO_MAP: Record<string, string> = {
   nicaragua: 'ni'
 }
 
-function formatDate(d: Date): string {
-  return d.toISOString().slice(0, 10)
+function isValidTimeZone(tz?: string | null): boolean {
+  if (!tz) return false
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: tz })
+    return true
+  } catch {
+    return false
+  }
+}
+
+function formatDate(d: Date, timeZone = 'America/Bogota'): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(d)
+  } catch {
+    return d.toISOString().slice(0, 10)
+  }
 }
 
 function getWeekKey(d: Date): { key: string; label: string } {
@@ -66,11 +85,16 @@ function getWeekKey(d: Date): { key: string; label: string } {
   }
 }
 
-export default defineEventHandler(async (): Promise<StatsOverviewResponse> => {
+export default defineEventHandler(async (event): Promise<StatsOverviewResponse> => {
+  const query = getQuery(event)
+  const headerTz = getHeader(event, 'x-timezone')
+  const requestedTz = (typeof query.tz === 'string' ? query.tz : headerTz) || process.env.NOTIFIER_TIMEZONE || 'America/Bogota'
+  const timeZone = isValidTimeZone(requestedTz) ? requestedTz : 'America/Bogota'
+
   const { data: rawRows, error: dbError } = await supabase
     .from('saas_entries')
     .select(`
-      id, name, slug, mrr, currency, views, published_at, is_incognito,
+      id, name, slug, mrr, revenue, currency, views, published_at, is_incognito,
       categories!saas_categories ( name, slug ),
       countries!saas_countries ( id, name, slug, flag, iso_code ),
       saas_metrics_cache ( created_at, history_synced_at, history_cache )
@@ -94,11 +118,21 @@ export default defineEventHandler(async (): Promise<StatsOverviewResponse> => {
       ? new Date(cache.created_at).toISOString()
       : (cache?.history_synced_at ? new Date(cache.history_synced_at).toISOString() : validDate)
 
+    const history = cache?.history_cache
+    let realAllTimeRevenue = 0
+    if (history?.charges?.length) {
+      realAllTimeRevenue = history.charges.reduce((sum: number, c: any) => sum + (Number(c.amount) || 0), 0)
+    }
+    const revenue = realAllTimeRevenue > 0
+      ? Math.round(realAllTimeRevenue)
+      : (row.revenue && Number(row.revenue) > 0 ? Math.round(Number(row.revenue)) : (mrr ?? 0))
+
     return {
       id: row.id,
       name: row.name || 'Startup',
       slug: row.slug,
       mrr,
+      revenue,
       mrrDate,
       views,
       date: validDate,
@@ -118,18 +152,20 @@ export default defineEventHandler(async (): Promise<StatsOverviewResponse> => {
 
   // Overall totals
   let totalMrr = 0
+  let totalRevenue = 0
   let totalViews = 0
   let verifiedCount = 0
 
   const categoryMap = new Map<string, StatCategoryPoint>()
   const countryMap = new Map<string, StatCountryPoint>()
-  const dailyAdditionsMap = new Map<string, { startups: number; mrr: number; views: number }>()
+  const dailyAdditionsMap = new Map<string, { startups: number; mrr: number; revenue: number; views: number }>()
 
   for (const item of rows) {
-    const isVerified = item.mrr !== null && item.mrr > 0
+    const isVerified = (item.mrr !== null && item.mrr > 0) || item.revenue > 0
     if (isVerified) {
       verifiedCount++
-      totalMrr += item.mrr!
+      if (item.mrr) totalMrr += item.mrr
+      if (item.revenue) totalRevenue += item.revenue
     }
     totalViews += item.views
 
@@ -168,23 +204,25 @@ export default defineEventHandler(async (): Promise<StatsOverviewResponse> => {
     }
 
     // Daily bucket for startup launches & views
-    const startupDayKey = item.date.slice(0, 10)
-    const startupDayEntry = dailyAdditionsMap.get(startupDayKey) || { startups: 0, mrr: 0, views: 0 }
+    const startupDayKey = formatDate(new Date(item.date), timeZone)
+    const startupDayEntry = dailyAdditionsMap.get(startupDayKey) || { startups: 0, mrr: 0, revenue: 0, views: 0 }
     startupDayEntry.startups++
     startupDayEntry.views += item.views
     dailyAdditionsMap.set(startupDayKey, startupDayEntry)
 
-    // Daily bucket for MRR additions (assigned to when revenue was registered/verified)
-    if (item.mrr && item.mrr > 0) {
-      const mrrDayKey = item.mrrDate ? item.mrrDate.slice(0, 10) : startupDayKey
-      const mrrDayEntry = dailyAdditionsMap.get(mrrDayKey) || { startups: 0, mrr: 0, views: 0 }
-      mrrDayEntry.mrr += item.mrr
-      dailyAdditionsMap.set(mrrDayKey, mrrDayEntry)
+    // Daily bucket for MRR and Revenue additions
+    if ((item.mrr && item.mrr > 0) || (item.revenue && item.revenue > 0)) {
+      const revDayKey = item.mrrDate ? formatDate(new Date(item.mrrDate), timeZone) : startupDayKey
+      const revDayEntry = dailyAdditionsMap.get(revDayKey) || { startups: 0, mrr: 0, revenue: 0, views: 0 }
+      if (item.mrr) revDayEntry.mrr += item.mrr
+      if (item.revenue) revDayEntry.revenue += item.revenue
+      dailyAdditionsMap.set(revDayKey, revDayEntry)
     }
   }
 
   // Build a continuous daily timeline
   const now = new Date()
+  const todayStr = formatDate(now, timeZone)
   const earliestDate = rows.length > 0 ? new Date(rows[0].date) : new Date(now.getTime() - 30 * 86400000)
   const startDate = new Date(Math.min(earliestDate.getTime(), now.getTime() - 14 * 86400000))
   startDate.setHours(0, 0, 0, 0)
@@ -195,8 +233,8 @@ export default defineEventHandler(async (): Promise<StatsOverviewResponse> => {
   let cumulativeViews = 0
 
   const cur = new Date(startDate)
-  while (cur <= now) {
-    const dayStr = formatDate(cur)
+  while (formatDate(cur, timeZone) <= todayStr) {
+    const dayStr = formatDate(cur, timeZone)
     const dayData = dailyAdditionsMap.get(dayStr)
     const added = dayData?.startups || 0
     const mrrAdded = dayData?.mrr || 0
@@ -222,7 +260,7 @@ export default defineEventHandler(async (): Promise<StatsOverviewResponse> => {
   // Build weekly timeline
   const weeklyMap = new Map<string, StatWeekPoint>()
   for (const day of daily) {
-    const d = new Date(day.date)
+    const d = new Date(day.date + 'T12:00:00Z')
     const { key, label } = getWeekKey(d)
     const existing = weeklyMap.get(key) || {
       week: key,
@@ -240,7 +278,7 @@ export default defineEventHandler(async (): Promise<StatsOverviewResponse> => {
   const weekly = Array.from(weeklyMap.values())
 
   // Calculate 30d growth
-  const thirtyDaysAgoStr = formatDate(new Date(now.getTime() - 30 * 86400000))
+  const thirtyDaysAgoStr = formatDate(new Date(now.getTime() - 30 * 86400000), timeZone)
   const point30dAgo = daily.find(d => d.date === thirtyDaysAgoStr) || daily[0]
   const prevStartups = point30dAgo ? point30dAgo.cumulativeStartups : 0
   const prevMrr = point30dAgo ? point30dAgo.mrr : 0
@@ -251,14 +289,13 @@ export default defineEventHandler(async (): Promise<StatsOverviewResponse> => {
   const byCategory = Array.from(categoryMap.values()).sort((a, b) => b.totalMrr - a.totalMrr || b.count - a.count)
   const byCountry = Array.from(countryMap.values()).sort((a, b) => b.totalMrr - a.totalMrr || b.count - a.count)
 
-  const todayStr = formatDate(now)
-  const todayBucket = dailyAdditionsMap.get(todayStr) || { startups: 0, mrr: 0, views: 0 }
+  const todayBucket = dailyAdditionsMap.get(todayStr) || { startups: 0, mrr: 0, revenue: 0, views: 0 }
 
   return {
     summary: {
       totalStartups: rows.length,
       totalMrr,
-      totalRevenue: totalMrr * 12,
+      totalRevenue,
       totalViews,
       avgMrr: verifiedCount > 0 ? Math.round(totalMrr / verifiedCount) : 0,
       verifiedCount,
@@ -268,7 +305,7 @@ export default defineEventHandler(async (): Promise<StatsOverviewResponse> => {
         date: todayStr,
         startupsAdded: todayBucket.startups,
         mrrAdded: todayBucket.mrr,
-        revenueAdded: todayBucket.mrr * 12,
+        revenueAdded: todayBucket.revenue || todayBucket.mrr,
         viewsAdded: todayBucket.views
       },
       growth30d: {

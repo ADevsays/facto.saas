@@ -1,9 +1,13 @@
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import type { AdSlot } from '../types'
 
 export function useAdsSlots() {
   const { data: slots, refresh } = useFetch<AdSlot[]>('/api/ads/slots', {
     key: 'ads-slots-list'
+  })
+
+  onMounted(() => {
+    refresh()
   })
 
   const safeSlots = computed<AdSlot[]>(() => {

@@ -221,6 +221,7 @@ export function useAdSetupForm(options: {
         }
       })
 
+      await refreshNuxtData('ads-slots-list')
       setupSuccess.value = true
 
       if (typeof window !== 'undefined') {
