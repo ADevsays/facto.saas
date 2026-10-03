@@ -145,10 +145,17 @@ export interface AdSetupConfirmationParams {
   to: string
   slot: number
   setupUrl: string
+  price?: number
 }
 
 export async function sendAdSetupConfirmationEmail(params: AdSetupConfirmationParams) {
-  const { to, slot, setupUrl } = params
+  const { to, slot, setupUrl, price = 15 } = params
+
+  const formattedDate = new Intl.DateTimeFormat('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  }).format(new Date())
 
   const html = `
 <!DOCTYPE html>
@@ -156,57 +163,92 @@ export async function sendAdSetupConfirmationEmail(params: AdSetupConfirmationPa
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configura tu anuncio en Facto</title>
+  <title>Tu cupo en la banda superior está reservado</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #030305; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #E5E7EB; -webkit-font-smoothing: antialiased;">
-  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #030305;">
+<body style="margin: 0; padding: 0; background-color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0F172A; -webkit-font-smoothing: antialiased;">
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC;">
     <tr>
       <td align="center" style="padding: 40px 16px;">
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; background-color: #0c0c10; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; overflow: hidden;">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 560px; background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);">
           <tr>
-            <td style="padding: 36px 36px 20px 36px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-              <span style="display: inline-block; font-family: 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.02em;">
+            <td style="padding: 32px 36px 20px 36px; border-bottom: 1px solid #F1F5F9;">
+              <span style="font-family: 'Playfair Display', Georgia, serif; font-size: 24px; font-weight: 700; color: #0F172A; letter-spacing: -0.02em;">
                 Facto<span style="color: #00D4FF;">.</span>
               </span>
-              <p style="margin: 6px 0 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: #00D4FF; font-weight: 600;">
-                Banda Superior &bull; Confirmación de Cupo
-              </p>
             </td>
           </tr>
 
           <tr>
-            <td style="padding: 36px;">
-              <h1 style="margin: 0 0 16px 0; font-family: 'Playfair Display', Georgia, serif; font-size: 22px; line-height: 1.3; color: #FFFFFF; font-weight: 600;">
-                ¡Tu pago ha sido confirmado!
+            <td style="padding: 32px 36px;">
+              <div style="display: inline-block; background-color: #E0F7FA; color: #00838F; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 12px; border-radius: 9999px; margin-bottom: 18px;">
+                Pago confirmado
+              </div>
+
+              <h1 style="margin: 0 0 14px 0; font-family: 'Playfair Display', Georgia, serif; font-size: 24px; line-height: 1.3; color: #0F172A; font-weight: 700;">
+                Tu cupo en la banda superior está reservado
               </h1>
-              <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #9CA3AF;">
-                Tu cupo para el <strong style="color: #00D4FF;">Puesto #${slot}</strong> en la banda superior de Facto ya está reservado.
-              </p>
-              <p style="margin: 0 0 28px 0; font-size: 14px; line-height: 1.6; color: #9CA3AF;">
-                Puedes completar los datos de tu startup (nombre, pitch, enlace y logo) en cualquier momento haciendo clic en el siguiente botón:
+
+              <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #475569;">
+                Gracias por tu compra. Solo falta que completes los datos de tu startup para que tu anuncio se publique.
               </p>
 
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 28px;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 24px; padding: 6px 16px;">
+                <tr>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #EDF2F7; font-size: 13px; color: #64748B;">
+                    Puesto
+                  </td>
+                  <td align="right" style="padding: 10px 0; border-bottom: 1px solid #EDF2F7; font-size: 13px; font-weight: 700; color: #0F172A;">
+                    Banda superior #${slot}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #EDF2F7; font-size: 13px; color: #64748B;">
+                    Importe pagado
+                  </td>
+                  <td align="right" style="padding: 10px 0; border-bottom: 1px solid #EDF2F7; font-size: 14px; font-weight: 700; color: #0F172A;">
+                    $${price}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; font-size: 13px; color: #64748B;">
+                    Fecha
+                  </td>
+                  <td align="right" style="padding: 10px 0; font-size: 13px; color: #0F172A; font-weight: 500;">
+                    ${formattedDate}
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 10px;">
                 <tr>
                   <td align="center">
-                    <a href="${setupUrl}" target="_blank" style="display: inline-block; background-color: #00D4FF; color: #030305; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; padding: 14px 32px; border-radius: 12px; box-shadow: 0 0 25px rgba(0, 212, 255, 0.35);">
-                      Configurar mi anuncio &rarr;
+                    <a href="${setupUrl}" target="_blank" style="display: block; width: 100%; box-sizing: border-box; background-color: #00D4FF; color: #030305; font-size: 14px; font-weight: 700; text-align: center; text-decoration: none; padding: 14px 24px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0, 212, 255, 0.25);">
+                      Configurar mi anuncio
                     </a>
                   </td>
                 </tr>
               </table>
 
-              <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #6B7280; text-align: center;">
-                Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
-                <a href="${setupUrl}" style="color: #00D4FF; word-break: break-all; font-size: 11px;">${setupUrl}</a>
+              <p style="margin: 0 0 24px 0; font-size: 12px; color: #64748B; text-align: center;">
+                Tu anuncio se publica en cuanto completes los datos.
               </p>
+
+              <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748B;">
+                Si el botón no funciona, copia y pega este enlace en tu navegador:
+              </p>
+              <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 14px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; color: #475569; word-break: break-all; line-height: 1.4;">
+                ${setupUrl}
+              </div>
             </td>
           </tr>
 
           <tr>
-            <td style="padding: 20px 36px 32px 36px; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
-              <p style="margin: 0; font-size: 11px; color: #4B5563;">
-                Facto &bull; El ranking transparente de SaaS y startups.
+            <td style="padding: 24px 36px 32px 36px; border-top: 1px solid #F1F5F9;">
+              <p style="margin: 0 0 6px 0; font-size: 12px; color: #64748B;">
+                ¿Dudas? Escríbenos a <a href="mailto:adevsaysinfo@gmail.com" style="color: #0284C7; text-decoration: underline;">adevsaysinfo@gmail.com</a>.
+              </p>
+              <p style="margin: 0; font-size: 11px; color: #94A3B8; line-height: 1.5;">
+                Recibes este correo porque compraste un puesto en Facto. &bull; Facto, el ranking transparente de SaaS y startups.
               </p>
             </td>
           </tr>

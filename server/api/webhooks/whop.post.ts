@@ -131,7 +131,8 @@ export default defineEventHandler(async (event) => {
           await sendAdSetupConfirmationEmail({
             to: cleanEmail,
             slot,
-            setupUrl
+            setupUrl,
+            price: price > 0 ? price : 15
           })
         } catch (mailErr) {
           console.error('[Whop Webhook] Failed to send setup confirmation email:', mailErr)
