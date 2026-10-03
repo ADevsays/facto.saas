@@ -2,13 +2,16 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import AdCard from '../components/AdCard.vue'
 import AdEmptyCard from '../components/AdEmptyCard.vue'
+import AdSkeletonCard from '../components/AdSkeletonCard.vue'
 import AdCtaCard from '../components/AdCtaCard.vue'
 import { useAdsSlots } from '../composables/useAdsSlots'
 import { useAddAdModal } from '~/composables/useAddAdModal'
 import type { AdSlot } from '../types'
 
 const { openBuy, openAuctionList } = useAddAdModal()
-const { bottomSlots, freeSlotsCount, safeSlots } = useAdsSlots()
+const { bottomSlots, freeSlotsCount, safeSlots, pending, slots } = useAdsSlots()
+
+const isLoading = computed(() => pending.value && !slots.value)
 
 const track = computed<AdSlot[]>(() => [
   ...bottomSlots.value,
@@ -88,17 +91,20 @@ onUnmounted(() => {
     <div class="overflow-hidden w-full relative">
       <div ref="trackRef" class="ads-track-mobile">
         <template v-for="(slot, i) in track" :key="`bot-${slot.position}-${slot.ad?.id || 'empty'}-${slot.ad?.name || ''}-${i}`">
-          <AdCard
-            v-if="!slot.isAvailable && slot.ad"
-            v-bind="slot.ad"
-            :position="slot.position"
-          />
-          <AdEmptyCard
-            v-else
-            :position="slot.position"
-            :price="slot.currentPrice"
-            @click="onEmptySlotClick"
-          />
+          <AdSkeletonCard v-if="isLoading" />
+          <template v-else>
+            <AdCard
+              v-if="!slot.isAvailable && slot.ad"
+              v-bind="slot.ad"
+              :position="slot.position"
+            />
+            <AdEmptyCard
+              v-else
+              :position="slot.position"
+              :price="slot.currentPrice"
+              @click="onEmptySlotClick"
+            />
+          </template>
         </template>
       </div>
 
