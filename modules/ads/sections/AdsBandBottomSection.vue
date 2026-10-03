@@ -66,7 +66,50 @@ function onWheel(e: WheelEvent) {
   userScrollTimeout = setTimeout(() => { isUserScrolling = false }, 1200)
 }
 
+let isDragging = false
+let dragStartX = 0
+let dragMoved = false
+const DRAG_THRESHOLD = 5
+
+function onPointerDown(e: PointerEvent) {
+  isDragging = true
+  dragStartX = e.clientX
+  dragMoved = false
+  autoScrollReady = true
+  isUserScrolling = true
+  clearTimeout(userScrollTimeout)
+}
+
+function onPointerMove(e: PointerEvent) {
+  if (!isDragging) return
+  const dx = e.clientX - dragStartX
+  if (Math.abs(dx) > DRAG_THRESHOLD) dragMoved = true
+  if (!dragMoved) return
+
+  dragStartX = e.clientX
+  if (trackRef.value) {
+    const limit = trackRef.value.scrollWidth / 3
+    position = wrap(position - dx, limit)
+    trackRef.value.style.transform = `translateX(${-position}px)`
+  }
+}
+
+function onPointerUp() {
+  if (!isDragging) return
+  isDragging = false
+  clearTimeout(userScrollTimeout)
+  userScrollTimeout = setTimeout(() => { isUserScrolling = false }, 1200)
+}
+
+function onClickCapture(e: MouseEvent) {
+  if (dragMoved) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+}
+
 function onEmptySlotClick(pos: number) {
+  if (dragMoved) return
   const slotData = safeSlots.value.find(s => s.position === pos)
   const price = slotData?.currentPrice ?? (pos === 1 ? 10 : 1)
   openBuy(pos, price)
@@ -75,13 +118,29 @@ function onEmptySlotClick(pos: number) {
 let delayTimeout: ReturnType<typeof setTimeout>
 
 onMounted(() => {
-  sectionRef.value?.addEventListener('wheel', onWheel, { passive: false })
+  const el = sectionRef.value
+  if (el) {
+    el.addEventListener('wheel', onWheel, { passive: false })
+    el.addEventListener('pointerdown', onPointerDown)
+    el.addEventListener('pointermove', onPointerMove)
+    el.addEventListener('pointerup', onPointerUp)
+    el.addEventListener('pointercancel', onPointerUp)
+    el.addEventListener('click', onClickCapture, true)
+  }
   rafId = requestAnimationFrame(tick)
   delayTimeout = setTimeout(() => { autoScrollReady = true }, INITIAL_DELAY)
 })
 
 onUnmounted(() => {
-  sectionRef.value?.removeEventListener('wheel', onWheel)
+  const el = sectionRef.value
+  if (el) {
+    el.removeEventListener('wheel', onWheel)
+    el.removeEventListener('pointerdown', onPointerDown)
+    el.removeEventListener('pointermove', onPointerMove)
+    el.removeEventListener('pointerup', onPointerUp)
+    el.removeEventListener('pointercancel', onPointerUp)
+    el.removeEventListener('click', onClickCapture, true)
+  }
   cancelAnimationFrame(rafId)
   clearTimeout(userScrollTimeout)
   clearTimeout(delayTimeout)
@@ -138,5 +197,8 @@ onUnmounted(() => {
   padding: 0 0.5rem;
   width: max-content;
   will-change: transform;
+  touch-action: none;
+  cursor: grab;
 }
 </style>
+
