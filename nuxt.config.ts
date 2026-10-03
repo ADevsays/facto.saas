@@ -79,11 +79,13 @@ export default defineNuxtConfig({
     '/stats': { swr: 60 },
     '/saas': { swr: 60 },
     '/saas/**': { swr: 60 },
+    '/saas/**/edit': { ssr: false },
     '/ranking': { swr: 60 },
     '/en': { swr: 60 },
     '/en/stats': { swr: 60 },
     '/en/saas': { swr: 60 },
     '/en/saas/**': { swr: 60 },
+    '/en/saas/**/edit': { ssr: false },
     '/en/ranking': { swr: 60 }
   },
   runtimeConfig: {
