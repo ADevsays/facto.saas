@@ -11,9 +11,9 @@ import type { AdSlot } from '../types'
 const route = useRoute()
 const isDashboard = computed(() => route.path.includes('/dashboard'))
 const { openBuy, openAuctionList } = useAddAdModal()
-const { safeSlots, topSlots, freeSlotsCount, pending, slots } = useAdsSlots()
+const { safeSlots, topSlots, freeSlotsCount, clientReady } = useAdsSlots()
 
-const isLoading = computed(() => pending.value && !slots.value)
+const isLoading = computed(() => !clientReady.value)
 
 // Desktop track: full 20 slots tripled
 const trackDesktop = computed<AdSlot[]>(() => [
@@ -153,11 +153,11 @@ onMounted(() => {
   if (el) {
     el.addEventListener('wheel', onWheel, { passive: false })
     el.addEventListener('pointerdown', onPointerDown)
-    el.addEventListener('pointermove', onPointerMove)
-    el.addEventListener('pointerup', onPointerUp)
-    el.addEventListener('pointercancel', onPointerUp)
     el.addEventListener('click', onClickCapture, true)
   }
+  document.addEventListener('pointermove', onPointerMove)
+  document.addEventListener('pointerup', onPointerUp)
+  document.addEventListener('pointercancel', onPointerUp)
   rafId = requestAnimationFrame(tick)
   delayTimeout = setTimeout(() => { autoScrollReady = true }, INITIAL_DELAY)
 })
@@ -167,11 +167,11 @@ onUnmounted(() => {
   if (el) {
     el.removeEventListener('wheel', onWheel)
     el.removeEventListener('pointerdown', onPointerDown)
-    el.removeEventListener('pointermove', onPointerMove)
-    el.removeEventListener('pointerup', onPointerUp)
-    el.removeEventListener('pointercancel', onPointerUp)
     el.removeEventListener('click', onClickCapture, true)
   }
+  document.removeEventListener('pointermove', onPointerMove)
+  document.removeEventListener('pointerup', onPointerUp)
+  document.removeEventListener('pointercancel', onPointerUp)
   cancelAnimationFrame(rafId)
   clearTimeout(userScrollTimeout)
   clearTimeout(delayTimeout)

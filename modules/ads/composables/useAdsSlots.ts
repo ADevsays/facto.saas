@@ -6,8 +6,11 @@ export function useAdsSlots() {
     key: 'ads-slots-list'
   })
 
-  onMounted(() => {
-    refresh()
+  const clientReady = useState('ads-client-ready', () => false)
+
+  onMounted(async () => {
+    await refresh()
+    clientReady.value = true
   })
 
   const safeSlots = computed<AdSlot[]>(() => {
@@ -39,6 +42,7 @@ export function useAdsSlots() {
     bottomSlots,
     freeSlotsCount,
     refresh,
-    pending
+    pending,
+    clientReady
   }
 }
