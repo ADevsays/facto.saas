@@ -28,7 +28,9 @@ let position = 0
 let lastTime = 0
 let userScrollTimeout: ReturnType<typeof setTimeout>
 let isUserScrolling = false
+let autoScrollReady = false
 const SPEED = 28
+const INITIAL_DELAY = 2500
 
 function wrap(pos: number, limit: number) {
   if (limit <= 0) return pos
@@ -42,7 +44,7 @@ function tick(timestamp: number) {
   const dt = Math.min((timestamp - lastTime) / 1000, 0.1)
   lastTime = timestamp
 
-  if (!isHovered.value && !isUserScrolling && trackRef.value) {
+  if (autoScrollReady && !isHovered.value && !isUserScrolling && trackRef.value) {
     const limit = trackRef.value.scrollWidth / 3
     if (limit > 0) {
       position = wrap(position + SPEED * dt, limit)
@@ -54,6 +56,7 @@ function tick(timestamp: number) {
 
 function onWheel(e: WheelEvent) {
   e.preventDefault()
+  autoScrollReady = true
   if (trackRef.value) {
     const limit = trackRef.value.scrollWidth / 3
     position = wrap(position + e.deltaX + e.deltaY * 0.3, limit)
@@ -69,15 +72,19 @@ function onEmptySlotClick(pos: number) {
   openBuy(pos, price)
 }
 
+let delayTimeout: ReturnType<typeof setTimeout>
+
 onMounted(() => {
   sectionRef.value?.addEventListener('wheel', onWheel, { passive: false })
   rafId = requestAnimationFrame(tick)
+  delayTimeout = setTimeout(() => { autoScrollReady = true }, INITIAL_DELAY)
 })
 
 onUnmounted(() => {
   sectionRef.value?.removeEventListener('wheel', onWheel)
   cancelAnimationFrame(rafId)
   clearTimeout(userScrollTimeout)
+  clearTimeout(delayTimeout)
 })
 </script>
 

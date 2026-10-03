@@ -23,8 +23,15 @@ watch(
 const targetUrl = computed(() => {
   const raw = (props.url || '').trim()
   if (!raw) return '#'
-  if (/^https?:\/\//i.test(raw)) return raw
-  return `https://${raw}`
+  const base = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
+  try {
+    const u = new URL(base)
+    u.searchParams.set('utm_source', 'facto')
+    u.searchParams.set('utm_medium', 'ad')
+    return u.toString()
+  } catch {
+    return base
+  }
 })
 
 const isPositionOne = computed(() => props.position === 1)
