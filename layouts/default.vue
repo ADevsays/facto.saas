@@ -13,6 +13,7 @@ import { useAddAdModal } from '~/composables/useAddAdModal'
 import { useLanguage } from '~/composables/useLanguage'
 import { useAdPreferences } from '~/composables/useAdPreferences'
 import { useFounderSession } from '~/composables/useFounderSession'
+import { useLoginModal } from '~/composables/useLoginModal'
 
 const route = useRoute()
 const isInfoPage = computed(() => route.path === '/info')
@@ -35,6 +36,20 @@ const { openForSetup } = useAddAdModal()
 const { detectLanguage } = useLanguage()
 const { showAds, checkPreferences } = useAdPreferences()
 const { checkSession } = useFounderSession()
+const { open: openLoginModal } = useLoginModal()
+
+const checkLoginQuery = () => {
+  if (route.query.login === '1') {
+    openLoginModal()
+    if (typeof window !== 'undefined') {
+      const nextQuery = { ...route.query }
+      delete nextQuery.login
+      const search = new URLSearchParams(nextQuery as any).toString()
+      const newUrl = window.location.pathname + (search ? `?${search}` : '')
+      window.history.replaceState({}, document.title, newUrl)
+    }
+  }
+}
 
 onMounted(async () => {
   await Promise.all([
@@ -46,6 +61,8 @@ onMounted(async () => {
     await detectLanguage()
   }
 
+  checkLoginQuery()
+
   if (route.query.ad_setup === 'true') {
     const slot = route.query.slot ? Number(route.query.slot) : undefined
     const token = typeof route.query.token === 'string' ? route.query.token : undefined
@@ -55,6 +72,10 @@ onMounted(async () => {
       window.history.replaceState({}, document.title, window.location.pathname)
     }
   }
+})
+
+watch(() => route.query.login, () => {
+  checkLoginQuery()
 })
 </script>
 

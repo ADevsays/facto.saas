@@ -24,7 +24,7 @@ function validateAndNormalizeCheckout(input: ValidateCheckoutInput) {
 
   const price = Math.max(input.minRequiredPrice, Math.floor(Number(input.price) || input.minRequiredPrice))
   const setupToken = crypto.randomUUID()
-  const redirectUrl = `https://www.factosaas.com/dashboard/ads?ad_setup=true&slot=${slot}&price=${price}&token=${setupToken}`
+  const redirectUrl = `https://www.factosaas.com/?ad_setup=true&slot=${slot}&price=${price}&token=${setupToken}`
 
   return {
     slot,

@@ -90,6 +90,8 @@
     "sort_mrr": "Mayor MRR",
     "sort_views": "Más vistas",
     "all_categories": "Todas las categorías",
+    "all_countries": "Todos los países",
+    "other_countries": "Otros países",
     "sort_fallback": "Ordenar",
     "categories_fallback": "Categorías"
   },

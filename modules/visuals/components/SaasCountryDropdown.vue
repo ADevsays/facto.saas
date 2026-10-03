@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useLanguage } from '~/composables/useLanguage'
+import es from '../locales/es.json'
+import en from '../locales/en.json'
+
+const { t } = useLanguage({ es, en })
 
 const props = defineProps<{
   isOpen: boolean;
   activeValue: string | null;
-  countries: { name: string, slug: string, flag: string, iso_code: string }[];
+  countries: { name: string, slug: string, flag: string, iso_code: string, startupsCount?: number }[];
 }>()
 
 defineEmits(['toggle', 'select'])
@@ -13,6 +18,26 @@ const selected = computed(() => {
   if (!props.activeValue || props.activeValue === 'all') return null
   return props.countries.find(c => c.slug === props.activeValue)
 })
+
+const sortedCountries = computed(() => {
+  const list = props.countries.filter(c => c.slug !== 'global')
+  return [...list].sort((a, b) => {
+    const aCount = a.startupsCount || 0
+    const bCount = b.startupsCount || 0
+
+    if (aCount > 0 && bCount === 0) return -1
+    if (aCount === 0 && bCount > 0) return 1
+
+    if (aCount > 0 && bCount > 0 && bCount !== aCount) {
+      return bCount - aCount
+    }
+
+    return a.name.localeCompare(b.name)
+  })
+})
+
+const activeCountries = computed(() => sortedCountries.value.filter(c => (c.startupsCount || 0) > 0))
+const otherCountries = computed(() => sortedCountries.value.filter(c => (c.startupsCount || 0) === 0))
 </script>
 
 <template>
@@ -45,32 +70,70 @@ const selected = computed(() => {
     >
       <button 
         @click="$emit('select', 'all')"
-        class="px-4 py-2.5 flex items-center gap-3 text-left text-xs font-sans tracking-wide hover:bg-white/[0.08] transition-colors duration-200"
+        class="px-4 py-2 flex items-center gap-3 text-left text-xs font-sans tracking-wide hover:bg-white/[0.08] transition-colors duration-200"
         :class="(!activeValue || activeValue === 'all') ? 'bg-[#00D4FF]/10 text-[#00D4FF] font-medium' : 'text-neutral-300'"
       >
         <div class="text-neutral-400 shrink-0 flex justify-center w-5">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
         </div>
-        Todos los países
+        {{ t.filters?.all_countries || 'Todos los países' }}
       </button>
 
+      <!-- Países con startups registradas -->
       <button 
-        v-for="country in countries.filter(c => c.slug !== 'global')" 
+        v-for="country in activeCountries" 
         :key="country.slug"
         @click="$emit('select', country.slug)"
-        class="px-4 py-2.5 flex items-center gap-3 text-left text-xs font-sans tracking-wide hover:bg-white/[0.08] transition-colors duration-200"
+        class="px-4 py-2 flex items-center justify-between gap-3 text-left text-xs font-sans tracking-wide hover:bg-white/[0.08] transition-colors duration-200"
         :class="activeValue === country.slug ? 'bg-[#00D4FF]/10 text-[#00D4FF] font-medium' : 'text-neutral-300'"
       >
-        <div class="shrink-0 flex justify-center w-5">
-          <img 
-            v-if="country.iso_code" 
-            :src="`https://flagcdn.com/w40/${country.iso_code}.png`" 
-            :alt="country.name"
-            class="w-5 rounded-[2px] shadow-sm"
-          />
-          <span v-else class="text-base leading-none">{{ country.flag }}</span>
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="shrink-0 flex justify-center w-5">
+            <img 
+              v-if="country.iso_code" 
+              :src="`https://flagcdn.com/w40/${country.iso_code}.png`" 
+              :alt="country.name"
+              class="w-5 rounded-[2px] shadow-sm"
+            />
+            <span v-else class="text-base leading-none">{{ country.flag }}</span>
+          </div>
+          <span class="truncate">{{ country.name }}</span>
         </div>
-        {{ country.name }}
+        <span 
+          v-if="(country.startupsCount || 0) > 0" 
+          class="text-[10px] font-mono text-[#00D4FF] bg-[#00D4FF]/10 border border-[#00D4FF]/20 px-1.5 py-0.5 rounded shrink-0 font-medium"
+        >
+          {{ country.startupsCount }}
+        </span>
+      </button>
+
+      <!-- Otros países (vacíos) -->
+      <div 
+        v-if="otherCountries.length > 0 && activeCountries.length > 0"
+        class="px-4 py-1.5 text-[10px] font-mono uppercase tracking-wider text-neutral-500 border-t border-white/10 mt-1 select-none"
+      >
+        {{ t.filters?.other_countries || 'Otros países' }}
+      </div>
+
+      <button 
+        v-for="country in otherCountries" 
+        :key="country.slug"
+        @click="$emit('select', country.slug)"
+        class="px-4 py-1.5 flex items-center justify-between gap-3 text-left text-xs font-sans tracking-wide hover:bg-white/[0.08] transition-colors duration-200 text-neutral-400 opacity-70 hover:opacity-100"
+        :class="activeValue === country.slug ? 'bg-[#00D4FF]/10 text-[#00D4FF] font-medium opacity-100' : ''"
+      >
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="shrink-0 flex justify-center w-5">
+            <img 
+              v-if="country.iso_code" 
+              :src="`https://flagcdn.com/w40/${country.iso_code}.png`" 
+              :alt="country.name"
+              class="w-5 rounded-[2px] shadow-sm opacity-60"
+            />
+            <span v-else class="text-base leading-none opacity-60">{{ country.flag }}</span>
+          </div>
+          <span class="truncate">{{ country.name }}</span>
+        </div>
       </button>
     </div>
   </div>

@@ -65,7 +65,7 @@ export default defineEventHandler(async (event) => {
   const siteUrl = config.public.siteUrl || 'https://www.factosaas.com'
   const isHttps = siteUrl.startsWith('https://')
   const baseUrl = isHttps ? siteUrl : 'https://www.factosaas.com'
-  const redirectUrl = `${baseUrl}/dashboard/ads?ad_setup=true&slot=${slot}&price=${price}&token=${setupToken}`
+  const redirectUrl = `${baseUrl}/?ad_setup=true&slot=${slot}&price=${price}&token=${setupToken}`
 
   const whopApiKey = resolveWhopApiKey()
   const whopAccountId = (process.env.WHOP_ACCOUNT_ID || 'biz_LGcptk06n8Q82U').trim()

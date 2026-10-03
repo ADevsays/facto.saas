@@ -37,11 +37,27 @@ const { countries } = useCountries()
 const { isOnContinentRoute, continentSlug, continent } = useCountryFilter()
 
 const displayedCountries = computed(() => {
+  let list = countries.value
   if (isOnContinentRoute.value && continent.value) {
     const allowed = new Set(continent.value.countrySlugs)
-    return countries.value.filter(c => allowed.has(c.slug) || c.slug === 'global')
+    list = list.filter(c => allowed.has(c.slug) || c.slug === 'global')
   }
-  return countries.value
+  return [...list].sort((a, b) => {
+    if (a.slug === 'global') return -1
+    if (b.slug === 'global') return 1
+
+    const aCount = a.startupsCount || 0
+    const bCount = b.startupsCount || 0
+
+    if (aCount > 0 && bCount === 0) return -1
+    if (aCount === 0 && bCount > 0) return 1
+
+    if (aCount > 0 && bCount > 0 && bCount !== aCount) {
+      return bCount - aCount
+    }
+
+    return a.name.localeCompare(b.name)
+  })
 })
 
 const currentCountryName = computed(() => {

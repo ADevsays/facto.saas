@@ -126,7 +126,7 @@ export default defineEventHandler(async (event) => {
             ? siteUrl
             : (siteUrl.includes('localhost') ? `http://${siteUrl}` : `https://${siteUrl}`)
           const priceParam = price > 0 ? `&price=${price}` : ''
-          const setupUrl = `${normalizedUrl}/dashboard/ads?ad_setup=true&slot=${slot}&token=${setupToken}${priceParam}`
+          const setupUrl = `${normalizedUrl}/?ad_setup=true&slot=${slot}&token=${setupToken}${priceParam}`
 
           await sendAdSetupConfirmationEmail({
             to: cleanEmail,

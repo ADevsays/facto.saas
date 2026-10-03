@@ -90,6 +90,8 @@
     "sort_mrr": "Highest MRR",
     "sort_views": "Most views",
     "all_categories": "All categories",
+    "all_countries": "All countries",
+    "other_countries": "Other countries",
     "sort_fallback": "Sort",
     "categories_fallback": "Categories"
   },

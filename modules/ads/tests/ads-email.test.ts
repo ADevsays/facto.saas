@@ -27,7 +27,7 @@ function renderOutbidEmailTemplate(slot: number, adName: string, oldPrice: numbe
 
 describe('Ads Email Templates Rendering', () => {
   it('should render valid setup confirmation email with CTA link and slot number', () => {
-    const setupUrl = 'https://www.factosaas.com/dashboard/ads?ad_setup=true&slot=3&token=uuid-test-123'
+    const setupUrl = 'https://www.factosaas.com/?ad_setup=true&slot=3&token=uuid-test-123'
     const html = renderSetupEmailTemplate(3, setupUrl)
 
     assert.ok(html.includes('Puesto #3'))
