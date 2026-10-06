@@ -5,12 +5,12 @@ import es from '~/modules/visuals/locales/es.json'
 import en from '~/modules/visuals/locales/en.json'
 
 const route = useRoute()
-const slug = route.params.slug as string
+const slug = computed(() => route.params.slug as string)
 const { t } = useLanguage({ es, en })
 const localePath = useLocalePath()
 
-const { data, error, pending } = await useFetch<any>(() => `/api/founder/${slug}`, {
-  key: `founder-profile-${slug}`
+const { data, error, pending } = useLazyFetch<any>(() => `/api/founder/${slug.value}`, {
+  key: `founder-profile-${route.params.slug}`
 })
 
 useAppSeo({

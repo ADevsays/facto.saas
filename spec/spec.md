@@ -21,8 +21,17 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 ### Banda de Anuncios (Ads Banner)
 - **Persistencia**: La banda de anuncios (`AdsBandSection.vue`) es un elemento global ubicado en el layout `default.vue`.
 - **Visibilidad**: Debe estar visible por defecto en todas las rutas del sitio, **excepto en `/info`**.
-- **Comportamiento**: Se mantiene en la parte superior (`sticky top-0`) actuando como el detalle superior constante de la navegaciÃ³n.
-- **ImplicaciÃ³n en PÃ¡ginas**: Todas las pÃ¡ginas (excepto `/info`) deben estructurarse asumiendo la presencia de este banner (ej: rellenos superiores adecuados para que el contenido no quede oculto bajo el banner sticky).
+- **Comportamiento**: Se mantiene en la parte superior (`sticky top-0`) actuando como el detalle superior constante de la navegación.
+- **Implicación en Páginas**: Todas las páginas (excepto `/info`) deben estructurarse asumiendo la presencia de este banner (ej: rellenos superiores adecuados para que el contenido no quede oculto bajo el banner sticky).
+- **Regla Estricta de Renderizado de Anuncios**: El renderizado de los anuncios debe ser fluido, directo y sin estados de carga conflictivos (prohibido provocar ticks/parpadeos múltiples o forzar re-fetches en cliente sobre SSR). No se puede alterar el ciclo de renderizado de los ads a menos que se argumente detalladamente su necesidad.
+
+### Regla Inviolable de Renderizado y Navegación de Páginas
+- **Navegación Fluida No Bloqueante**: Las páginas dinámicas (como `/saas/[slug]` y `/founder/[slug]`) **deben** utilizar `useLazyFetch` con key reactiva y renderizar inmediatamente sus respectivos skeletons (`pending`).
+- **Prohibición de `await useFetch` Bloqueante**: Bajo ningún concepto se permite utilizar `await useFetch` en el setup raíz de las páginas que congele la pantalla del usuario antes de transicionar. Tampoco se permite alterar el modo de renderizado de las páginas como parche para resolver errores intermedios.
+
+### Doctrina de Unicidad y Deduplicación Estricta de Startups
+- **Anti-Duplicación en Envío ("Más tarde" o Directo)**: Si un usuario envía su startup múltiples veces (por ejemplo, haciendo click repetido en "más tarde"), el sistema **debe actualizar** la instancia existente buscando por `slug`, `website_url` o `(name, founder_email)`, impidiendo terminantemente la creación de filas duplicadas en `saas_entries`.
+- **Consistencia de Rutas**: Una slug en `saas_entries` es única; el endpoint `/api/saas/[slug]` resuelve con prioridad de publicación y resiliencia `maybeSingle()`.
 
 
 ---

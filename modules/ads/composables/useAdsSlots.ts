@@ -3,7 +3,6 @@ import type { AdSlot } from '../types'
 
 let syncChannel: BroadcastChannel | null = null
 let activeListeners = 0
-let hasRefreshedClient = false
 
 export function useAdsSlots() {
   const { data: slots, refresh, pending } = useFetch<AdSlot[]>('/api/ads/slots', {
@@ -13,11 +12,6 @@ export function useAdsSlots() {
   if (import.meta.client) {
     onMounted(() => {
       activeListeners++
-
-      if (!hasRefreshedClient) {
-        hasRefreshedClient = true
-        refresh()
-      }
 
       if (!syncChannel && typeof BroadcastChannel !== 'undefined') {
         try {

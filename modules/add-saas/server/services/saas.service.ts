@@ -96,20 +96,69 @@ export async function upsertSaasEntry(
     ...(pData.providerKeyEncrypted && { provider_key_encrypted: pData.providerKeyEncrypted })
   }
 
-  let entry;
-  let error;
+  let entryId = body.id
+  let existingEntry: any = null
+
+  if (entryId) {
+    const { data: existing } = await supabase.from('saas_entries').select('*').eq('id', entryId).maybeSingle()
+    existingEntry = existing
+  } else if (!isIncognito) {
+    // 1. Check by slug
+    if (slugVal) {
+      const { data: bySlug } = await supabase
+        .from('saas_entries')
+        .select('*')
+        .eq('slug', slugVal)
+        .order('published_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (bySlug) existingEntry = bySlug
+    }
+
+    // 2. Check by website_url if not found by slug
+    if (!existingEntry && websiteUrl) {
+      const normalizedUrl = websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
+      const { data: byUrl } = await supabase
+        .from('saas_entries')
+        .select('*')
+        .or(`website_url.ilike.%${normalizedUrl}%,website_url.eq.${websiteUrl}`)
+        .order('published_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (byUrl) existingEntry = byUrl
+    }
+
+    // 3. Check by founder_email and name
+    if (!existingEntry && body.founderEmail && body.name) {
+      const { data: byEmailName } = await supabase
+        .from('saas_entries')
+        .select('*')
+        .eq('founder_email', body.founderEmail.trim().toLowerCase())
+        .ilike('name', body.name.trim())
+        .order('published_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (byEmailName) existingEntry = byEmailName
+    }
+
+    if (existingEntry) {
+      entryId = existingEntry.id
+    }
+  }
+
+  let entry: any
+  let error: any
   let status = pData.hasProvider ? 'published' : 'pending_review'
 
-  if (body.id) {
-    const { data: existing } = await supabase.from('saas_entries').select('status').eq('id', body.id).single()
-    status = pData.hasProvider ? 'published' : (existing?.status || status)
-    const shouldSetPublishedAt = status === 'published' && (!existing || existing.status !== 'published')
+  if (entryId && existingEntry) {
+    status = pData.hasProvider ? 'published' : (existingEntry.status || status)
+    const shouldSetPublishedAt = status === 'published' && existingEntry.status !== 'published'
     
     const res = await supabase.from('saas_entries').update({
       ...payload,
       status,
       ...(shouldSetPublishedAt ? { published_at: new Date().toISOString() } : {})
-    }).eq('id', body.id).select().single()
+    }).eq('id', entryId).select().single()
     entry = res.data
     error = res.error
     
@@ -118,6 +167,16 @@ export async function upsertSaasEntry(
       await supabase.from('saas_countries').delete().eq('saas_id', entry.id)
     }
   } else {
+    // If inserting a new entry, verify slug uniqueness
+    let finalSlug = slugVal
+    if (!isIncognito && finalSlug) {
+      const { data: slugCheck } = await supabase.from('saas_entries').select('id').eq('slug', finalSlug).maybeSingle()
+      if (slugCheck) {
+        finalSlug = `${finalSlug}-${Date.now().toString(36).slice(-4)}`
+        payload.slug = finalSlug
+      }
+    }
+
     const res = await supabase.from('saas_entries').insert({
       ...payload,
       status,

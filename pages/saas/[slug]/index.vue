@@ -6,11 +6,11 @@ import { computed, watchEffect } from 'vue'
 import { useAppSchema } from '~/composables/useAppSchema'
 
 const route = useRoute()
-const slug = route.params.slug as string
+const slug = computed(() => route.params.slug as string)
 const { t, locale } = useI18n()
 
-const { data: saas, error, pending } = await useFetch<any>(() => `/api/saas/${slug}`, {
-  key: `saas-profile-${slug}`
+const { data: saas, error, pending } = useLazyFetch<any>(() => `/api/saas/${slug.value}`, {
+  key: `saas-profile-${route.params.slug}`
 })
 
 const { defineSaasProfile } = useAppSchema()

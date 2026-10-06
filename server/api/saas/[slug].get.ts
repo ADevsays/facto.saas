@@ -26,7 +26,9 @@ export default defineEventHandler(async (event) => {
         payment_providers ( slug )
       `)
       .eq('slug', slug)
-      .single()
+      .order('published_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
     if (fullRes.error && fullRes.error.code === '42703') {
       // Si aún no se corrió el SQL en Supabase, hacer fallback a las columnas existentes
@@ -39,7 +41,9 @@ export default defineEventHandler(async (event) => {
           payment_providers ( slug )
         `)
         .eq('slug', slug)
-        .single()
+        .order('published_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
 
       dbEntry = fallbackRes.data
       dbError = fallbackRes.error

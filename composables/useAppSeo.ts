@@ -1,7 +1,8 @@
 interface SeoConfig {
   title: () => string;
   description: () => string;
-  imagePath?: string;
+  imagePath?: string | null;
+  customOgImage?: boolean;
   robots?: string;
 }
 
@@ -20,7 +21,10 @@ export function useAppSeo(config: SeoConfig) {
     meta: () => i18nHead.value.meta ?? [],
   });
 
+  const hasCustomOg = config.customOgImage === true || config.imagePath === null;
+
   const imageUrl = () => {
+    if (hasCustomOg) return undefined;
     const rawPath = config.imagePath || '/og-image.png';
     const cleanPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
     return `${siteUrl}${cleanPath}?v=2`;
@@ -31,9 +35,12 @@ export function useAppSeo(config: SeoConfig) {
     ogTitle: config.title,
     description: config.description,
     ogDescription: config.description,
-    ogImage: imageUrl,
-    ogImageWidth: 1200,
-    ogImageHeight: 630,
+    ...(hasCustomOg ? {} : {
+      ogImage: imageUrl,
+      ogImageWidth: 1200,
+      ogImageHeight: 630,
+      twitterImage: imageUrl,
+    }),
     ogType: 'website',
     ogUrl: canonicalHref,
     twitterCard: 'summary_large_image',
@@ -41,7 +48,6 @@ export function useAppSeo(config: SeoConfig) {
     twitterCreator: '@Adevsays569',
     twitterTitle: config.title,
     twitterDescription: config.description,
-    twitterImage: imageUrl,
     ...(config.robots ? { robots: config.robots } : {}),
   });
 }
