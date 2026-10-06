@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
+import { loadedLogoCache } from '~/utils/preloadLogo'
 
-// Cache global para recordar imágenes que ya cargaron en esta sesión
-const loadedImageCache = new Set<string>()
 const failedImageCache = new Set<string>()
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   src: string | null | undefined
   alt: string
   initial: string
@@ -13,12 +12,18 @@ const props = defineProps<{
   gemColor?: string
   rounded?: 'lg' | 'xl'
   websiteUrl?: string | null
-}>()
+  priority?: boolean
+}>(), {
+  size: 'md',
+  rounded: 'lg',
+  priority: false
+})
 
 const loaded = ref(false)
 const failed = ref(false)
 const isCached = ref(false)
 const currentSrc = ref<string | null>(null)
+const imgRef = ref<HTMLImageElement | null>(null)
 let attemptIndex = 0
 
 function extractDomain(url: string | null | undefined): string | null {
@@ -78,15 +83,15 @@ function getCandidateUrls(): string[] {
 }
 
 function initLoad() {
-  loaded.value = false
   failed.value = false
-  isCached.value = false
   attemptIndex = 0
 
   const candidates = getCandidateUrls()
   if (!candidates.length) {
     failed.value = true
     currentSrc.value = null
+    loaded.value = false
+    isCached.value = false
     return
   }
 
@@ -94,19 +99,21 @@ function initLoad() {
   if (!firstAvailable) {
     failed.value = true
     currentSrc.value = null
+    loaded.value = false
+    isCached.value = false
     return
   }
 
   attemptIndex = candidates.indexOf(firstAvailable)
+  currentSrc.value = firstAvailable
 
-  if (loadedImageCache.has(firstAvailable)) {
+  if (loadedLogoCache.has(firstAvailable)) {
     isCached.value = true
     loaded.value = true
-    currentSrc.value = firstAvailable
-    return
+  } else {
+    isCached.value = false
+    loaded.value = false
   }
-
-  currentSrc.value = firstAvailable
 }
 
 function isPlaceholderImage(img: HTMLImageElement): boolean {
@@ -146,8 +153,29 @@ function isPlaceholderImage(img: HTMLImageElement): boolean {
   }
 }
 
-function onImageLoad(event: Event) {
-  const target = event.target as HTMLImageElement | null
+function checkImageStatus() {
+  const img = imgRef.value
+  if (!img) return
+
+  if (img.complete) {
+    if (img.naturalWidth > 0) {
+      if (currentSrc.value?.includes('icon.horse') && isPlaceholderImage(img)) {
+        onImageError()
+        return
+      }
+      if (currentSrc.value) {
+        loadedLogoCache.add(currentSrc.value)
+      }
+      loaded.value = true
+      isCached.value = true
+    } else if (img.naturalWidth === 0 && currentSrc.value) {
+      onImageError()
+    }
+  }
+}
+
+function onImageLoad(event?: Event) {
+  const target = (event?.target as HTMLImageElement | null) || imgRef.value
 
   if (target && currentSrc.value?.includes('icon.horse') && isPlaceholderImage(target)) {
     onImageError()
@@ -155,7 +183,7 @@ function onImageLoad(event: Event) {
   }
 
   if (currentSrc.value) {
-    loadedImageCache.add(currentSrc.value)
+    loadedLogoCache.add(currentSrc.value)
   }
   loaded.value = true
 }
@@ -168,22 +196,43 @@ function onImageError() {
   const candidates = getCandidateUrls()
   attemptIndex++
 
-  // Probar siguiente candidato en la cascada
   while (attemptIndex < candidates.length) {
     const nextCandidate = candidates[attemptIndex]
     if (!failedImageCache.has(nextCandidate)) {
       currentSrc.value = nextCandidate
+      if (loadedLogoCache.has(nextCandidate)) {
+        isCached.value = true
+        loaded.value = true
+      } else {
+        loaded.value = false
+        isCached.value = false
+      }
+      nextTick(() => {
+        checkImageStatus()
+      })
       return
     }
     attemptIndex++
   }
 
-  // Si todos los candidatos de la cascada fallaron -> Mostrar letra (última opción)
   failed.value = true
 }
 
-onMounted(() => initLoad())
-watch(() => [props.src, props.websiteUrl], () => initLoad())
+initLoad()
+
+onMounted(() => {
+  checkImageStatus()
+  nextTick(() => {
+    checkImageStatus()
+  })
+})
+
+watch(() => [props.src, props.websiteUrl], () => {
+  initLoad()
+  nextTick(() => {
+    checkImageStatus()
+  })
+})
 
 const sizeMap = {
   sm: 'w-7 h-7',
@@ -196,47 +245,54 @@ const sizeMap = {
 
 <template>
   <div
-    class="logo-wrap relative overflow-hidden shrink-0 flex items-center justify-center"
+    class="logo-wrap relative overflow-hidden shrink-0 flex items-center justify-center transition-colors duration-300"
     :class="[
       sizeMap[size || 'md'],
       rounded === 'xl' ? 'rounded-xl' : 'rounded-lg'
     ]"
     :style="{
       backgroundColor: !loaded || failed
-        ? `color-mix(in srgb, ${gemColor || '#22d3ee'} 15%, transparent)`
+        ? `color-mix(in srgb, ${gemColor || '#22d3ee'} 12%, transparent)`
         : 'transparent',
-      border: !loaded || failed
-        ? `1px solid color-mix(in srgb, ${gemColor || '#22d3ee'} 25%, transparent)`
-        : 'none'
+      borderColor: !loaded || failed
+        ? `color-mix(in srgb, ${gemColor || '#22d3ee'} 20%, transparent)`
+        : 'transparent',
+      borderWidth: '1px',
+      borderStyle: 'solid'
     }"
   >
-    <!-- Fallback initial: Facto Gem Style (Última opción cuando la cascada falla) -->
+    <!-- Fallback initial: Facto Gem Style (smooth fade out when image arrives) -->
     <span
       v-if="!loaded || failed"
-      class="logo-initial font-serif font-bold text-white/80 select-none"
-      :class="{
-        'text-[11px]': size === 'sm',
-        'text-xs': !size || size === 'md',
-        'text-lg': size === 'lg',
-        'text-lg md:text-xl': size === 'xl'
-      }"
+      class="logo-initial font-serif font-bold text-white/80 select-none transition-opacity duration-300 pointer-events-none"
+      :class="[
+        loaded ? 'opacity-0' : 'opacity-100',
+        {
+          'text-[11px]': size === 'sm',
+          'text-xs': !size || size === 'md',
+          'text-lg': size === 'lg',
+          'text-lg md:text-xl': size === 'xl'
+        }
+      ]"
       :style="{ color: gemColor || '#22d3ee' }"
     >
       {{ initial }}
     </span>
 
-    <!-- Real image with fade-in -->
+    <!-- Real image with smooth fade-in (instant if cached) -->
     <img
       v-if="currentSrc && !failed"
+      ref="imgRef"
       :src="currentSrc"
       :alt="alt"
       :crossorigin="currentSrc?.includes('icon.horse') ? 'anonymous' : undefined"
       class="absolute inset-0 w-full h-full object-cover"
       :class="[
         loaded ? 'opacity-100' : 'opacity-0',
-        isCached ? '' : 'transition-opacity duration-300'
+        isCached ? '' : 'transition-opacity duration-300 ease-out'
       ]"
-      loading="lazy"
+      :loading="priority || size === 'xl' ? 'eager' : 'lazy'"
+      :fetchpriority="priority || size === 'xl' ? 'high' : 'auto'"
       decoding="async"
       @load="onImageLoad"
       @error="onImageError"

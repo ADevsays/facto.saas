@@ -3,6 +3,7 @@ import SaasBreadcrumb from '../components/SaasBreadcrumb.vue'
 import InputMrrView from '../../input-mrr/views/InputMrrView.vue'
 import SaasLogo from '~/ui/components/SaasLogo.vue'
 import IncognitoIcon from '~/ui/components/IncognitoIcon.vue'
+import { preloadLogo } from '~/utils/preloadLogo'
 
 import es from '../locales/es.json'
 import en from '../locales/en.json'
@@ -123,7 +124,10 @@ function formatCurrency(val: number | null, curr: string = 'USD') {
                   :src="item.flagUrl" 
                   :alt="item.name" 
                   class="w-full h-full object-cover"
-                  loading="lazy"
+                  :loading="index < 6 ? 'eager' : 'lazy'"
+                  :fetchpriority="index < 3 ? 'high' : 'auto'"
+                  decoding="async"
+                  @error="item.flagUrl = null"
                 />
                 <span v-else class="font-serif font-bold text-base text-neutral-300">{{ item.name.slice(0, 2).toUpperCase() }}</span>
               </div>
@@ -157,6 +161,7 @@ function formatCurrency(val: number | null, curr: string = 'USD') {
               :key="startup.id"
               :to="localePath('/saas/' + startup.slug)"
               class="flex items-center justify-between gap-4 p-3 md:p-3.5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/5 hover:border-white/15 transition-all duration-300 group/startup cursor-pointer"
+              @mouseenter="preloadLogo(startup.logoUrl)"
             >
               <div class="flex items-center gap-3.5 min-w-0">
                 <SaasLogo 

@@ -85,6 +85,7 @@ const handleShare = () => {
           :gem-color="gemColor"
           class="shadow-xl"
           :websiteUrl="saas.websiteUrl"
+          :priority="true"
         />
 
         <h1 class="font-serif text-[5.5vw] md:text-[2.25rem] leading-none tracking-tight text-left">

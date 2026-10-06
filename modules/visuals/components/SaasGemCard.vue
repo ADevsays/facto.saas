@@ -5,6 +5,7 @@ import type { SaasListItem } from '~/modules/ranking/types'
 import IncognitoIcon from '~/ui/components/IncognitoIcon.vue'
 import SaasLogo from '~/ui/components/SaasLogo.vue'
 import { getGemClass, getGemColor } from '~/ui/const/gems'
+import { preloadLogo } from '~/utils/preloadLogo'
 
 import es from '../locales/es.json'
 import en from '../locales/en.json'
@@ -109,6 +110,7 @@ const countryFlagSrc = computed(() => {
 <template>
   <NuxtLink 
     :to="saas.isIncognito ? undefined : localePath(`/saas/${saas.slug || slugify(saas.name || '')}`)"
+    @mouseenter="!saas.isIncognito && preloadLogo(saas.logoUrl)"
     class="gem-card group block relative overflow-hidden rounded-2xl border bg-white/[0.05] backdrop-blur-md p-6 transition-all duration-500"
     :class="[gemClass, saas.isIncognito ? 'pointer-events-none' : 'cursor-pointer', { 'has-glow': hasGlow }]"
     :style="cardStyle"

@@ -4,6 +4,7 @@ import { slugify } from '~/utils/slugify'
 import IncognitoIcon from '~/ui/components/IncognitoIcon.vue'
 import SaasLogo from '~/ui/components/SaasLogo.vue'
 import { getGemColor } from '~/ui/const/gems'
+import { preloadLogo } from '~/utils/preloadLogo'
 
 const localePath = useLocalePath()
 
@@ -31,6 +32,7 @@ const cardStyle = computed(() => ({
 <template>
   <NuxtLink 
     :to="localePath(`/saas/${slugify(props.name)}`)" 
+    @mouseenter="!isIncognito && preloadLogo(logoUrl)"
     class="saas-card group shrink-0 w-64 rounded-xl border border-white/20 bg-white/[0.08] backdrop-blur-sm py-[18px] px-3.5 flex flex-col gap-2 cursor-pointer transition-all duration-500"
     :class="{ 'has-glow': hasGlow }"
     :style="cardStyle"

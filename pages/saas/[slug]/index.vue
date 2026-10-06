@@ -71,6 +71,21 @@ useAppSeo({
   description: () => buildDescription(saas.value),
 })
 
+useHead(() => {
+  const logo = saas.value?.logoUrl
+  if (!logo) return {}
+  return {
+    link: [
+      {
+        rel: 'preload',
+        as: 'image',
+        href: logo,
+        fetchpriority: 'high'
+      }
+    ]
+  }
+})
+
 const localePath = useLocalePath()
 
 if (import.meta.server) {
@@ -90,11 +105,28 @@ if (import.meta.server) {
 
 <template>
   <div>
-    <SaasProfileSkeleton v-if="pending && !saas" />
-    <div v-else-if="error || !saas" class="min-h-screen bg-[#030305] flex flex-col items-center justify-center gap-4">
-       <span class="text-white/50 text-sm tracking-widest uppercase">{{ t('seo.saas_not_found') }}</span>
-       <NuxtLink :to="localePath('/')" class="text-xs text-cyan-500 uppercase tracking-widest border border-cyan-500/30 rounded-full px-4 py-2 hover:bg-cyan-500/10 transition-colors">{{ t('seo.back_to_home') }}</NuxtLink>
-    </div>
-    <SaasProfileView v-else :saas="saas" />
+    <Transition name="profile-fade" mode="out-in">
+      <SaasProfileSkeleton v-if="pending && !saas" key="skeleton" />
+      <div v-else-if="error || !saas" key="error" class="min-h-screen bg-[#030305] flex flex-col items-center justify-center gap-4">
+         <span class="text-white/50 text-sm tracking-widest uppercase">{{ t('seo.saas_not_found') }}</span>
+         <NuxtLink :to="localePath('/')" class="text-xs text-cyan-500 uppercase tracking-widest border border-cyan-500/30 rounded-full px-4 py-2 hover:bg-cyan-500/10 transition-colors">{{ t('seo.back_to_home') }}</NuxtLink>
+      </div>
+      <SaasProfileView v-else :key="slug" :saas="saas" />
+    </Transition>
   </div>
 </template>
+
+<style scoped>
+.profile-fade-enter-active,
+.profile-fade-leave-active {
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.profile-fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.profile-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+</style>

@@ -6,6 +6,7 @@ import { navigateTo } from '#app'
 import type { SaasListItem } from '~/modules/ranking/types'
 import SaasLogo from '~/ui/components/SaasLogo.vue'
 import { getGemColor } from '~/ui/const/gems'
+import { preloadLogo } from '~/utils/preloadLogo'
 
 const props = defineProps<{
   position: number
@@ -35,6 +36,7 @@ function handleClick(isIncognito: boolean, name: string | null) {
   <NuxtLink
     v-if="!item.isIncognito && (item.slug || item.name)"
     :to="localePath(`/saas/${item.slug || slugify(item.name || '')}`)"
+    @mouseenter="preloadLogo(item.logoUrl)"
     class="ranking-row grid grid-cols-[1.2rem_1fr_1fr_80px] sm:grid-cols-[2rem_1fr_1fr_100px] items-center py-[18px] px-3 sm:px-5 border-b border-white/5 last:border-0 transition-all duration-300 group gap-2 sm:gap-3 block cursor-pointer"
     :style="{ '--glow': rowColor }"
   >
