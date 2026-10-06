@@ -49,7 +49,8 @@ export default defineEventHandler(async (event) => {
   const isVectorOrAnimated = ['svg', 'gif', 'ico'].includes(fileExt)
   if (!isVectorOrAnimated) {
     try {
-      const sharpModule = await import('sharp').then(m => m.default || m).catch(() => null)
+      // @ts-ignore - optional dynamic optimization module
+      const sharpModule = await import('sharp').then((m: any) => m.default || m).catch(() => null)
       if (sharpModule) {
         uploadBuffer = await sharpModule(file.data)
           .resize(256, 256, { fit: 'inside', withoutEnlargement: true })
