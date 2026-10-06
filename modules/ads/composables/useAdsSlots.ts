@@ -6,7 +6,8 @@ let activeListeners = 0
 
 export function useAdsSlots() {
   const { data: slots, refresh, pending } = useFetch<AdSlot[]>('/api/ads/slots', {
-    key: 'ads-slots-list'
+    key: 'ads-slots-list',
+    getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] || nuxtApp.static.data[key]
   })
 
   if (import.meta.client) {

@@ -65,7 +65,7 @@ const cardColor = computed(() => {
     rel="noopener noreferrer"
     @click="playNextKeySound"
     :class="[
-      'ad-card group shrink-0 flex items-center gap-3 md:gap-3.5 rounded-xl px-4 py-2.5 md:px-5 md:py-3 cursor-pointer transition-all duration-500 select-none border w-[290px] sm:w-[320px] md:w-[340px] max-w-[340px] relative overflow-hidden',
+      'ad-card group shrink-0 flex items-center gap-3 md:gap-3.5 rounded-xl px-4 py-2 md:px-5 md:py-2.5 cursor-pointer transition-all duration-500 select-none border w-[290px] sm:w-[320px] md:w-[340px] max-w-[340px] h-[66px] md:h-[72px] relative overflow-hidden',
       isPositionOne
         ? 'gold-glow-border bg-[#FFD700]/[0.05] hover:bg-[#FFD700]/[0.1] hover:scale-[1.01]'
         : ''

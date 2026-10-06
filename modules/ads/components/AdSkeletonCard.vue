@@ -1,6 +1,6 @@
 <template>
   <div
-    class="shrink-0 flex items-center gap-3 md:gap-3.5 rounded-xl px-4 py-2.5 md:px-5 md:py-3 border border-white/5 bg-white/[0.02] w-[290px] sm:w-[320px] md:w-[340px] max-w-[340px] animate-pulse"
+    class="shrink-0 flex items-center gap-3 md:gap-3.5 rounded-xl px-4 py-2 md:px-5 md:py-2.5 border border-white/5 bg-white/[0.02] w-[290px] sm:w-[320px] md:w-[340px] max-w-[340px] h-[66px] md:h-[72px] animate-pulse"
   >
     <div class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/5 shrink-0"></div>
 

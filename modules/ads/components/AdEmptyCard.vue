@@ -51,7 +51,7 @@ function handleClick() {
     tabindex="0"
     @click="handleClick"
     :class="[
-      'empty-ad-card group shrink-0 flex items-center gap-3 md:gap-3.5 rounded-xl px-4 py-2.5 md:px-5 md:py-3 cursor-pointer transition-all duration-500 select-none border border-dashed w-[290px] sm:w-[320px] md:w-[340px] max-w-[340px]',
+      'empty-ad-card group shrink-0 flex items-center gap-3 md:gap-3.5 rounded-xl px-4 py-2 md:px-5 md:py-2.5 cursor-pointer transition-all duration-500 select-none border border-dashed w-[290px] sm:w-[320px] md:w-[340px] max-w-[340px] h-[66px] md:h-[72px]',
       position === 1
         ? 'border-[#FFD700]/70 bg-[#FFD700]/[0.05] hover:border-[#FFD700] hover:bg-[#FFD700]/[0.09] shadow-[0_0_15px_rgba(255,215,0,0.2)] hover:shadow-[0_0_25px_rgba(255,215,0,0.4)]'
         : 'border-white/15 bg-white/[0.02]'

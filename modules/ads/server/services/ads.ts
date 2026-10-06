@@ -25,8 +25,8 @@ function parseAdRecord(raw: any): Ad {
     if (metaMatch) {
       try {
         const meta = JSON.parse(metaMatch[1])
-        if (meta.position !== undefined) ad.position = meta.position
-        if (meta.price !== undefined) ad.price = meta.price
+        if (meta.position !== undefined) ad.position = Number(meta.position)
+        if (meta.price !== undefined) ad.price = Number(meta.price)
         if (meta.email !== undefined) ad.email = meta.email
         if (meta.is_affiliate !== undefined) ad.is_affiliate = meta.is_affiliate
       } catch (_) {}

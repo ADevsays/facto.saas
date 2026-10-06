@@ -46,7 +46,7 @@ function handleClick() {
     @click="handleClick"
     :class="[
       'ad-cta shrink-0 flex items-center cursor-pointer select-none transition-all duration-500',
-      compact ? 'gap-1.5 rounded-xl px-3 h-9 border border-white/10 bg-[#0f0f12]/95 shadow-lg' : 'gap-3 rounded-xl px-4 py-3'
+      compact ? 'gap-1.5 rounded-xl px-3 h-9 border border-white/10 bg-[#0f0f12]/95 shadow-lg' : 'gap-3 rounded-xl px-4 py-2.5 md:h-[72px]'
     ]"
   >
     <span :class="['ad-cta__icon leading-none transition-all duration-500', compact ? 'text-xs text-[#00D4FF] opacity-100' : 'text-xl']">✦</span>
