@@ -17,4 +17,6 @@ Aquí se registrarán todas las futuras tareas, ideas y cambios pendientes a imp
 - [x] **Rediseño Unificado de Modal de Ads**: Layout en una sola columna con beneficios sin algoritmos, selector de 20 puestos estilo `/saas` y puja personalizada dinámica.
 - [x] **Puesto #1 en Oro Brillante**: Estilizado `#FFD700` con resplandor en tarjetas vacías y ocupadas.
 - [x] **Mejoras UX en Flujo de Setup**: Limpieza de token en URL en recargas, normalización automática de URLs con `https://`, eliminación de pill `#2` y ancho homogéneo (`min-w-[340px]`) en anuncios activos.
+- [x] **Homologación de Alturas y Estabilización de Marquesina**: Altura fija y estricta en todas las tarjetas (`h-[66px] md:h-[72px]`) y claves inmutables en `v-for` para erradicar el salto del Slot #1 y prevenir layout shifts (CLS).
 - [ ] **Migración SQL en Supabase**: Ejecutar `ALTER TABLE ads ADD COLUMN IF NOT EXISTS position INTEGER...` en la consola de Supabase si se desea indexar y almacenar nativamente todas las columnas adicionales.
+

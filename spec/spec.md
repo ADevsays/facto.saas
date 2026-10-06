@@ -495,6 +495,9 @@ interface MyAdsResponse {
   - **Soporte Multi-Email**: Si el usuario registró su startup con un email y pagó el anuncio con otro, puede consultar y gestionar los anuncios del segundo email desde la misma vista de `/dashboard/ads`.
 - **Marquesina Continua de 20 Cupos (`AdsBandSection.vue`)**:
   - Los 20 puestos se deslizan continuamente en orden estricto (#1 al #20), mostrando tanto los anuncios activos (`AdCard.vue`) como los puestos libres (`AdEmptyCard.vue`).
+  - **Altura Uniforme y Prevención de Layout Shifts (CLS)**: Todas las tarjetas del carrusel (`AdCard`, `AdEmptyCard`, `AdSkeletonCard` y `AdCtaCard`) deben compartir una altura idéntica rígida (`h-[66px] md:h-[72px]`) y padding unificado (`px-4 py-2 md:px-5 md:py-2.5`). Bajo ningún concepto se permite que los anuncios ocupados varíen de altura respecto a los libres o skeletons, evitando saltos de página durante la carga o cambios de estado.
+  - **Estabilidad de Claves y Prevención de Descarte de Nodos**: Las directivas `v-for` del carrusel deben emplear claves estables e inmutables basadas en la posición del slot y su índice de iteración (`:key="'desktop-' + slot.position + '-' + i"`). Está estrictamente prohibido usar el ID o nombre del anuncio en la clave (`slot.ad?.id`), ya que fuerza a Vue a desmontar y destruir el elemento DOM en el primer render/hidratación, produciendo saltos o descartes temporales del Slot #1.
+  - **Caché Síncrona SSR (`getCachedData`)**: `useAdsSlots` debe usar `getCachedData` para sincronizar de inmediato el payload transferido por el servidor sin emitir renders intermedios vacíos en el cliente.
   - Al hacer click sobre un puesto libre en la marquesina, se abre de inmediato el modal de compra (`AddAdModal.vue`) con ese puesto preseleccionado a $1 USD.
   - Al hacer click sobre un anuncio activo en la marquesina, redirige a la URL del anunciante (`target="_blank"`).
 - **Listado y Subasta en "Anúnciate aquí" (`AdAuctionListModal.vue`)**:

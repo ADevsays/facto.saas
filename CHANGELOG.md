@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## [Estabilidad de Ads Band & Prevención de Layout Shifts] - 2026-10-06
+
+### Marquesina y Renderizado de Anuncios (`modules/ads`)
+- **Estabilidad de Claves y Eliminación del Descarte del Slot #1 en Carga Inicial**:
+  - **Problema / Síntoma**: En la carga inicial o recarga de la página, los anuncios pagados (por ejemplo, el Slot #1) desaparecían brevemente del DOM o se mostraban a partir del Slot #2, generando un salto horizontal visible y molesto en la marquesina de anuncios.
+  - **Causa Raíz**:
+    1. Las directivas `v-for` en `AdsBandSection.vue` y `AdsBandBottomSection.vue` utilizaban claves dinámicas compuestas dependientes del estado del anuncio (`:key="...-${slot.ad?.id || 'empty'}-${slot.ad?.name || ''}-${i}"`). Al sincronizarse los datos en la hidratación cliente-servidor o resolverse el fetch, el cambio de la clave obligaba al algoritmo diff de Vue a destruir y recrear desde cero el elemento DOM del Slot #1 en vez de parchearlo *in-place*. Esto provocaba que por un instante el slot quedara fuera de la escena y la marquesina saltara al #2.
+    2. En `useAdsSlots.ts`, la llamada a `useFetch('/api/ads/slots')` carecía de `getCachedData`, lo que podía provocar que en el cliente se disparara una resolución asíncrona intermedia sin aprovechar de inmediato la data pre-renderizada en SSR.
+    3. En `ads.ts`, el servicio backend no forzaba la coerción estricta a número (`Number(...)`) al leer `meta.position` y `meta.price` desde JSON, dejando abiertas discrepancias de tipo.
+  - **Cómo se Arregló**:
+    1. **Claves Inmutables por Posición**: Se estabilizaron las claves del `v-for` en `AdsBandSection.vue` y `AdsBandBottomSection.vue` asignando identificadores posicionales inmutables (`:key="'desktop-' + slot.position + '-' + i"`, `:key="'mobile-' + slot.position + '-' + i"` y `:key="'bot-' + slot.position + '-' + i"`). De esta manera, el nodo DOM del slot permanece siempre anclado y Vue solo actualiza sus propiedades reactivas sin destruirlo.
+    2. **Reutilización Síncrona de Caché SSR**: Se incorporó `getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] || nuxtApp.static.data[key]` en `useAdsSlots.ts`, permitiendo que el cliente adopte instantáneamente los slots del servidor sin parpadeos ni estados vacíos transitorios.
+    3. **Coerción Numérica en Backend**: Se aseguró `ad.position = Number(meta.position)` y `ad.price = Number(meta.price)` en `modules/ads/server/services/ads.ts`.
+
+- **Homologación de Alturas en Tarjetas (`AdCard`, `AdEmptyCard`, `AdSkeletonCard`, `AdCtaCard`)**:
+  - **Problema / Síntoma**: Las tarjetas de anuncios activos (`AdCard.vue`) que contienen pitch/descripción de dos líneas medían aproximadamente 80px de alto en desktop, mientras que las tarjetas no pagadas (`AdEmptyCard.vue`) medían ~66px en desktop y 58px en móvil. Al cargarse los anuncios o alternar entre ocupado/libre, la marquesina sufría un salto notable de altura (Cumulative Layout Shift - CLS) que empujaba el resto de la página.
+  - **Causa Raíz**: Los contenedores de las tarjetas carecían de una altura fija rígida (`h-[...]`), por lo que su dimensión dependía exclusivamente del padding vertical y de la cantidad de líneas de texto de su contenido interno.
+  - **Cómo se Arregló**:
+    1. Se estableció una altura estricta y uniforme en todas las tarjetas de la marquesina con clases Tailwind: `h-[66px] md:h-[72px]`.
+    2. Se unificó el padding a `px-4 py-2 md:px-5 md:py-2.5` en `AdCard.vue`, `AdEmptyCard.vue` y `AdSkeletonCard.vue`.
+    3. Se ajustó el botón "Anúnciate aquí" (`AdCtaCard.vue`) con `md:h-[72px]` y `px-4 py-2.5` para garantizar alineación pixel-perfect en la versión de escritorio.
+    4. **Verificación Automatizada**: Se comprobó con inspección directa en el DOM vía subagente de navegador que el 100% de los slots (activos, vacíos, skeletons y CTA) miden exactamente **72.00px** en desktop y **66.00px** en móvil, eliminando cualquier variación de altura entre estados.
+
 ## [Internacionalización, Subastas & Core] - 2026-09-21
 
 ### Internacionalización & Intlify Warnings
