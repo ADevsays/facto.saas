@@ -24,3 +24,6 @@ logs
 !.env.example
 
 .agents
+videos
+spec
+CHANGELOG.md

@@ -13,8 +13,8 @@ function parseAdRecord(raw: any): Ad {
     created_at: raw.created_at,
     user_id: raw.user_id,
     whop_membership_id: raw.whop_membership_id,
-    position: raw.position,
-    price: raw.price,
+    position: raw.position !== undefined && raw.position !== null ? Number(raw.position) : undefined,
+    price: raw.price !== undefined && raw.price !== null ? Number(raw.price) : undefined,
     email: raw.email,
     is_affiliate: raw.is_affiliate
   }
@@ -68,8 +68,9 @@ export const adsService = {
     const adsByPosition = new Map<number, Ad>()
 
     for (const ad of activeAds) {
-      if (ad.position && ad.position >= 1 && ad.position <= 20) {
-        adsByPosition.set(ad.position, ad)
+      const pos = Number(ad.position)
+      if (pos >= 1 && pos <= 20) {
+        adsByPosition.set(pos, ad)
       }
     }
 

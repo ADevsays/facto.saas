@@ -1,14 +1,31 @@
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useState } from '#app'
 import type { AdSlot } from '../types'
 
 let syncChannel: BroadcastChannel | null = null
 let activeListeners = 0
 
 export function useAdsSlots() {
-  const { data: slots, refresh, pending } = useFetch<AdSlot[]>('/api/ads/slots', {
-    key: 'ads-slots-list',
-    getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] || nuxtApp.static.data[key]
-  })
+  const slotsState = useState<AdSlot[]>('facto_ads_slots_data', () => [])
+  const pending = ref(false)
+
+  const refresh = async () => {
+    try {
+      pending.value = true
+      const data = await $fetch<AdSlot[]>('/api/ads/slots')
+      if (Array.isArray(data) && data.length === 20) {
+        slotsState.value = data
+      }
+    } catch (err) {
+      console.error('[useAdsSlots] Error refreshing slots:', err)
+    } finally {
+      pending.value = false
+    }
+  }
+
+  if (import.meta.client && (!slotsState.value || slotsState.value.length !== 20)) {
+    refresh()
+  }
 
   if (import.meta.client) {
     onMounted(() => {
@@ -42,8 +59,8 @@ export function useAdsSlots() {
   }
 
   const safeSlots = computed<AdSlot[]>(() => {
-    if (slots.value && slots.value.length === 20) {
-      return slots.value
+    if (slotsState.value && slotsState.value.length === 20) {
+      return slotsState.value
     }
     const list: AdSlot[] = []
     for (let i = 1; i <= 20; i++) {
@@ -64,7 +81,7 @@ export function useAdsSlots() {
   const bottomSlots = computed(() => safeSlots.value.slice(10, 20))
 
   return {
-    slots,
+    slots: slotsState,
     safeSlots,
     topSlots,
     bottomSlots,
