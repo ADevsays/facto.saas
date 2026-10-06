@@ -37,7 +37,7 @@ function handleClick(isIncognito: boolean, name: string | null) {
     v-if="!item.isIncognito && (item.slug || item.name)"
     :to="localePath(`/saas/${item.slug || slugify(item.name || '')}`)"
     @mouseenter="preloadLogo(item.logoUrl)"
-    class="ranking-row grid grid-cols-[1.2rem_1fr_1fr_80px] sm:grid-cols-[2rem_1fr_1fr_100px] items-center py-[18px] px-3 sm:px-5 border-b border-white/5 last:border-0 transition-all duration-300 group gap-2 sm:gap-3 block cursor-pointer"
+    class="ranking-row grid grid-cols-[1.2rem_1fr_1fr_80px] sm:grid-cols-[2rem_1fr_1fr_100px] items-center py-[18px] px-3 sm:px-5 border-b border-white/5 last:border-0 transition-all duration-300 group gap-2 sm:gap-3 cursor-pointer"
     :style="{ '--glow': rowColor }"
   >
     <span class="text-xs font-mono text-neutral-600 text-center">{{ position }}</span>
@@ -67,7 +67,7 @@ function handleClick(isIncognito: boolean, name: string | null) {
         </div>
       </template>
       <template v-else>
-        <div class="w-[80px] flex items-center justify-center shrink-0 hidden md:flex">
+        <div class="w-[80px] hidden md:flex items-center justify-center shrink-0">
           <span class="text-xs text-neutral-500 font-sans font-extralight truncate text-center w-full">
             {{ item.founderName }}
           </span>
@@ -87,7 +87,7 @@ function handleClick(isIncognito: boolean, name: string | null) {
 
   <div
     v-else
-    class="ranking-row grid grid-cols-[1.2rem_1fr_1fr_80px] sm:grid-cols-[2rem_1fr_1fr_100px] items-center py-[18px] px-3 sm:px-5 border-b border-white/5 last:border-0 transition-all duration-300 group gap-2 sm:gap-3 block cursor-default"
+    class="ranking-row grid grid-cols-[1.2rem_1fr_1fr_80px] sm:grid-cols-[2rem_1fr_1fr_100px] items-center py-[18px] px-3 sm:px-5 border-b border-white/5 last:border-0 transition-all duration-300 group gap-2 sm:gap-3 cursor-default"
     :style="{ '--glow': rowColor }"
   >
     <span class="text-xs font-mono text-neutral-600 text-center">{{ position }}</span>

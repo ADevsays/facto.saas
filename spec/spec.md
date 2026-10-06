@@ -87,8 +87,7 @@ Flujo de dos pasos que permite a un founder publicar su SaaS en el ranking. **El
 - `modules/add-saas/server/api/[id]/mrr.get.ts` â€” MRR on-demand (llama al service del provider correcto)
 
 **Flujo UX:**
-1. El founder hace click en "Agrega tu MRR" en la home â†’ navega a `/add`.
-1. El founder hace click en "Agrega tu MRR" en la home → navega a `/add`.
+1. El founder hace click en "Agrega tu Startup" en la home → navega a `/add`.
 2. **Paso 1 — Datos del SaaS** (`StepInfoSection`): Formulario con los campos:
    - `name` (string, obligatorio)
    - `logoUrl` (string, URL de imagen, opcional)

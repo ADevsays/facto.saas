@@ -13,6 +13,8 @@ import { useAdsSlots } from '../composables/useAdsSlots'
 import { useAdCheckout } from '../composables/useAdCheckout'
 import { useAdSetupForm } from '../composables/useAdSetupForm'
 import { useLanguage } from '~/composables/useLanguage'
+import { useOtpModal } from '~/composables/useOtpModal'
+import { useFounderSession } from '~/composables/useFounderSession'
 
 import AddAdSlotDropdown from './AddAdSlotDropdown.vue'
 import AddAdBidControls from './AddAdBidControls.vue'
@@ -26,8 +28,10 @@ const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
 const { t } = useLanguage({ es, en })
+const { open: openOtpModal } = useOtpModal()
+const { founder } = useFounderSession()
 
-const { isOpen, mode, selectedSlot, targetPrice, targetAdName, setupToken, close, openForSetup } = useAddAdModal()
+const { isOpen, mode, selectedSlot, targetPrice, targetAdName, setupToken, verifiedEmail, close, openForSetup } = useAddAdModal()
 const { slots, refresh: refreshSlots } = useAdsSlots()
 
 const isSlotDropdownOpen = ref(false)
@@ -55,14 +59,8 @@ const {
 })
 
 const {
-  step,
-  subStep,
   email,
   isValidatingToken,
-  isSendingOtp,
-  isVerifyingOtp,
-  otpDigits,
-  resendCountdown,
   isSubmitting,
   setupSuccess,
   setupError,
@@ -71,9 +69,6 @@ const {
   form,
   resetSetup,
   validateToken,
-  sendOtp,
-  verifyOtp,
-  backToEmail,
   handleFileUpload,
   submitSetup
 } = useAdSetupForm({
@@ -92,18 +87,46 @@ function onSelectSlot(pos: number) {
   isSlotDropdownOpen.value = false
 }
 
-function handleSendOtp() {
-  sendOtp(t.value.modal?.setup?.no_payment_found)
-}
-
-function handleVerifyOtp() {
-  verifyOtp('Código incorrecto o expirado.')
-}
-
 function handleSubmitSetup() {
   const qPrice = Number(route.query.price)
   const setupPrice = (qPrice && !isNaN(qPrice)) ? qPrice : undefined
   submitSetup(setupPrice)
+}
+
+function startAdSetupFlow(slot = selectedSlot.value) {
+  const currentEmail = verifiedEmail.value || founder.value?.email
+  if (currentEmail) {
+    email.value = currentEmail
+    openForSetup(slot, setupToken.value, currentEmail)
+    return
+  }
+
+  close()
+  openOtpModal({
+    mode: 'ad_setup',
+    title: t.value.modal.setup.title,
+    badge: t.value.modal.setup.subtitle,
+    description: t.value.modal.setup.step1_desc,
+    emailLabel: t.value.modal.setup.step1_email_label,
+    emailPlaceholder: t.value.modal.setup.step1_email_placeholder,
+    submitButtonText: t.value.modal.setup.step1_continue || 'Continuar',
+    beforeSendOtp: async (emailToVerify) => {
+      const res = await $fetch<any>('/api/ads/session', {
+        params: {
+          email: emailToVerify.trim().toLowerCase(),
+          token: setupToken.value || undefined
+        }
+      })
+      if (!res?.ok) {
+        throw new Error(t.value.modal.setup.no_payment_found || 'No se encontró un pago activo para este correo.')
+      }
+    },
+    onSuccess: async ({ email: verified }) => {
+      verifiedEmail.value = verified
+      email.value = verified
+      openForSetup(slot, setupToken.value, verified)
+    }
+  })
 }
 
 watch(isOpen, async (val) => {
@@ -129,6 +152,13 @@ watch(isOpen, async (val) => {
       const tokenToValidate = setupToken.value || (typeof route.query.token === 'string' ? route.query.token : null)
       if (tokenToValidate) {
         await validateToken(tokenToValidate)
+      }
+      if (verifiedEmail.value) {
+        email.value = verifiedEmail.value
+      } else if (founder.value?.email) {
+        email.value = founder.value.email
+      } else if (!email.value && !isValidatingToken.value) {
+        startAdSetupFlow(selectedSlot.value)
       }
     }
   } else {
@@ -185,8 +215,8 @@ watch(minPrice, (newMin) => {
             <!-- 3 Features List -->
             <div class="flex flex-col gap-2.5">
               <div class="flex items-center gap-3">
-                <div class="w-7 h-7 rounded-lg bg-[#00D4FF]/10 text-[#00D4FF] flex items-center justify-center shrink-0 border border-[#00D4FF]/20">
-                  <Pin class="w-3.5 h-3.5" />
+                <div class="w-[34px] h-[34px] sm:w-[37px] sm:h-[37px] rounded-xl bg-[#00D4FF]/10 text-[#00D4FF] flex items-center justify-center shrink-0 border border-[#00D4FF]/20">
+                  <Pin class="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
                 </div>
                 <p class="text-xs sm:text-[13px] text-neutral-300 leading-snug">
                   <strong class="text-white font-medium">{{ t.modal.sale.benefit_1_title }}</strong> · {{ t.modal.sale.benefit_1_desc }}
@@ -194,8 +224,8 @@ watch(minPrice, (newMin) => {
               </div>
 
               <div class="flex items-center gap-3">
-                <div class="w-7 h-7 rounded-lg bg-[#00D4FF]/10 text-[#00D4FF] flex items-center justify-center shrink-0 border border-[#00D4FF]/20">
-                  <CircleOff class="w-3.5 h-3.5" />
+                <div class="w-[34px] h-[34px] sm:w-[37px] sm:h-[37px] rounded-xl bg-[#00D4FF]/10 text-[#00D4FF] flex items-center justify-center shrink-0 border border-[#00D4FF]/20">
+                  <CircleOff class="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
                 </div>
                 <p class="text-xs sm:text-[13px] text-neutral-300 leading-snug">
                   <strong class="text-white font-medium">{{ t.modal.sale.benefit_2_title }}</strong> · {{ t.modal.sale.benefit_2_desc }}
@@ -203,8 +233,8 @@ watch(minPrice, (newMin) => {
               </div>
 
               <div class="flex items-center gap-3">
-                <div class="w-7 h-7 rounded-lg bg-[#00D4FF]/10 text-[#00D4FF] flex items-center justify-center shrink-0 border border-[#00D4FF]/20">
-                  <Target class="w-3.5 h-3.5" />
+                <div class="w-[34px] h-[34px] sm:w-[37px] sm:h-[37px] rounded-xl bg-[#00D4FF]/10 text-[#00D4FF] flex items-center justify-center shrink-0 border border-[#00D4FF]/20">
+                  <Target class="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
                 </div>
                 <p class="text-xs sm:text-[13px] text-neutral-300 leading-snug">
                   <strong class="text-white font-medium">{{ t.modal.sale.benefit_3_title }}</strong> · {{ t.modal.sale.benefit_3_desc }}
@@ -262,7 +292,7 @@ watch(minPrice, (newMin) => {
             <div class="flex justify-center -mt-1">
               <button
                 type="button"
-                @click="openForSetup(selectedSlot)"
+                @click="startAdSetupFlow(selectedSlot)"
                 class="text-xs text-neutral-500 hover:text-neutral-300 transition-colors underline decoration-white/20 underline-offset-4 cursor-pointer"
               >
                 {{ t.modal.sale.already_paid }}
@@ -275,24 +305,16 @@ watch(minPrice, (newMin) => {
             <AddAdSuccessState v-if="setupSuccess" :selected-slot="selectedSlot" />
             <AddAdSetupForm
               v-else
-              :step="step"
-              :sub-step="subStep"
               :email="email"
               :selected-slot="selectedSlot"
               :is-validating-token="isValidatingToken"
-              :is-sending-otp="isSendingOtp"
-              :is-verifying-otp="isVerifyingOtp"
-              :otp-digits="otpDigits"
-              :resend-countdown="resendCountdown"
               :is-submitting="isSubmitting"
               :is-uploading-image="isUploadingImage"
               :upload-error="uploadError"
               :error-msg="setupError"
               :form="form"
               @update:email="email = $event"
-              @send-otp="handleSendOtp"
-              @verify-otp="handleVerifyOtp"
-              @back-to-email="backToEmail"
+              @change-email="startAdSetupFlow(selectedSlot)"
               @upload-file="handleFileUpload"
               @submit-setup="handleSubmitSetup"
             />

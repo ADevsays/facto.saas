@@ -14,11 +14,11 @@ const localePath = useLocalePath()
         Facto
       </span>
     </div>
-    <div class="flex flex-col items-center justify-center gap-4 mb-4">
-      <h1 class="text-neutral-300 font-serif font-medium tracking-tight text-3xl text-center">
+    <div class="flex flex-col items-center justify-center gap-3 sm:gap-4">
+      <h1 class="text-neutral-300 font-serif font-medium tracking-tight text-2xl md:text-3xl text-center">
         {{ t.home_header.title_start }} <span class="font-bold px-1">{{ t.home_header.title_highlight }}</span> {{ t.home_header.title_end }}
       </h1>
-      <p class="text-neutral-400 font-sans font-normal text-base text-center max-w-2xl px-4">
+      <p class="text-neutral-400 font-sans font-normal text-sm md:text-base text-center max-w-2xl px-4">
         {{ t.home_header.description }}
         <NuxtLink :to="localePath('/saas')" class="text-neutral-200 hover:text-white transition-colors underline decoration-neutral-500/50 hover:decoration-neutral-400/80 underline-offset-4 ml-1">{{ t.home_header.explore_ranking }}</NuxtLink>
       </p>

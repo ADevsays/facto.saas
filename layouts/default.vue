@@ -6,7 +6,7 @@ import AddSaasModal from '~/modules/add-saas/components/AddSaasModal.vue'
 import AddAdModal from '~/modules/ads/components/AddAdModal.vue'
 import AdAuctionListModal from '~/modules/ads/components/AdAuctionListModal.vue'
 import AdFreeModal from '~/modules/ads/components/AdFreeModal.vue'
-import LoginModal from '~/components/LoginModal.vue'
+import OtpModal from '~/components/OtpModal.vue'
 import TelegramPopup from '~/components/TelegramPopup.vue'
 import GlobalFooter from '~/ui/sections/GlobalFooter.vue'
 import { useAddAdModal } from '~/composables/useAddAdModal'
@@ -87,7 +87,7 @@ watch(() => route.query.login, () => {
     <AddSaasModal />
     <AddAdModal />
     <AdAuctionListModal />
-    <LoginModal />
+    <OtpModal />
     <AdFreeModal />
     <TelegramPopup />
     <AdsBandBottomSection v-if="!isInfoPage && showAds" />

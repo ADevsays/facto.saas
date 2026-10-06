@@ -7,6 +7,7 @@ const selectedSlot = ref(1)
 const targetPrice = ref<number | null>(null)
 const targetAdName = ref<string | null>(null)
 const setupToken = ref<string | null>(null)
+const verifiedEmail = ref<string>('')
 
 export function useAddAdModal() {
   function open(slot: number = 1, price?: number | null, adName?: string | null) {
@@ -30,10 +31,13 @@ export function useAddAdModal() {
     isAuctionListOpen.value = false
   }
 
-  function openForSetup(slot: number = 1, token?: string | null) {
+  function openForSetup(slot: number = 1, token?: string | null, email?: string | null) {
     mode.value = 'setup'
     selectedSlot.value = slot
     setupToken.value = token || null
+    if (email) {
+      verifiedEmail.value = email
+    }
     targetPrice.value = null
     targetAdName.value = null
     isOpen.value = true
@@ -55,6 +59,7 @@ export function useAddAdModal() {
     targetPrice,
     targetAdName,
     setupToken,
+    verifiedEmail,
     open,
     openBuy,
     openAuctionList,

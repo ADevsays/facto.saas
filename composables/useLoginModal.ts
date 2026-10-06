@@ -1,18 +1,17 @@
-import { computed } from 'vue'
+import { useOtpModal, type OtpModalConfig } from './useOtpModal'
 
 export function useLoginModal() {
-  const isOpen = useState<boolean>('facto_login_modal_open', () => false)
+  const { isOpen, open: openOtp, close } = useOtpModal()
 
-  const open = () => {
-    isOpen.value = true
-  }
-
-  const close = () => {
-    isOpen.value = false
+  const open = (customOptions: Partial<OtpModalConfig> = {}) => {
+    openOtp({
+      mode: 'login',
+      ...customOptions
+    })
   }
 
   return {
-    isOpen: computed(() => isOpen.value),
+    isOpen,
     open,
     close
   }
