@@ -13,7 +13,8 @@ const props = defineProps<{
 const formattedDate = computed(() => {
   return new Date(props.lastSyncedAt).toLocaleString(locale.value === 'es' ? 'es-ES' : 'en-US', { 
     dateStyle: 'short', 
-    timeStyle: 'short' 
+    timeStyle: 'short',
+    timeZone: 'UTC'
   })
 })
 

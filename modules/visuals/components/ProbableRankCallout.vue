@@ -57,7 +57,9 @@ const formattedProjectedViews = computed(() => projectedViews.value.toLocaleStri
         <p class="text-[11px] sm:text-xs font-sans font-light text-neutral-400 mt-0.5 leading-normal flex items-center flex-wrap gap-x-1">
           <span class="hidden sm:inline">{{ t.profile.chart.probable_rank_sub_desktop_prefix }}</span>
           <span class="text-emerald-400/75 font-medium">{{ t.profile.chart.probable_rank_multiplier }}</span>
-          <span class="text-neutral-500">(~{{ formattedProjectedViews }} vs {{ formattedCurrentViews }})</span>
+          <ClientOnly>
+            <span class="text-neutral-500">(~{{ formattedProjectedViews }} vs {{ formattedCurrentViews }})</span>
+          </ClientOnly>
         </p>
       </div>
     </div>

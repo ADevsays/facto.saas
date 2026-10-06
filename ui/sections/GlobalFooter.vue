@@ -78,16 +78,21 @@ onMounted(() => {
         <!-- Categories Links -->
         <div class="flex flex-col gap-5 items-start">
           <h4 class="font-medium text-white tracking-widest uppercase text-xs text-left">{{ t('footer.categories') }}</h4>
-          <div class="flex flex-col gap-3 items-start text-left">
-            <NuxtLink 
-              v-for="cat in categories" 
-              :key="cat.slug"
-              :to="localePath(`${ROUTES.CATEGORY}/${cat.slug}`)" 
-              class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light truncate max-w-[150px]"
-            >
-              {{ cat.name }}
-            </NuxtLink>
-          </div>
+          <ClientOnly fallback-tag="div">
+            <div class="flex flex-col gap-3 items-start text-left">
+              <NuxtLink 
+                v-for="cat in categories" 
+                :key="cat.slug"
+                :to="localePath(`${ROUTES.CATEGORY}/${cat.slug}`)" 
+                class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light truncate max-w-[150px]"
+              >
+                {{ cat.name }}
+              </NuxtLink>
+            </div>
+            <template #fallback>
+              <div class="flex flex-col gap-3 items-start text-left"></div>
+            </template>
+          </ClientOnly>
         </div>
 
         <!-- Legal & Countries Links -->

@@ -9,9 +9,14 @@ const slug = computed(() => route.params.slug as string)
 const { t } = useLanguage({ es, en })
 const localePath = useLocalePath()
 
-const { data, error, pending } = useLazyFetch<any>(() => `/api/founder/${slug.value}`, {
+const asyncData = useFetch<any>(() => `/api/founder/${slug.value}`, {
   key: `founder-profile-${route.params.slug}`
 })
+const { data, error, pending } = asyncData
+
+if (import.meta.server) {
+  await asyncData
+}
 
 useAppSeo({
   title: () => data.value?.founder?.name 

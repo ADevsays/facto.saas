@@ -36,7 +36,7 @@ function formatCurrency(val: number | null, curr: string) {
 
 function formatDate(dateStr: string) {
   if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' })
 }
 
 const hasAllTimeRevenue = computed(() => {

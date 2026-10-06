@@ -56,7 +56,6 @@ export default defineNuxtConfig({
   },
   experimental: {
     emitRouteChunkError: 'automatic',
-    payloadExtraction: false,
   },
   nitro: {
     scanDirs: moduleServerDirs,

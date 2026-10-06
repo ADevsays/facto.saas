@@ -9,9 +9,15 @@ const route = useRoute()
 const slug = computed(() => route.params.slug as string)
 const { t, locale } = useI18n()
 
-const { data: saas, error, pending } = useLazyFetch<any>(() => `/api/saas/${slug.value}`, {
+const asyncData = useFetch<any>(() => `/api/saas/${slug.value}`, {
   key: `saas-profile-${route.params.slug}`
 })
+const { data: saas, error, pending } = asyncData
+
+if (import.meta.server) {
+  await asyncData
+}
+
 
 const { defineSaasProfile } = useAppSchema()
 const { checkSession } = useFounderSession()
@@ -84,7 +90,7 @@ if (import.meta.server) {
 
 <template>
   <div>
-    <SaasProfileSkeleton v-if="pending" />
+    <SaasProfileSkeleton v-if="pending && !saas" />
     <div v-else-if="error || !saas" class="min-h-screen bg-[#030305] flex flex-col items-center justify-center gap-4">
        <span class="text-white/50 text-sm tracking-widest uppercase">{{ t('seo.saas_not_found') }}</span>
        <NuxtLink :to="localePath('/')" class="text-xs text-cyan-500 uppercase tracking-widest border border-cyan-500/30 rounded-full px-4 py-2 hover:bg-cyan-500/10 transition-colors">{{ t('seo.back_to_home') }}</NuxtLink>
