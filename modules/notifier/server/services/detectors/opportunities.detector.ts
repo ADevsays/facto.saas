@@ -30,7 +30,7 @@ export function evaluateOpportunities(
   const exceptionalScore = NOTIFIER_CONFIG.opportunity.exceptionalScore
   const sentHistory = previousSnapshot?.sentOpportunities || {}
 
-  const nowMs = Date.now()
+  const nowMs = new Date(currentDateStr).getTime() || Date.now()
   const prevStartupMap = new Map<string, StartupSnapshotItem>()
   if (previousSnapshot?.ranking) {
     for (const s of previousSnapshot.ranking) {
