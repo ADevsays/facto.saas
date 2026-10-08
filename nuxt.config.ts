@@ -74,18 +74,18 @@ export default defineNuxtConfig({
   routeRules: {
     '/cuanto-vale-tu-saas': { redirect: { to: '/herramientas/cuanto-vale-tu-saas', statusCode: 301 } },
     '/_nuxt/**': { cache: { maxAge: 60 * 60 * 24 * 365 } },
-    '/': { swr: 60 },
-    '/stats': { swr: 60 },
-    '/saas': { swr: 60 },
-    '/saas/**': { swr: 60 },
+    '/': { isr: 60 },
+    '/stats': { isr: 60 },
+    '/saas': { isr: 60 },
+    '/saas/**': { isr: 60 },
     '/saas/**/edit': { ssr: false },
-    '/ranking': { swr: 60 },
-    '/en': { swr: 60 },
-    '/en/stats': { swr: 60 },
-    '/en/saas': { swr: 60 },
-    '/en/saas/**': { swr: 60 },
+    '/ranking': { isr: 60 },
+    '/en': { isr: 60 },
+    '/en/stats': { isr: 60 },
+    '/en/saas': { isr: 60 },
+    '/en/saas/**': { isr: 60 },
     '/en/saas/**/edit': { ssr: false },
-    '/en/ranking': { swr: 60 }
+    '/en/ranking': { isr: 60 }
   },
   runtimeConfig: {
     encryptionKey: process.env.NUXT_ENCRYPTION_KEY,
