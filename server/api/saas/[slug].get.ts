@@ -1,6 +1,7 @@
 import { supabase } from '~/server/lib/supabase'
 import { checkAndNotifyAchievement } from '~/modules/achievements/server/services/achievements'
 import { recordDailyView } from '~/server/lib/dailyViews'
+import { fetchCachedFinancialSummaries } from '~/server/utils/saas-financials'
  
 export default defineEventHandler(async (event) => {
   setResponseHeaders(event, {
@@ -89,10 +90,24 @@ export default defineEventHandler(async (event) => {
     }
  
     const providerSlug = (dbEntry.payment_providers as any)?.slug
-    const mrrVal = dbEntry.mrr !== null ? Number(dbEntry.mrr) : null
-    const persistedRevenue = dbEntry.revenue !== null && dbEntry.revenue !== undefined
+    let mrrVal = dbEntry.mrr !== null ? Number(dbEntry.mrr) : null
+    let persistedRevenue = dbEntry.revenue !== null && dbEntry.revenue !== undefined
       ? Number(dbEntry.revenue)
       : null
+
+    // Older entries may still have their financial source of truth only in the
+    // cached provider history. Read that cache as a server-side fallback, but
+    // keep the history itself out of the initial profile payload. The dedicated
+    // history endpoint remains responsible for refreshing stale provider data.
+    if (mrrVal === null || persistedRevenue === null) {
+      const cachedFinancials = await fetchCachedFinancialSummaries([dbEntry.id])
+      const summary = cachedFinancials.get(dbEntry.id)
+      if (summary) {
+        mrrVal = summary.mrr
+        persistedRevenue = summary.revenue
+      }
+    }
+
     const revenueValue = persistedRevenue !== null && Number.isFinite(persistedRevenue)
       ? persistedRevenue
       : mrrVal === null ? null : mrrVal * 12

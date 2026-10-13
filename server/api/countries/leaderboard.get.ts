@@ -1,4 +1,5 @@
 import { supabase } from '~/server/lib/supabase'
+import { fetchCachedFinancialSummaries } from '~/server/utils/saas-financials'
 
 const COUNTRY_ISO_MAP: Record<string, string> = {
   colombia: 'co',
@@ -64,6 +65,12 @@ export default defineEventHandler(async (event) => {
   if (countriesErr) {
     throw createError({ statusCode: 500, message: countriesErr.message })
   }
+
+  const cachedFinancials = await fetchCachedFinancialSummaries(
+    ((saasRows as any[]) || [])
+      .filter(row => row.mrr === null || row.mrr === undefined || row.revenue === null || row.revenue === undefined)
+      .map(row => row.id),
+  )
 
   const countryMap = new Map<string, {
     id: number
@@ -136,10 +143,14 @@ export default defineEventHandler(async (event) => {
 
     const isIncognito = Boolean(row.is_incognito)
     let mrrVal = row.mrr !== null && row.mrr !== undefined ? Number(row.mrr) : null
+    const cachedSummary = cachedFinancials.get(row.id)
+    if (cachedSummary && mrrVal === null) mrrVal = cachedSummary.mrr
 
     let revenueVal: number | null = null
     if (row.revenue !== null && row.revenue !== undefined && Number(row.revenue) > 0) {
       revenueVal = Number(row.revenue)
+    } else if (cachedSummary?.revenue !== null && cachedSummary?.revenue !== undefined) {
+      revenueVal = cachedSummary.revenue
     } else if (mrrVal !== null && mrrVal > 0) {
       revenueVal = mrrVal * 12
     } else if (mrrVal === 0) {

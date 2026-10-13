@@ -148,10 +148,15 @@ export async function upsertSaasEntry(
 
   let entry: any
   let error: any
+  // A valid provider key publishes immediately. Without a key, a new
+  // submission enters manual review. Explicit edits to an already published
+  // entry preserve its public status even when the founder does not resubmit a key.
   let status = pData.hasProvider ? 'published' : 'pending_review'
+  if (body.id && existingEntry?.status === 'published' && !pData.hasProvider) {
+    status = 'published'
+  }
 
   if (entryId && existingEntry) {
-    status = pData.hasProvider ? 'published' : (existingEntry.status || status)
     const shouldSetPublishedAt = status === 'published' && existingEntry.status !== 'published'
     
     const res = await supabase.from('saas_entries').update({

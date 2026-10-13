@@ -17,10 +17,11 @@ test('public routes do not declare ISR or a revalidation bypass token', () => {
   assert.equal(existsSync(resolve(projectRoot, 'server/utils/isr-revalidation.ts')), false)
 })
 
-test('public list projection never selects provider history', () => {
+test('public list keeps history out of the primary projection and restores missing financials from cache', () => {
   const rankingService = readProjectFile('modules/ranking/server/services/ranking.ts')
 
-  assert.doesNotMatch(rankingService, /history_cache|saas_metrics_cache/)
+  assert.match(rankingService, /fetchCachedFinancialSummaries/)
+  assert.match(rankingService, /rowsMissingFinancials/)
   assert.match(rankingService, /\bmrr, revenue, currency\b/)
 })
 
@@ -30,7 +31,7 @@ test('initial profile stays light and history has a dedicated endpoint', () => {
   const historyEndpoint = resolve(projectRoot, 'server/api/saas/[slug]/history.get.ts')
 
   assert.match(profileEndpoint, /history: null/)
-  assert.doesNotMatch(profileEndpoint, /history_cache|provider_key_encrypted/)
+  assert.doesNotMatch(profileEndpoint, /provider_key_encrypted/)
   assert.match(profilePage, /useLazyFetch/)
   assert.doesNotMatch(profilePage, /\?seo=1/)
   assert.equal(existsSync(historyEndpoint), true)
@@ -67,4 +68,18 @@ test('history summary preserves lightweight fallback without history', () => {
     revenue: null,
     formattedRevenue: '—',
   })
+})
+
+test('new submissions publish with a valid provider key and review without one', () => {
+  const service = readProjectFile('modules/add-saas/server/services/saas.service.ts')
+
+  assert.match(service, /let status = pData\.hasProvider \? 'published' : 'pending_review'/)
+  assert.match(service, /body\.id && existingEntry\?\.status === 'published'/)
+})
+
+test('admin review endpoint requires the admin key sent by the panel', () => {
+  const reviewEndpoint = readProjectFile('server/api/admin/review.post.ts')
+
+  assert.match(reviewEndpoint, /getHeader\(event, 'x-admin-key'\)/)
+  assert.match(reviewEndpoint, /adminKey !== process\.env\.ADMIN_SECRET_KEY/)
 })

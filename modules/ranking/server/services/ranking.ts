@@ -1,5 +1,7 @@
 import { supabase } from '~/server/lib/supabase'
 import type { SaasListItem, ListQueryParams, SortOption } from '~/modules/ranking/types'
+import { fetchCachedFinancialSummaries } from '~/server/utils/saas-financials'
+import type { SaasHistorySummary } from '~/server/utils/saas-history'
 
 const SORT_COLUMN: Record<SortOption, string> = {
   mrr: 'mrr',
@@ -121,5 +123,27 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
     }
   }
 
-  return rawData.map(row => mapRow(row as unknown as Record<string, unknown>, category))
+  const rowsMissingFinancials = rawData.filter((row) => (
+    row.mrr === null || row.mrr === undefined || row.revenue === null || row.revenue === undefined
+  ))
+  const cachedFinancialsBySaasId = new Map<string, SaasHistorySummary>()
+
+  if (rowsMissingFinancials.length > 0) {
+    const cachedFinancials = await fetchCachedFinancialSummaries(rowsMissingFinancials.map(row => row.id))
+    for (const [id, summary] of cachedFinancials) {
+      cachedFinancialsBySaasId.set(id, summary)
+    }
+  }
+
+  return rawData.map((row) => {
+    const item = mapRow(row as unknown as Record<string, unknown>, category)
+    const cachedFinancials = cachedFinancialsBySaasId.get(row.id)
+
+    if (cachedFinancials) {
+      item.mrr = cachedFinancials.mrr ?? item.mrr
+      item.revenue = cachedFinancials.formattedRevenue
+    }
+
+    return item
+  })
 }

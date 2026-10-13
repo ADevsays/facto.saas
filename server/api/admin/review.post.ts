@@ -162,6 +162,11 @@ function buildRejectionEmail(name: string, siteUrl: string): string {
 }
 
 export default defineEventHandler(async (event) => {
+  const adminKey = getHeader(event, 'x-admin-key')
+  if (adminKey !== process.env.ADMIN_SECRET_KEY) {
+    throw createError({ statusCode: 401, message: 'Unauthorized' })
+  }
+
   const body = await readBody<{ saasId: string; action: 'approve' | 'reject' }>(event)
 
   if (!body.saasId || !['approve', 'reject'].includes(body.action)) {

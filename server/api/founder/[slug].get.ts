@@ -1,4 +1,5 @@
 import { supabase } from '~/server/lib/supabase'
+import { fetchCachedFinancialSummaries } from '~/server/utils/saas-financials'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
@@ -68,6 +69,11 @@ export default defineEventHandler(async (event) => {
   }
 
   const { data: saasList } = await saasQuery.order('mrr', { ascending: false, nullsFirst: false })
+  const cachedFinancials = await fetchCachedFinancialSummaries(
+    ((saasList as any[]) || [])
+      .filter(row => row.mrr === null || row.mrr === undefined || row.revenue === null || row.revenue === undefined)
+      .map(row => row.id),
+  )
 
   let totalRevenue = 0
   let hasAnyPublicRevenue = false
@@ -75,10 +81,14 @@ export default defineEventHandler(async (event) => {
   const startups = (saasList || []).map((s: any) => {
     const isIncognito = Boolean(s.is_incognito)
     let mrrVal = s.mrr !== null && s.mrr !== undefined ? Number(s.mrr) : null
+    const cachedSummary = cachedFinancials.get(s.id)
+    if (cachedSummary && mrrVal === null) mrrVal = cachedSummary.mrr
 
     let revenueVal: number | null = null
     if (s.revenue !== null && s.revenue !== undefined && Number(s.revenue) > 0) {
       revenueVal = Number(s.revenue)
+    } else if (cachedSummary?.revenue !== null && cachedSummary?.revenue !== undefined) {
+      revenueVal = cachedSummary.revenue
     } else if (mrrVal !== null && mrrVal > 0) {
       revenueVal = mrrVal * 12
     } else if (mrrVal === 0) {

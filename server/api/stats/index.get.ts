@@ -1,5 +1,6 @@
 import { supabase } from '~/server/lib/supabase'
 import { getDailyViewsMap } from '~/server/lib/dailyViews'
+import { fetchCachedFinancialSummaries } from '~/server/utils/saas-financials'
 import type {
   StatDayPoint,
   StatWeekPoint,
@@ -124,10 +125,16 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
     from += PAGE_SIZE
   }
 
+  const cachedFinancials = await fetchCachedFinancialSummaries(
+    rawRows
+      .filter(row => row.mrr === null || row.mrr === undefined || row.revenue === null || row.revenue === undefined)
+      .map(row => row.id),
+  )
+
   const rows = (rawRows || []).map((row: any) => {
     const rawDate = row.published_at || new Date().toISOString()
     const validDate = new Date(rawDate).toISOString()
-    const mrr = row.mrr !== null && !isNaN(Number(row.mrr)) && Number(row.mrr) >= 0 ? Number(row.mrr) : null
+    let mrr = row.mrr !== null && !isNaN(Number(row.mrr)) && Number(row.mrr) >= 0 ? Number(row.mrr) : null
     const views = !isNaN(Number(row.views)) && Number(row.views) >= 0 ? Number(row.views) : 0
     const cats = (row.categories as any[]) || []
     const countries = (row.countries as any[]) || []
@@ -137,8 +144,13 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
       ? new Date(cache.created_at).toISOString()
       : (cache?.history_synced_at ? new Date(cache.history_synced_at).toISOString() : validDate)
 
+    const cachedSummary = cachedFinancials.get(row.id)
+    if (cachedSummary && mrr === null) mrr = cachedSummary.mrr
+
     const revenue = row.revenue && Number(row.revenue) > 0
       ? Math.round(Number(row.revenue))
+      : cachedSummary?.revenue !== null && cachedSummary?.revenue !== undefined
+        ? Math.round(cachedSummary.revenue)
       : (mrr ?? 0)
 
     return {
