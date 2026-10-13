@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
   if (error) throw createError({ statusCode: 500, statusMessage: 'Could not write the isolated ad fixture' })
   if (!data) throw createError({ statusCode: 404, statusMessage: 'Seed the fixture before updating it' })
 
-  await revalidatePublicPaths(event, 'cache-e2e')
+  const revalidation = await revalidatePublicPaths(event, 'cache-e2e')
   setHeader(event, 'Cache-Control', 'no-store')
-  return data
+  return { ...data, revalidation }
 })
