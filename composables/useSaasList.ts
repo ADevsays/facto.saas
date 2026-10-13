@@ -46,15 +46,21 @@ export function useSaasList(options: { server?: boolean } = {}) {
     state.value.error = value instanceof Error ? value.message : value ? String(value) : null
   }, { immediate: true })
 
+  // `watch` callbacks are not guaranteed to run before an SSR render. Render
+  // from the async-data ref itself so direct entries to /saas use the same
+  // branch on the server and client; keep useState only as cross-route
+  // fallback once the client has already loaded the list.
+  const sourceItems = computed(() => data.value.length > 0 ? data.value : state.value.items)
+
   const localizedItems = computed(() => {
-    return state.value.items.map(item => ({
+    return sourceItems.value.map(item => ({
       ...item,
       category: getCategoryDisplayName(item.categorySlug, item.category, locale.value)
     }))
   })
 
   async function fetchAll(force = false) {
-    if (!force && state.value.items.length > 0) return
+    if (!force && sourceItems.value.length > 0) return
     if (pendingRequest) return pendingRequest
 
     pendingRequest = (async () => {

@@ -43,8 +43,12 @@ test('an ads mutation revalidates the shared entry pages, not arbitrary profiles
   assert.equal(paths.some(path => path.startsWith('/saas/any-profile')), false)
 })
 
-test('the Preview probe can revalidate only its dedicated test route', () => {
-  assert.deepEqual(cacheE2eRevalidationPaths(), ['/__cache-e2e'])
+test('the Preview fixture revalidates its probe and the public marquee pages it renders in', () => {
+  const paths = cacheE2eRevalidationPaths()
+  assert.ok(paths.includes('/'))
+  assert.ok(paths.includes('/ranking'))
+  assert.ok(paths.includes('/__cache-e2e'))
+  assert.ok(paths.includes('/__cache-e2e/ads'))
 })
 
 test('revalidation sends the server-only bypass token and records failures', async () => {

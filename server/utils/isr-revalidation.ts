@@ -92,7 +92,9 @@ export function adsRevalidationPaths(): string[] {
 
 /** Preview-only probe used to verify Vercel ISR without application records. */
 export function cacheE2eRevalidationPaths(): string[] {
-  return ['/__cache-e2e', '/__cache-e2e/ads']
+  // The Preview fixture is rendered by the real global marquee. Revalidating
+  // its probe routes alone proves nothing about the public Home document.
+  return unique([...adsRevalidationPaths(), '/__cache-e2e', '/__cache-e2e/ads'])
 }
 
 export function cacheE2eSaasRevalidationPaths(slug: string): string[] {
