@@ -2,12 +2,9 @@ import { fetchSaasList } from '~/modules/ranking/server/services/ranking'
 
 export default defineEventHandler((event) => {
   setResponseHeaders(event, {
-    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0',
-    'Pragma': 'no-cache',
-    'Expires': '0',
-    'Surrogate-Control': 'no-store',
-    'CDN-Cache-Control': 'no-store',
-    'Vercel-CDN-Cache-Control': 'no-store'
+    'Cache-Control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=300',
+    'CDN-Cache-Control': 'max-age=60, stale-while-revalidate=300',
+    'Vercel-CDN-Cache-Control': 's-maxage=60, stale-while-revalidate=300'
   })
   return fetchSaasList({ sort: 'mrr' })
 })

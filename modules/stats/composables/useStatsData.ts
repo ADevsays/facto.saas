@@ -1,4 +1,3 @@
-import { onMounted } from 'vue'
 import type { StatsOverviewResponse } from '../types'
 
 export function useStatsData() {
@@ -7,12 +6,6 @@ export function useStatsData() {
     key: 'facto-stats-data',
     query: { tz }
   })
-
-  if (import.meta.client) {
-    onMounted(() => {
-      refresh()
-    })
-  }
 
   return {
     stats: data,

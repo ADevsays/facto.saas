@@ -1,6 +1,7 @@
 import { supabase } from '~/server/lib/supabase'
 import { sendFoundersReport } from '~/modules/leadmagnets/server/services/email'
 import { NotifierOrchestrator } from '~/modules/notifier/server/services/notifier.orchestrator'
+import { relationSlug, revalidatePublicPaths } from '~/server/utils/isr-revalidation'
 
 function buildApprovalEmail(name: string, slug: string | null, siteUrl: string): string {
   const profileUrl = slug ? `${siteUrl}/saas/${slug}` : siteUrl
@@ -170,7 +171,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: entry, error } = await supabase
     .from('saas_entries')
-    .select('id, name, slug, founder_email, status')
+    .select('id, name, slug, founder_email, status, saas_categories(categories(slug)), saas_countries(countries(slug))')
     .eq('id', body.saasId)
     .single()
 
@@ -194,6 +195,18 @@ export default defineEventHandler(async (event) => {
 
   if (updateError) {
     throw createError({ statusCode: 500, message: updateError.message })
+  }
+
+  if (body.action === 'approve') {
+    const categories = (entry.saas_categories || [])
+      .map((row: any) => row.categories?.slug)
+      .filter(Boolean)
+    const country = relationSlug((entry.saas_countries || [])[0]?.countries)
+    await revalidatePublicPaths(event, 'saas', {
+      slug: entry.slug || '',
+      categorySlugs: categories,
+      countrySlug: country,
+    })
   }
 
   if (entry.founder_email) {

@@ -29,6 +29,7 @@ const saasData = ref<SaasShareData | null>(null)
 
 export function useShareModal() {
   const config = useRuntimeConfig()
+  const { locale } = useI18n()
 
   const openShare = (
     param1: string | SaasShareOptions,
@@ -48,7 +49,6 @@ export function useShareModal() {
     }
 
     const { name, slug, logoUrl = null, views = 0, allTimeRevenue, mrr, currency = 'USD' } = options
-    const { locale } = useI18n()
     const isEn = locale.value === 'en'
     const pathPrefix = isEn ? '/en/saas' : '/saas'
     const url = `${baseUrl}${pathPrefix}/${slug}?ref=facto&utm_source=share&utm_medium=social_proof`

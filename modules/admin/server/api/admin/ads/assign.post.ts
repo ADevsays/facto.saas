@@ -1,5 +1,6 @@
 import { adsService } from '~/modules/ads/server/services/ads'
 import type { AdminAssignAdPayload } from '~/modules/ads/types'
+import { revalidatePublicPaths } from '~/server/utils/isr-revalidation'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<AdminAssignAdPayload>(event)
@@ -20,6 +21,8 @@ export default defineEventHandler(async (event) => {
     price,
     is_affiliate: true
   })
+
+  await revalidatePublicPaths(event, 'ads')
 
   return { ok: true, ad }
 })

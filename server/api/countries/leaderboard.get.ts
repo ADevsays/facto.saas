@@ -37,7 +37,13 @@ function formatRevenue(val: number | null): string {
   return `$${Math.round(val)}`
 }
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  setResponseHeaders(event, {
+    'Cache-Control': 'public, max-age=0, s-maxage=300, stale-while-revalidate=900',
+    'CDN-Cache-Control': 'max-age=300, stale-while-revalidate=900',
+    'Vercel-CDN-Cache-Control': 's-maxage=300, stale-while-revalidate=900'
+  })
+
   const { data: saasRows, error: saasErr } = await supabase
     .from('saas_entries')
     .select(

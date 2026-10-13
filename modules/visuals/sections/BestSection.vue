@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import SaasCard from '../components/SaasCard.vue'
 import SaasCardSkeleton from '../components/SaasCardSkeleton.vue'
 import { useSaasList } from '~/composables/useSaasList'
@@ -11,9 +10,7 @@ import en from '../locales/en.json'
 const { t } = useLanguage({ es, en })
 const localePath = useLocalePath()
 
-const { bestItems, loading, fetchAll } = useSaasList()
-
-onMounted(fetchAll)
+const { bestItems, loading } = useSaasList()
 </script>
 
 <template>
@@ -27,7 +24,7 @@ onMounted(fetchAll)
       </NuxtLink>
     </div>
     <div class="flex gap-4 overflow-x-auto no-scrollbar pb-4 min-w-0">
-      <template v-if="loading">
+      <template v-if="loading || bestItems.length === 0">
         <SaasCardSkeleton v-for="n in 6" :key="'best-sk-' + n" />
       </template>
       <template v-else>
@@ -35,6 +32,7 @@ onMounted(fetchAll)
           v-for="(item, index) in bestItems"
           :key="item.id"
           :name="item.name || '— Anónimo —'"
+          :slug="item.slug"
           :category="item.category"
           :categorySlug="item.categorySlug"
           :index="index"

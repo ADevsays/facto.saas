@@ -9,14 +9,37 @@ const route = useRoute()
 const slug = computed(() => route.params.slug as string)
 const { t, locale } = useI18n()
 
-const asyncData = useFetch<any>(() => `/api/saas/${slug.value}`, {
-  key: `saas-profile-${route.params.slug}`
-})
-const { data: saas, error, pending } = asyncData
+definePageMeta({ pageTransition: false })
 
+// Render the same data branch on SSR and in the browser. Keeping this request
+// server-side prevents the page from hydrating from an error/empty branch while
+// the client is still fetching, which caused the skeleton and profile cards to
+// pop in with a different layout.
+const asyncData = useFetch<any>(() => `/api/saas/${slug.value}`, {
+  key: () => `saas-profile-${slug.value}`,
+  server: true,
+  lazy: true,
+  getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
+})
+const { data: saas, error } = asyncData
+
+// useLazyFetch can retain the previous result while its reactive key changes.
+// Never render that old profile under the new route: it hides the skeleton and
+// makes the transition look broken until the new request resolves.
+const profileSaas = computed(() => {
+  return saas.value?.slug === slug.value ? saas.value : null
+})
+
+let serverSaas: any = null
 if (import.meta.server) {
-  await asyncData
+  try {
+    serverSaas = await $fetch<any>(`/api/saas/${slug.value}?seo=1`)
+  } catch (error) {
+    console.error('[saas profile] Unable to resolve OG data:', error)
+  }
 }
+
+const saasForSeo = computed(() => profileSaas.value ?? serverSaas)
 
 
 const { defineSaasProfile } = useAppSchema()
@@ -27,8 +50,8 @@ onMounted(() => {
 })
 
 watchEffect(() => {
-  if (saas.value) {
-    defineSaasProfile(saas.value)
+  if (profileSaas.value) {
+    defineSaasProfile(profileSaas.value)
   }
 })
 
@@ -47,32 +70,33 @@ function buildDescription(s: any): string {
 }
 
 const revenueDisplay = computed(() => {
-  if (saas.value?.allTimeRevenue && saas.value.allTimeRevenue !== '—') {
-    return String(saas.value.allTimeRevenue)
+  if (saasForSeo.value?.allTimeRevenue && saasForSeo.value.allTimeRevenue !== '—') {
+    return String(saasForSeo.value.allTimeRevenue)
   }
-  if (saas.value?.mrr) {
-    return `$${Number(saas.value.mrr).toLocaleString()}`
+  if (saasForSeo.value?.mrr) {
+    return `$${Number(saasForSeo.value.mrr).toLocaleString()}`
   }
   return '$0'
 })
 
 const viewsDisplay = computed(() => {
-  return Number(saas.value?.views || 0).toLocaleString()
+  return Number(saasForSeo.value?.views || 0).toLocaleString()
 })
 
 useAppSeo({
   title: () => {
-    if (!saas.value?.name) return 'Facto'
+    if (!saasForSeo.value?.name) return 'Facto'
     if (locale.value === 'en') {
-      return `${saas.value.name} — ${revenueDisplay.value} Billed & ${viewsDisplay.value} Visits | Facto`
+      return `${saasForSeo.value.name} — ${revenueDisplay.value} Billed & ${viewsDisplay.value} Visits | Facto`
     }
-    return `${saas.value.name} — ${revenueDisplay.value} Facturado y ${viewsDisplay.value} Visitas | Facto`
+    return `${saasForSeo.value.name} — ${revenueDisplay.value} Facturado y ${viewsDisplay.value} Visitas | Facto`
   },
-  description: () => buildDescription(saas.value),
+  description: () => buildDescription(saasForSeo.value),
+  customOgImage: true,
 })
 
 useHead(() => {
-  const logo = saas.value?.logoUrl
+  const logo = saasForSeo.value?.logoUrl
   if (!logo) return {}
   return {
     link: [
@@ -88,45 +112,65 @@ useHead(() => {
 
 const localePath = useLocalePath()
 
-if (import.meta.server) {
-  watchEffect(() => {
-    defineOgImageComponent('SaasProfile', {
-      name: String(saas.value?.name || 'SaaS'),
-      logoUrl: String(saas.value?.logoUrl || ''),
-      mrr: saas.value?.mrr ? Number(saas.value.mrr) : null,
+if (import.meta.server && serverSaas) {
+  defineOgImageComponent('SaasProfile', {
+      name: String(serverSaas.name || 'SaaS'),
+      logoUrl: String(serverSaas.logoUrl || ''),
+      mrr: serverSaas.mrr ? Number(serverSaas.mrr) : null,
       revenue: revenueDisplay.value,
       views: viewsDisplay.value,
-      category: String(saas.value?.categories?.[0]?.name || 'Software'),
-      categorySlug: String(saas.value?.categories?.[0]?.slug || 'software')
-    })
+      category: String(serverSaas.categories?.[0]?.name || 'Software'),
+      categorySlug: String(serverSaas.categories?.[0]?.slug || 'software')
   })
 }
 </script>
 
 <template>
-  <div>
-    <Transition name="profile-fade" mode="out-in">
-      <SaasProfileSkeleton v-if="pending && !saas" key="skeleton" />
-      <div v-else-if="error || !saas" key="error" class="min-h-screen bg-[#030305] flex flex-col items-center justify-center gap-4">
+  <div class="profile-stage">
+    <Transition name="profile-reveal">
+      <SaasProfileSkeleton v-if="!profileSaas && !error" key="skeleton" />
+      <div v-else-if="error" key="error" class="min-h-screen bg-[#030305] flex flex-col items-center justify-center gap-4">
          <span class="text-white/50 text-sm tracking-widest uppercase">{{ t('seo.saas_not_found') }}</span>
          <NuxtLink :to="localePath('/')" class="text-xs text-cyan-500 uppercase tracking-widest border border-cyan-500/30 rounded-full px-4 py-2 hover:bg-cyan-500/10 transition-colors">{{ t('seo.back_to_home') }}</NuxtLink>
       </div>
-      <SaasProfileView v-else :key="slug" :saas="saas" />
+      <SaasProfileView v-else-if="profileSaas" :key="slug" :saas="profileSaas" />
     </Transition>
   </div>
 </template>
 
 <style scoped>
-.profile-fade-enter-active,
-.profile-fade-leave-active {
-  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+.profile-stage {
+  position: relative;
+  isolation: isolate;
 }
-.profile-fade-enter-from {
-  opacity: 0;
-  transform: translateY(6px);
+
+.profile-reveal-enter-active {
+  transition: opacity 420ms cubic-bezier(0.16, 1, 0.3, 1), transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.profile-fade-leave-to {
+
+.profile-reveal-leave-active {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  pointer-events: none;
+  transition: opacity 320ms cubic-bezier(0.16, 1, 0.3, 1), transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.profile-reveal-enter-from {
   opacity: 0;
-  transform: translateY(-6px);
+  transform: translateY(10px);
+}
+
+.profile-reveal-leave-to {
+  opacity: 0;
+  transform: scale(0.992);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-reveal-enter-active,
+  .profile-reveal-leave-active {
+    transition: none;
+  }
 }
 </style>
