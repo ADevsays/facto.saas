@@ -3,7 +3,7 @@
  * between a domain mutation and the assets which expose that data in one
  * place, so mutations do not fall back to a short, polling-style TTL.
  */
-export type RevalidationKind = 'saas' | 'ads' | 'cache-e2e'
+export type RevalidationKind = 'saas' | 'ads' | 'cache-e2e' | 'cache-e2e-saas'
 
 export interface SaasCacheTarget {
   slug: string
@@ -95,6 +95,11 @@ export function cacheE2eRevalidationPaths(): string[] {
   return ['/__cache-e2e', '/__cache-e2e/ads']
 }
 
+export function cacheE2eSaasRevalidationPaths(slug: string): string[] {
+  const safeSlug = safeSegment(slug)
+  return unique(['/', '/saas', '/ranking', ...(safeSlug ? [`/saas/${safeSlug}`] : [])])
+}
+
 /**
  * Sends the Vercel ISR invalidation header only from the server.  A failed
  * cache purge is deliberately reported, but never turns a committed database
@@ -132,6 +137,8 @@ export async function revalidatePublicPaths(event: any, kind: RevalidationKind, 
     ? adsRevalidationPaths()
     : kind === 'cache-e2e'
       ? cacheE2eRevalidationPaths()
+      : kind === 'cache-e2e-saas'
+        ? cacheE2eSaasRevalidationPaths(target?.slug || '')
       : saasRevalidationPaths(target || { slug: '' })
   return revalidateISRPaths(event, kind, paths)
 }

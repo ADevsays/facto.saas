@@ -1,5 +1,6 @@
 import { supabase } from '~/server/lib/supabase'
 import type { SaasListItem, ListQueryParams, SortOption } from '~/modules/ranking/types'
+import { getCacheE2eSaasList } from '~/server/utils/cache-e2e-fixtures'
 
 const SORT_COLUMN: Record<SortOption, string> = {
   mrr: 'mrr',
@@ -40,6 +41,7 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
 }
 
 export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasListItem[]> {
+  if (useRuntimeConfig().cacheE2eEnabled) return getCacheE2eSaasList(params)
   const { sort = 'mrr', category, country, q, limit, offset = 0 } = params
   const column = SORT_COLUMN[sort]
   const nullsFirst = sort === 'mrr' ? false : false

@@ -4,6 +4,7 @@ import { mercadopagoService } from '~/modules/add-saas/server/services/mercadopa
 import { whopService } from '~/modules/add-saas/server/services/whop.service'
 import { checkAndNotifyAchievement } from '~/modules/achievements/server/services/achievements'
 import { recordDailyView } from '~/server/lib/dailyViews'
+import { getCacheE2eSaasBySlug } from '~/server/utils/cache-e2e-fixtures'
  
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
@@ -11,6 +12,12 @@ export default defineEventHandler(async (event) => {
   
   if (!slug) {
     throw createError({ statusCode: 400, message: 'Slug is required' })
+  }
+
+  if (useRuntimeConfig().cacheE2eEnabled) {
+    const fixture = await getCacheE2eSaasBySlug(slug)
+    if (!fixture) throw createError({ statusCode: 404, message: 'SaaS not found' })
+    return fixture
   }
  
     let dbEntry: any = null
