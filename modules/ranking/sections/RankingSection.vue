@@ -41,7 +41,7 @@ const filteredItems = computed(() => {
       </NuxtLink>
     </div>
 
-    <div v-if="loading" class="rounded-2xl border border-white/10 overflow-hidden">
+    <div v-if="loading || (!error && filteredItems.length === 0)" class="rounded-2xl border border-white/10 overflow-hidden">
       <div class="grid grid-cols-[1.2rem_1fr_1fr_80px] sm:grid-cols-[2rem_1fr_1fr_100px] items-center py-2.5 px-3 sm:px-5 border-b border-white/10 bg-white/[0.03] gap-2 sm:gap-3">
         <span class="text-[10px] text-neutral-600 uppercase tracking-widest text-center">#</span>
         <span class="text-[10px] text-neutral-600 uppercase tracking-widest font-sans font-extralight">{{ t.section.col_startup }}</span>

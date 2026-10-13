@@ -24,7 +24,7 @@ const { bestItems, loading } = useSaasList()
       </NuxtLink>
     </div>
     <div class="flex gap-4 overflow-x-auto no-scrollbar pb-4 min-w-0">
-      <template v-if="loading">
+      <template v-if="loading || bestItems.length === 0">
         <SaasCardSkeleton v-for="n in 6" :key="'best-sk-' + n" />
       </template>
       <template v-else>
