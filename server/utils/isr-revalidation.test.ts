@@ -39,6 +39,8 @@ test('an ads mutation revalidates the shared entry pages, not arbitrary profiles
   const paths = adsRevalidationPaths()
   assert.ok(paths.includes('/'))
   assert.ok(paths.includes('/ranking'))
+  assert.ok(paths.includes('/_payload.json'))
+  assert.ok(paths.includes('/saas/_payload.json'))
   assert.equal(paths.some(path => path.startsWith('/saas/any-profile')), false)
 })
 

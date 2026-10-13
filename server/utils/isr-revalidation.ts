@@ -44,6 +44,20 @@ const ADS_PATHS = [
   '/en/stats',
 ]
 
+// Nuxt payload extraction stores the SSR state in separate ISR assets. The
+// HTML document can therefore be fresh while hydration still receives an old
+// ads snapshot unless these companion assets are invalidated too.
+const ADS_PAYLOAD_PATHS = [
+  '/_payload.json',
+  '/en/_payload.json',
+  '/ranking/_payload.json',
+  '/en/ranking/_payload.json',
+  '/saas/_payload.json',
+  '/en/saas/_payload.json',
+  '/stats/_payload.json',
+  '/en/stats/_payload.json',
+]
+
 function safeSegment(value: string | null | undefined): string | null {
   const segment = value?.trim().toLowerCase()
   return segment && /^[a-z0-9-]+$/.test(segment) ? segment : null
@@ -87,7 +101,7 @@ export function saasRevalidationPaths(target: SaasCacheTarget): string[] {
  * existing BroadcastChannel after an ad mutation.
  */
 export function adsRevalidationPaths(): string[] {
-  return [...ADS_PATHS]
+  return unique([...ADS_PATHS, ...ADS_PAYLOAD_PATHS])
 }
 
 /**
