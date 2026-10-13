@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue'
 import { X, Upload, Loader2, ExternalLink } from 'lucide-vue-next'
 import AdCard from './AdCard.vue'
 import type { Ad } from '../types'
+import { useAdsSlots } from '../composables/useAdsSlots'
 
 const props = defineProps<{
   modelValue: boolean
@@ -22,6 +23,7 @@ const imageUrl = ref('')
 const isSubmitting = ref(false)
 const isUploading = ref(false)
 const errorMessage = ref('')
+const { refresh: refreshAdsSlots } = useAdsSlots()
 
 watch(
   () => props.ad,
@@ -113,7 +115,14 @@ async function handleSubmit() {
     })
 
     if (res?.ok && res.ad) {
-      await refreshNuxtData('ads-slots-list')
+      await refreshAdsSlots()
+      if (typeof BroadcastChannel !== 'undefined') {
+        try {
+          const channel = new BroadcastChannel('facto_ads_sync')
+          channel.postMessage({ type: 'AD_UPDATED' })
+          channel.close()
+        } catch {}
+      }
       emit('saved', res.ad)
       closeModal()
     }
