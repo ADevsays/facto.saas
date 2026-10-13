@@ -1,6 +1,7 @@
 import { supabase } from '~/server/lib/supabase'
 import type { Ad, AdSlot } from '../../types'
 import { sendOutbidNotification } from './adEmail'
+import { getCacheE2eAds } from '~/server/utils/cache-e2e-fixtures'
 
 function parseAdRecord(raw: any): Ad {
   const ad: Ad = {
@@ -44,6 +45,12 @@ function parseAdRecord(raw: any): Ad {
 export const adsService = {
   async getActiveAds(): Promise<Ad[]> {
     try {
+      // The dev Preview fixture is intentionally isolated from the production
+      // ads table. It lets ISR tests exercise the real marquee and slots UI.
+      if (useRuntimeConfig().cacheE2eEnabled) {
+        return await getCacheE2eAds()
+      }
+
       const { data, error } = await supabase
         .from('ads')
         .select('*')

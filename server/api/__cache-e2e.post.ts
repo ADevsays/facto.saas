@@ -40,6 +40,7 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (error) {
+    console.error('[cache-e2e] isolated insert failed', error)
     throw createError({ statusCode: 500, statusMessage: 'Could not write the isolated cache test row' })
   }
 

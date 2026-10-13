@@ -39,6 +39,7 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - `server/utils/isr-revalidation.ts` es la única utilidad que traduce mutaciones de dominio en rutas ISR a revalidar. No usa Runtime Cache tags para invalidar páginas ISR.
 - Publicar, aprobar o editar un SaaS revalida sus proyecciones: perfil, home, ranking, listado, estadísticas, categoría y país afectados. Una mutación de anuncio revalida las páginas públicas de entrada que contienen la banda global; la pestaña que originó el cambio se actualiza con el canal de sincronización de ads existente.
 - La verificación remota usa exclusivamente `public.cache_e2e_test`, una tabla de prueba con RLS, y la ruta Preview `__cache-e2e`, apagada salvo que `CACHE_E2E_ENABLED=true`. La escritura exige `x-cache-e2e-key`; ninguna tabla de producto participa en la prueba.
+- En el Preview de pruebas, la fixture de anuncios usa exclusivamente filas `kind = 'ad'` de `cache_e2e_test`. La ruta `/__cache-e2e/ads` y la marquesina global consumen esa fixture; `ads` nunca se lee ni se escribe en este modo.
 
 #### Dominio
 
@@ -47,6 +48,7 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - "Un fallo al revalidar se registra para observabilidad, pero no convierte una mutación ya confirmada en un error para el fundador o anunciante."
 - "Un deployment de Vercel sin `NUXT_ISR_BYPASS_TOKEN` falla durante build: una página ISR permanente sin mecanismo de actualización no es válida."
 - "La sonda de Preview inserta solo una fila en `cache_e2e_test`, solicita la revalidación únicamente de `/__cache-e2e` y nunca puede recibir una ruta objetivo del cliente."
+- "La mutación de fixture de anuncio solo acepta `seed` o `update`, valida sus campos y revalida exclusivamente `/__cache-e2e` y `/__cache-e2e/ads`."
 
 #### Validación
 
@@ -56,6 +58,7 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - ✅ Home, ranking y listados hidratan `useSaasList` desde el payload SSR de la página ISR y no ejecutan un fetch de ranking durante `onMounted`.
 - ⏳ En Preview Vercel: dos lecturas consecutivas deben mostrar `x-vercel-cache: HIT`; después de una mutación, la siguiente lectura afectada debe actualizarse y las no afectadas conservar su HIT.
 - ⏳ En Preview Vercel: `POST /api/__cache-e2e` con la clave de prueba cambia solo `cache_e2e_test`; `/__cache-e2e` muestra el nuevo valor tras la revalidación ISR.
+- ⏳ En Preview Vercel: crear y editar el anuncio aislado por `POST /api/__cache-e2e/ads` actualiza la marquesina y `/__cache-e2e/ads`, sin leer ni escribir `ads`.
 
 ### Doctrina de Unicidad y Deduplicación Estricta de Startups
 - **Anti-Duplicación en Envío ("Más tarde" o Directo)**: Si un usuario envía su startup múltiples veces (por ejemplo, haciendo click repetido en "más tarde"), el sistema **debe actualizar** la instancia existente buscando por `slug`, `website_url` o `(name, founder_email)`, impidiendo terminantemente la creación de filas duplicadas en `saas_entries`.

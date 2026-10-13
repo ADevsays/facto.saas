@@ -101,7 +101,8 @@ export default defineNuxtConfig({
     '/en/saas/**': { isr: true },
     '/en/saas/**/edit': { ssr: false },
     '/en/ranking': { isr: true },
-    '/__cache-e2e': { isr: true }
+    '/__cache-e2e': { isr: true },
+    '/__cache-e2e/ads': { isr: true }
   },
   runtimeConfig: {
     isrBypassToken,

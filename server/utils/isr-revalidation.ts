@@ -92,7 +92,7 @@ export function adsRevalidationPaths(): string[] {
 
 /** Preview-only probe used to verify Vercel ISR without application records. */
 export function cacheE2eRevalidationPaths(): string[] {
-  return ['/__cache-e2e']
+  return ['/__cache-e2e', '/__cache-e2e/ads']
 }
 
 /**
