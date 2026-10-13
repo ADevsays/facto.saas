@@ -27,7 +27,15 @@ export function useSaasList(options: { server?: boolean } = {}) {
     default: () => [],
     // The ISR page embeds this once in its Nuxt payload. Hydration reuses it
     // instead of re-requesting the ranking from the browser.
-    getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key],
+    // An empty list can be an ISR snapshot created while Supabase was
+    // temporarily unavailable. Do not treat that snapshot as authoritative:
+    // allow useFetch to recover from the origin instead of freezing Home with
+    // “No se encontraron resultados”. Non-empty payloads remain fully
+    // hydrated and avoid the extra request.
+    getCachedData: (key, nuxtApp) => {
+      const cached = nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
+      return Array.isArray(cached) && cached.length === 0 ? undefined : cached
+    },
   })
 
   watch(data, (items) => {
