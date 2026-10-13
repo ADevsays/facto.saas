@@ -10,6 +10,7 @@ const localePath = useLocalePath()
 
 const props = defineProps<{
   name: string
+  slug?: string | null
   category: string
   categorySlug: string
   mrr: string
@@ -31,7 +32,7 @@ const cardStyle = computed(() => ({
 
 <template>
   <NuxtLink 
-    :to="localePath(`/saas/${slugify(props.name)}`)" 
+    :to="localePath(`/saas/${props.slug || slugify(props.name)}`)"
     @mouseenter="!isIncognito && preloadLogo(logoUrl)"
     class="saas-card group shrink-0 w-64 rounded-xl border border-white/20 bg-white/[0.08] backdrop-blur-sm py-[18px] px-3.5 flex flex-col gap-2 cursor-pointer transition-all duration-500"
     :class="{ 'has-glow': hasGlow }"

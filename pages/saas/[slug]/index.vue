@@ -11,11 +11,24 @@ const { t, locale } = useI18n()
 
 definePageMeta({ pageTransition: false })
 
-const asyncData = useLazyFetch<any>(() => `/api/saas/${slug.value}`, {
+// Render the same data branch on SSR and in the browser. Keeping this request
+// server-side prevents the page from hydrating from an error/empty branch while
+// the client is still fetching, which caused the skeleton and profile cards to
+// pop in with a different layout.
+const asyncData = useFetch<any>(() => `/api/saas/${slug.value}`, {
   key: () => `saas-profile-${slug.value}`,
-  server: false
+  server: true,
+  lazy: true,
+  getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
 })
-const { data: saas, error, pending } = asyncData
+const { data: saas, error } = asyncData
+
+// useLazyFetch can retain the previous result while its reactive key changes.
+// Never render that old profile under the new route: it hides the skeleton and
+// makes the transition look broken until the new request resolves.
+const profileSaas = computed(() => {
+  return saas.value?.slug === slug.value ? saas.value : null
+})
 
 let serverSaas: any = null
 if (import.meta.server) {
@@ -26,7 +39,7 @@ if (import.meta.server) {
   }
 }
 
-const saasForSeo = computed(() => saas.value ?? serverSaas)
+const saasForSeo = computed(() => profileSaas.value ?? serverSaas)
 
 
 const { defineSaasProfile } = useAppSchema()
@@ -37,8 +50,8 @@ onMounted(() => {
 })
 
 watchEffect(() => {
-  if (saas.value) {
-    defineSaasProfile(saas.value)
+  if (profileSaas.value) {
+    defineSaasProfile(profileSaas.value)
   }
 })
 
@@ -115,12 +128,12 @@ if (import.meta.server && serverSaas) {
 <template>
   <div class="profile-stage">
     <Transition name="profile-reveal">
-      <SaasProfileSkeleton v-if="pending && !saas" key="skeleton" />
-      <div v-else-if="error || !saas" key="error" class="min-h-screen bg-[#030305] flex flex-col items-center justify-center gap-4">
+      <SaasProfileSkeleton v-if="!profileSaas && !error" key="skeleton" />
+      <div v-else-if="error" key="error" class="min-h-screen bg-[#030305] flex flex-col items-center justify-center gap-4">
          <span class="text-white/50 text-sm tracking-widest uppercase">{{ t('seo.saas_not_found') }}</span>
          <NuxtLink :to="localePath('/')" class="text-xs text-cyan-500 uppercase tracking-widest border border-cyan-500/30 rounded-full px-4 py-2 hover:bg-cyan-500/10 transition-colors">{{ t('seo.back_to_home') }}</NuxtLink>
       </div>
-      <SaasProfileView v-else :key="slug" :saas="saas" />
+      <SaasProfileView v-else-if="profileSaas" :key="slug" :saas="profileSaas" />
     </Transition>
   </div>
 </template>

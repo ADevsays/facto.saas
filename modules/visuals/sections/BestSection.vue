@@ -32,6 +32,7 @@ const { bestItems, loading } = useSaasList()
           v-for="(item, index) in bestItems"
           :key="item.id"
           :name="item.name || '— Anónimo —'"
+          :slug="item.slug"
           :category="item.category"
           :categorySlug="item.categorySlug"
           :index="index"
