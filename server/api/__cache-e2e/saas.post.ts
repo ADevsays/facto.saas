@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
   }
   if (!data) throw createError({ statusCode: 404, statusMessage: 'Create the fixture before updating it' })
 
-  await revalidatePublicPaths(event, 'cache-e2e-saas', { slug: saas.slug })
+  const revalidation = await revalidatePublicPaths(event, 'cache-e2e-saas', { slug: saas.slug })
   setHeader(event, 'Cache-Control', 'no-store')
-  return data
+  return { fixture: data, revalidation }
 })
