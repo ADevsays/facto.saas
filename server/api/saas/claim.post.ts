@@ -1,5 +1,6 @@
 import { supabase } from '~/server/lib/supabase'
 import { processProviderInfo } from '~/modules/add-saas/server/services/saas.service'
+import { relationSlug, revalidatePublicPaths } from '~/server/utils/isr-revalidation'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{
@@ -31,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: entry, error: entryError } = await supabase
     .from('saas_entries')
-    .select('id, founder_email')
+    .select('id, founder_email, slug, saas_categories(categories(slug)), saas_countries(countries(slug))')
     .eq('id', body.saasId)
     .single()
 
@@ -69,6 +70,12 @@ export default defineEventHandler(async (event) => {
     if (updateError) {
       throw createError({ statusCode: 500, message: 'Failed to update MRR info' })
     }
+
+    await revalidatePublicPaths(event, 'saas', {
+      slug: entry.slug || '',
+      categorySlugs: (entry.saas_categories || []).map((row: any) => row.categories?.slug).filter(Boolean),
+      countrySlug: relationSlug((entry.saas_countries || [])[0]?.countries),
+    })
 
     // Async Background Sync
     ;(async () => {
@@ -172,6 +179,12 @@ export default defineEventHandler(async (event) => {
         .insert({ saas_id: body.saasId, country_id: country.id })
     }
   }
+
+  await revalidatePublicPaths(event, 'saas', {
+    slug: entry.slug || '',
+    categorySlugs: (entry.saas_categories || []).map((row: any) => row.categories?.slug).filter(Boolean),
+    countrySlug: body.countrySlug || relationSlug((entry.saas_countries || [])[0]?.countries),
+  })
 
   return { founder }
 })

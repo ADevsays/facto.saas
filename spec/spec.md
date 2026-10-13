@@ -28,6 +28,34 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 ### Regla Inviolable de Renderizado y Navegación de Páginas
 - **Navegación Fluida No Bloqueante**: Las páginas dinámicas (como `/saas/[slug]` y `/founder/[slug]`) **deben** utilizar `useLazyFetch` con key reactiva y renderizar inmediatamente sus respectivos skeletons (`pending`).
 - **Prohibición de `await useFetch` Bloqueante**: Bajo ningún concepto se permite utilizar `await useFetch` en el setup raíz de las páginas que congele la pantalla del usuario antes de transicionar. Tampoco se permite alterar el modo de renderizado de las páginas como parche para resolver errores intermedios.
+- **Validación de transición**: Al navegar entre rutas hacia un perfil SaaS, el skeleton debe aparecer de inmediato, sin exponer el fondo negro global entre la salida de la ruta anterior y la carga del perfil.
+
+### Caché Pública Sincronizada por Eventos
+
+#### Contrato
+
+- Las rutas públicas ISR (`/`, `/ranking`, `/saas`, `/saas/[slug]`, `/stats` y sus equivalentes `/en`) usan `isr: true`, sin expiración temporal.
+- `NUXT_ISR_BYPASS_TOKEN` es un secreto exclusivamente de servidor. Se publica como `nitro.vercel.config.bypassToken` al construir y se usa solo en el header `x-prerender-revalidate`.
+- `server/utils/isr-revalidation.ts` es la única utilidad que traduce mutaciones de dominio en rutas ISR a revalidar. No usa Runtime Cache tags para invalidar páginas ISR.
+- Publicar, aprobar o editar un SaaS revalida sus proyecciones: perfil, home, ranking, listado, estadísticas, categoría y país afectados. Una mutación de anuncio revalida las páginas públicas de entrada que contienen la banda global; la pestaña que originó el cambio se actualiza con el canal de sincronización de ads existente.
+- La verificación remota usa exclusivamente `public.cache_e2e_test`, una tabla de prueba con RLS, y la ruta Preview `__cache-e2e`, apagada salvo que `CACHE_E2E_ENABLED=true`. La escritura exige `x-cache-e2e-key`; ninguna tabla de producto participa en la prueba.
+
+#### Dominio
+
+- "Una lectura pública no consulta Supabase ni Compute si la página ISR ya está vigente."
+- "Después de una escritura confirmada, solo las rutas públicas que representan esos datos reciben una solicitud `GET` con `x-prerender-revalidate`; no se revalida por reloj ni se purga una ruta arbitraria aportada por el cliente."
+- "Un fallo al revalidar se registra para observabilidad, pero no convierte una mutación ya confirmada en un error para el fundador o anunciante."
+- "Un deployment de Vercel sin `NUXT_ISR_BYPASS_TOKEN` falla durante build: una página ISR permanente sin mecanismo de actualización no es válida."
+- "La sonda de Preview inserta solo una fila en `cache_e2e_test`, solicita la revalidación únicamente de `/__cache-e2e` y nunca puede recibir una ruta objetivo del cliente."
+
+#### Validación
+
+- ✅ Publicar o editar un SaaS calcula rutas compartidas y solamente su perfil, categorías y país afectados; no forma una URL arbitraria a partir de un slug inválido.
+- ✅ Un cambio de anuncio revalida solo las páginas públicas de entrada con la banda SSR y no perfiles no relacionados.
+- ✅ La solicitud de revalidación usa el header secreto y registra rutas con respuesta no exitosa; sin secreto no realiza solicitudes.
+- ✅ Home, ranking y listados hidratan `useSaasList` desde el payload SSR de la página ISR y no ejecutan un fetch de ranking durante `onMounted`.
+- ⏳ En Preview Vercel: dos lecturas consecutivas deben mostrar `x-vercel-cache: HIT`; después de una mutación, la siguiente lectura afectada debe actualizarse y las no afectadas conservar su HIT.
+- ⏳ En Preview Vercel: `POST /api/__cache-e2e` con la clave de prueba cambia solo `cache_e2e_test`; `/__cache-e2e` muestra el nuevo valor tras la revalidación ISR.
 
 ### Doctrina de Unicidad y Deduplicación Estricta de Startups
 - **Anti-Duplicación en Envío ("Más tarde" o Directo)**: Si un usuario envía su startup múltiples veces (por ejemplo, haciendo click repetido en "más tarde"), el sistema **debe actualizar** la instancia existente buscando por `slug`, `website_url` o `(name, founder_email)`, impidiendo terminantemente la creación de filas duplicadas en `saas_entries`.
@@ -388,6 +416,7 @@ interface ListQueryParams {
 - "La secciÃ³n `RecentlySection` y `BestSection` no tienen paginaciÃ³n; muestran mÃ¡ximo 6 items."
 - "Backlink/UTM: Al renderizar el link hacia el sitio de la startup, se debe agregar dinamicamente el parametro ?ref=facto, utm_source=factosaas.com y utm_medium=ranking para que el founder pueda identificar el trafico entrante en sus analiticas."
 - "Compartir SaaS: Se debe mostrar un boton 'Compartir' que abre un modal con opciones para compartir el perfil de la startup en X, LinkedIn, Facebook, y copiar enlace (para Instagram). El texto predefinido es 'Ahora [nombre] esta en Facto' junto con la URL de la pagina en Facto."
+- "Los metadatos Open Graph del perfil deben resolverse con datos del SaaS durante SSR para que Telegram y otros crawlers rendericen su vista previa, sin bloquear la navegación cliente ni el skeleton."
 
 ### ValidaciÃ³n
 - âœ… **Happy Path**: SaaS publicados â†’ Ranking muestra ordenados por MRR, Recently los 6 mÃ¡s nuevos, Best los 6 con mayor MRR.

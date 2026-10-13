@@ -1,5 +1,6 @@
 import { supabase } from '~/server/lib/supabase'
 import { adsService } from '~/modules/ads/server/services/ads'
+import { revalidatePublicPaths } from '~/server/utils/isr-revalidation'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ position: number }>(event)
@@ -27,6 +28,8 @@ export default defineEventHandler(async (event) => {
       console.error('[Admin Remove Ad] Exception:', err)
     }
   }
+
+  if (removedCount > 0) await revalidatePublicPaths(event, 'ads')
 
   return { ok: true, position: slotNumber, removedCount }
 })

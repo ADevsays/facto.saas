@@ -1,31 +1,19 @@
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useState } from '#app'
+import { computed, onMounted, onUnmounted } from 'vue'
 import type { AdSlot } from '../types'
 
 let syncChannel: BroadcastChannel | null = null
 let activeListeners = 0
+let onWindowFocus: (() => void) | null = null
 
 export function useAdsSlots() {
-  const slotsState = useState<AdSlot[]>('facto_ads_slots_data', () => [])
-  const pending = ref(false)
-
-  const refresh = async () => {
-    try {
-      pending.value = true
-      const data = await $fetch<AdSlot[]>('/api/ads/slots')
-      if (Array.isArray(data) && data.length === 20) {
-        slotsState.value = data
-      }
-    } catch (err) {
-      console.error('[useAdsSlots] Error refreshing slots:', err)
-    } finally {
-      pending.value = false
-    }
-  }
-
-  if (import.meta.client && (!slotsState.value || slotsState.value.length !== 20)) {
-    refresh()
-  }
+  const { data: slotsState, pending, refresh } = useFetch<AdSlot[]>('/api/ads/slots', {
+    key: 'facto_ads_slots_data',
+    default: () => [],
+    // Keep the SSR payload through hydration. This prevents every global ads
+    // consumer from immediately issuing the same client request.
+    getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key],
+    transform: (data) => Array.isArray(data) && data.length === 20 ? data : [],
+  })
 
   if (import.meta.client) {
     onMounted(() => {
@@ -42,17 +30,22 @@ export function useAdsSlots() {
         } catch {}
       }
 
-      const onFocus = () => {
-        refresh()
+      if (!onWindowFocus) {
+        onWindowFocus = () => {
+          refresh()
+        }
+        window.addEventListener('focus', onWindowFocus)
       }
-      window.addEventListener('focus', onFocus)
 
       onUnmounted(() => {
         activeListeners--
-        window.removeEventListener('focus', onFocus)
         if (activeListeners <= 0 && syncChannel) {
           syncChannel.close()
           syncChannel = null
+        }
+        if (activeListeners <= 0 && onWindowFocus) {
+          window.removeEventListener('focus', onWindowFocus)
+          onWindowFocus = null
         }
       })
     })

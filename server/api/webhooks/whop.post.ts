@@ -4,6 +4,7 @@ import { Webhook } from 'svix'
 import { whopService } from '~/server/services/whop'
 import { adsService } from '~/modules/ads/server/services/ads'
 import { sendAdSetupConfirmationEmail } from '~/modules/ads/server/services/adEmail'
+import { revalidatePublicPaths } from '~/server/utils/isr-revalidation'
 
 function resolveWebhookSecret(): string {
   try {
@@ -150,6 +151,7 @@ export default defineEventHandler(async (event) => {
     }
     if (membership?.id) {
       await adsService.deactivateAdByMembershipId(membership.id)
+      await revalidatePublicPaths(event, 'ads')
     }
   }
 

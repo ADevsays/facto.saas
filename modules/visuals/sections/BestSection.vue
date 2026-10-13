@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import SaasCard from '../components/SaasCard.vue'
 import SaasCardSkeleton from '../components/SaasCardSkeleton.vue'
 import { useSaasList } from '~/composables/useSaasList'
@@ -11,9 +10,7 @@ import en from '../locales/en.json'
 const { t } = useLanguage({ es, en })
 const localePath = useLocalePath()
 
-const { bestItems, loading, fetchAll } = useSaasList()
-
-onMounted(fetchAll)
+const { bestItems, loading } = useSaasList()
 </script>
 
 <template>

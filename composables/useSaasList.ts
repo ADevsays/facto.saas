@@ -1,11 +1,8 @@
+import { computed, watch } from 'vue'
 import type { SaasListItem, SaasListState } from '~/modules/ranking/types'
 import { getCategoryDisplayName } from '~/utils/categories'
 
-const state = reactive<SaasListState>({
-  items: [],
-  loading: true,
-  error: null,
-})
+let pendingRequest: Promise<void> | null = null
 
 const parseRev = (val?: string, fallbackMrr?: number | null) => {
   if (!val || val === '—') return (fallbackMrr || 0) * 12
@@ -16,29 +13,55 @@ const parseRev = (val?: string, fallbackMrr?: number | null) => {
   return (parseFloat(num) * multi) || 0
 }
 
-export function useSaasList() {
+export function useSaasList(options: { server?: boolean } = {}) {
   const { locale } = useI18n()
+  const state = useState<SaasListState>('facto-saas-list', () => ({
+    items: [],
+    loading: true,
+    error: null,
+  }))
+  const { data, pending, error, refresh } = useFetch<SaasListItem[]>('/api/ranking/list?limit=1000', {
+    key: 'facto-saas-list-data',
+    server: options.server !== false,
+    immediate: options.server !== false,
+    default: () => [],
+    // The ISR page embeds this once in its Nuxt payload. Hydration reuses it
+    // instead of re-requesting the ranking from the browser.
+    getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key],
+  })
+
+  watch(data, (items) => {
+    if (items) state.value.items = items
+  }, { immediate: true })
+
+  watch(error, (value) => {
+    state.value.error = value instanceof Error ? value.message : value ? String(value) : null
+  }, { immediate: true })
 
   const localizedItems = computed(() => {
-    return state.items.map(item => ({
+    return state.value.items.map(item => ({
       ...item,
       category: getCategoryDisplayName(item.categorySlug, item.category, locale.value)
     }))
   })
 
   async function fetchAll(force = false) {
-    if (!force && state.items.length > 0) return
-    state.loading = true
-    state.error = null
+    if (!force && state.value.items.length > 0) return
+    if (pendingRequest) return pendingRequest
 
-    try {
-      const data = await $fetch<SaasListItem[]>(`/api/ranking/list?limit=1000&_t=${Date.now()}`)
-      state.items = data
-    } catch (e: unknown) {
-      state.error = e instanceof Error ? e.message : 'Error cargando el ranking'
-    } finally {
-      state.loading = false
-    }
+    pendingRequest = (async () => {
+      state.value.error = null
+
+      try {
+        await refresh()
+      } catch (e: unknown) {
+        state.value.error = e instanceof Error ? e.message : 'Error cargando el ranking'
+      } finally {
+        pendingRequest = null
+      }
+    })()
+
+    return pendingRequest
   }
 
   const rankingItems = computed(() =>
@@ -71,8 +94,8 @@ export function useSaasList() {
 
   return {
     items: localizedItems,
-    loading: computed(() => state.loading),
-    error: computed(() => state.error),
+    loading: computed(() => pending.value),
+    error: computed(() => state.value.error),
     rankingItems,
     recentItems,
     bestItems,

@@ -3,6 +3,14 @@ import { readdirSync, statSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const modulesDir = fileURLToPath(new URL('./modules', import.meta.url))
+const isrBypassToken = process.env.NUXT_ISR_BYPASS_TOKEN
+
+// An ISR route without this token can never be invalidated on demand.  Keep
+// local builds usable, but reject a Vercel deployment that would serve stale
+// public data forever after an edit.
+if (process.env.VERCEL && !isrBypassToken) {
+  throw new Error('NUXT_ISR_BYPASS_TOKEN is required for on-demand ISR revalidation on Vercel')
+}
 
 const moduleServerDirs = readdirSync(modulesDir)
     .map(name => join(modulesDir, name, 'server'))
@@ -69,25 +77,40 @@ export default defineNuxtConfig({
         '/en/tools/how-much-is-your-saas-worth'
       ],
       crawlLinks: false
+    },
+    vercel: {
+      config: {
+        bypassToken: isrBypassToken
+      }
     }
   },
   routeRules: {
     '/cuanto-vale-tu-saas': { redirect: { to: '/herramientas/cuanto-vale-tu-saas', statusCode: 301 } },
     '/_nuxt/**': { cache: { maxAge: 60 * 60 * 24 * 365 } },
-    '/': { isr: 60 },
-    '/stats': { isr: 60 },
-    '/saas': { isr: 60 },
-    '/saas/**': { isr: 60 },
+    // Public content stays static until a successful domain mutation invokes
+    // the Vercel ISR bypass token. It is not polled every minute.
+    '/': { isr: true },
+    '/stats': { isr: true },
+    '/saas': { isr: true },
+    '/saas/**': { isr: true },
     '/saas/**/edit': { ssr: false },
-    '/ranking': { isr: 60 },
-    '/en': { isr: 60 },
-    '/en/stats': { isr: 60 },
-    '/en/saas': { isr: 60 },
-    '/en/saas/**': { isr: 60 },
+    '/ranking': { isr: true },
+    '/en': { isr: true },
+    '/en/stats': { isr: true },
+    '/en/saas': { isr: true },
+    '/en/saas/**': { isr: true },
     '/en/saas/**/edit': { ssr: false },
-    '/en/ranking': { isr: 60 }
+    '/en/ranking': { isr: true },
+    '/__cache-e2e': { isr: true }
   },
   runtimeConfig: {
+    isrBypassToken,
+    // Explicit in Preview when a custom domain is used; otherwise Vercel_URL
+    // points at the deployment currently handling the mutation.
+    isrRevalidationOrigin: process.env.NUXT_ISR_REVALIDATION_ORIGIN || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ''),
+    // Preview-only verification switch. Both values remain server-only.
+    cacheE2eEnabled: process.env.CACHE_E2E_ENABLED === 'true',
+    cacheE2eKey: process.env.CACHE_E2E_KEY,
     encryptionKey: process.env.NUXT_ENCRYPTION_KEY,
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,

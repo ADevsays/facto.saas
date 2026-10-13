@@ -7,6 +7,7 @@ import { recordDailyView } from '~/server/lib/dailyViews'
  
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
+  const seoOnly = getQuery(event).seo === '1'
   
   if (!slug) {
     throw createError({ statusCode: 400, message: 'Slug is required' })
@@ -58,27 +59,32 @@ export default defineEventHandler(async (event) => {
  
   if (dbEntry) {
     const nextViews = (Number(dbEntry.views) || 0) + 1
-    supabase
-      .from('saas_entries')
-      .update({ views: nextViews })
-      .eq('id', dbEntry.id)
-      .then(() => {})
+    // The server-side render only needs metadata for crawlers. Counting it as a
+    // product visit duplicates the client request after hydration and can invoke
+    // provider-history synchronization during every ISR regeneration.
+    if (!seoOnly) {
+      supabase
+        .from('saas_entries')
+        .update({ views: nextViews })
+        .eq('id', dbEntry.id)
+        .then(() => {})
 
-    recordDailyView().catch(() => {})
+      recordDailyView().catch(() => {})
 
-    const referer = getHeader(event, 'referer') || ''
-    const isEn = referer.includes('/en/') || (getHeader(event, 'accept-language')?.toLowerCase().startsWith('en') ?? false)
-    const lang: 'es' | 'en' = isEn ? 'en' : 'es'
+      const referer = getHeader(event, 'referer') || ''
+      const isEn = referer.includes('/en/') || (getHeader(event, 'accept-language')?.toLowerCase().startsWith('en') ?? false)
+      const lang: 'es' | 'en' = isEn ? 'en' : 'es'
 
-    checkAndNotifyAchievement({
-      saasId: dbEntry.id,
-      saasName: dbEntry.name || 'Tu SaaS',
-      saasLogoUrl: dbEntry.logo_url,
-      founderEmail: dbEntry.founder_email,
-      saasSlug: slug,
-      currentViews: nextViews,
-      lang
-    })
+      checkAndNotifyAchievement({
+        saasId: dbEntry.id,
+        saasName: dbEntry.name || 'Tu SaaS',
+        saasLogoUrl: dbEntry.logo_url,
+        founderEmail: dbEntry.founder_email,
+        saasSlug: slug,
+        currentViews: nextViews,
+        lang
+      })
+    }
  
     let history = null
     let lastSyncedAt: number | null = null
@@ -98,7 +104,7 @@ export default defineEventHandler(async (event) => {
         }
 
         // Cache valid for 48 hours
-        if (cacheRow && cacheRow.history_cache && (nowMs - syncedAtMs < 48 * 60 * 60 * 1000)) {
+        if (cacheRow && cacheRow.history_cache && (seoOnly || nowMs - syncedAtMs < 48 * 60 * 60 * 1000)) {
           history = cacheRow.history_cache
           lastSyncedAt = syncedAtMs
         } else {
@@ -187,7 +193,7 @@ export default defineEventHandler(async (event) => {
       categorySlug: (dbEntry.categories as any[])?.[0]?.slug ?? 'software',
       categories: dbEntry.categories || [],
       provider: providerSlug ?? 'stripe',
-      views: nextViews,
+      views: seoOnly ? Number(dbEntry.views) || 0 : nextViews,
       publishedAt: dbEntry.published_at,
       allTimeRevenue: allTimeRev,
       country: isGlobal ? 'Global' : (countryData?.name || 'Global'),

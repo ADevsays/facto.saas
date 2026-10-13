@@ -20,9 +20,7 @@ const props = withDefaults(
   }
 )
 
-const { rankingItems, loading, error, fetchAll } = useSaasList()
-
-onMounted(fetchAll)
+const { rankingItems, loading, error } = useSaasList()
 
 const filteredItems = computed(() => {
   if (props.limit && props.limit > 0) {

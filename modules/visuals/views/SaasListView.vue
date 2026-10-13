@@ -19,7 +19,7 @@ import en from '../locales/en.json'
 const { t } = useLanguage({ es, en })
 
 
-const { items, loading, error, fetchAll } = useSaasList()
+const { items, loading, error } = useSaasList()
 const { category, filterByCategory } = useCategoryFilter()
 const { country, filterByCountry, isOnContinentRoute, continent } = useCountryFilter()
 const { sort, sortItems } = useSortFilter()
@@ -55,7 +55,6 @@ const { containerRef, initObserver } = useReveal([category, country, sort])
 
 onMounted(async () => {
   await Promise.all([
-    fetchAll(true),
     fetchCategories(),
     fetchCountries()
   ])
