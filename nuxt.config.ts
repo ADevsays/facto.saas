@@ -4,6 +4,10 @@ import { join } from 'node:path'
 
 const modulesDir = fileURLToPath(new URL('./modules', import.meta.url))
 const isrBypassToken = process.env.NUXT_ISR_BYPASS_TOKEN
+  const isrRevalidationOrigin = process.env.NUXT_ISR_REVALIDATION_ORIGIN
+    || (process.env.VERCEL_ENV === 'production'
+      ? 'https://www.factosaas.com'
+      : process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '')
 
 // An ISR route without this token can never be invalidated on demand.  Keep
 // local builds usable, but reject a Vercel deployment that would serve stale
@@ -104,9 +108,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     isrBypassToken,
-    // Explicit in Preview when a custom domain is used; otherwise Vercel_URL
-    // points at the deployment currently handling the mutation.
-    isrRevalidationOrigin: process.env.NUXT_ISR_REVALIDATION_ORIGIN || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ''),
+      // Preview may target its alias explicitly. Production always invalidates
+      // the canonical domain cache, never the deployment-only hostname.
+      isrRevalidationOrigin,
     encryptionKey: process.env.NUXT_ENCRYPTION_KEY,
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,
