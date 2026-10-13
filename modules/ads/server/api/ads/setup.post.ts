@@ -3,7 +3,6 @@ import { whopService } from '~/server/services/whop'
 import { adsService } from '~/modules/ads/server/services/ads'
 import { authService } from '~/server/services/auth'
 import { supabase } from '~/server/lib/supabase'
-import { revalidatePublicPaths } from '~/server/utils/isr-revalidation'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<AdSetupPayload>(event)
@@ -90,8 +89,6 @@ export default defineEventHandler(async (event) => {
   if (!wasMarked) {
     throw createError({ statusCode: 409, statusMessage: 'Este token ya ha sido utilizado para configurar un anuncio.' })
   }
-
-  await revalidatePublicPaths(event, 'ads')
 
   return { ok: true, ad: adData }
 })

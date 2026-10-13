@@ -1,6 +1,5 @@
 import { supabase } from '~/server/lib/supabase'
 import type { AdPayload } from '../../../types'
-import { revalidatePublicPaths } from '~/server/utils/isr-revalidation'
 
 export default defineEventHandler(async (event) => {
   const payload = await readBody<AdPayload>(event)
@@ -24,8 +23,6 @@ export default defineEventHandler(async (event) => {
   if (error) {
     throw createError({ statusCode: 500, statusMessage: error.message })
   }
-
-  await revalidatePublicPaths(event, 'ads')
 
   return data
 })

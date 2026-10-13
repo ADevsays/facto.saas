@@ -4,7 +4,6 @@ import { processProviderInfo, upsertSaasEntry } from '../services/saas.service'
 import { sendFoundersReport } from '~/modules/leadmagnets/server/services/email'
 import { sendFounderWelcomeEmail } from '../services/founderEmail'
 import { NotifierOrchestrator } from '~/modules/notifier/server/services/notifier.orchestrator'
-import { revalidatePublicPaths } from '~/server/utils/isr-revalidation'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<SaasSubmission>(event)
@@ -71,14 +70,6 @@ export default defineEventHandler(async (event) => {
 
   // 5. Upsert to DB
   const finalEntry = await upsertSaasEntry(body, websiteUrl, pData, matchedCategories, matchedCountry)
-
-  if (finalEntry?.status === 'published') {
-    await revalidatePublicPaths(event, 'saas', {
-      slug: finalEntry.slug || '',
-      categorySlugs: body.categorySlugs,
-      countrySlug: body.countrySlug,
-    })
-  }
 
   // 5.5 Notify founder upon registration
   if (body.founderEmail?.trim() && finalEntry) {

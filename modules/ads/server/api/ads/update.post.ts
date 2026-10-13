@@ -1,5 +1,4 @@
 import { supabase } from '~/server/lib/supabase'
-import { revalidatePublicPaths } from '~/server/utils/isr-revalidation'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{
@@ -127,8 +126,6 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Error al actualizar el anuncio: ' + updateError.message
     })
   }
-
-  await revalidatePublicPaths(event, 'ads')
 
   return {
     ok: true,

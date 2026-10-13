@@ -11,14 +11,12 @@ const { t, locale } = useI18n()
 
 definePageMeta({ pageTransition: false })
 
-// Render the same data branch on SSR and in the browser. Keeping this request
-// server-side prevents the page from hydrating from an error/empty branch while
-// the client is still fetching, which caused the skeleton and profile cards to
-// pop in with a different layout.
-const asyncData = useFetch<any>(() => `/api/saas/${slug.value}`, {
+// Keep one lazy request as the source for SSR, hydration and SEO. This preserves
+// the immediate skeleton during navigation without executing a second server
+// request solely for metadata.
+const asyncData = await useLazyFetch<any>(() => `/api/saas/${slug.value}`, {
   key: () => `saas-profile-${slug.value}`,
   server: true,
-  lazy: true,
   getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
 })
 const { data: saas, error } = asyncData
@@ -30,16 +28,7 @@ const profileSaas = computed(() => {
   return saas.value?.slug === slug.value ? saas.value : null
 })
 
-let serverSaas: any = null
-if (import.meta.server) {
-  try {
-    serverSaas = await $fetch<any>(`/api/saas/${slug.value}?seo=1`)
-  } catch (error) {
-    console.error('[saas profile] Unable to resolve OG data:', error)
-  }
-}
-
-const saasForSeo = computed(() => profileSaas.value ?? serverSaas)
+const saasForSeo = computed(() => profileSaas.value)
 
 
 const { defineSaasProfile } = useAppSchema()
@@ -112,7 +101,8 @@ useHead(() => {
 
 const localePath = useLocalePath()
 
-if (import.meta.server && serverSaas) {
+if (import.meta.server && profileSaas.value) {
+  const serverSaas = profileSaas.value
   defineOgImageComponent('SaasProfile', {
       name: String(serverSaas.name || 'SaaS'),
       logoUrl: String(serverSaas.logoUrl || ''),

@@ -1,6 +1,5 @@
 import { supabase } from '~/server/lib/supabase'
 import { processProviderInfo } from '~/modules/add-saas/server/services/saas.service'
-import { relationSlug, revalidatePublicPaths } from '~/server/utils/isr-revalidation'
 
 export default defineEventHandler(async (event) => {
   const token = getCookie(event, 'facto_founder_token') || getHeader(event, 'x-founder-token')
@@ -175,21 +174,6 @@ export default defineEventHandler(async (event) => {
       }
     }
   }
-
-  const existingCategories = (startup.saas_categories || [])
-    .map((row: any) => row.categories?.slug)
-    .filter(Boolean)
-  const submittedCategories = body.categorySlugs !== undefined
-    ? body.categorySlugs
-    : body.categorySlug ? [body.categorySlug] : []
-  const existingCountry = relationSlug((startup.saas_countries || [])[0]?.countries)
-
-  await revalidatePublicPaths(event, 'saas', {
-    slug: startup.slug || '',
-    // Invalidate both former and new projections when a category changes.
-    categorySlugs: [...existingCategories, ...submittedCategories],
-    countrySlug: body.countrySlug || existingCountry,
-  })
 
   return { success: true }
 })

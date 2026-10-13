@@ -3,17 +3,10 @@ import { readdirSync, statSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const modulesDir = fileURLToPath(new URL('./modules', import.meta.url))
-const isrBypassToken = process.env.NUXT_ISR_BYPASS_TOKEN
-  const isrRevalidationOrigin = process.env.NUXT_ISR_REVALIDATION_ORIGIN
-    || (process.env.VERCEL_ENV === 'production'
-      ? 'https://www.factosaas.com'
-      : process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '')
-
-// An ISR route without this token can never be invalidated on demand.  Keep
-// local builds usable, but reject a Vercel deployment that would serve stale
-// public data forever after an edit.
-if (process.env.VERCEL && !isrBypassToken) {
-  throw new Error('NUXT_ISR_BYPASS_TOKEN is required for on-demand ISR revalidation on Vercel')
+const dynamicPageHeaders = {
+  'cache-control': 'private, no-store, max-age=0',
+  'cdn-cache-control': 'no-store',
+  'vercel-cdn-cache-control': 'no-store'
 }
 
 const moduleServerDirs = readdirSync(modulesDir)
@@ -51,6 +44,12 @@ export default defineNuxtConfig({
   robots: {
     disallow: ['/admin'],
   },
+  // Link inspection renders discovered pages during build. Public pages are
+  // dynamic and may record views or refresh provider data, so production data
+  // must never be crawled as a build side effect.
+  linkChecker: {
+    runOnBuild: false
+  },
   i18n: {
     restructureDir: false as any,
     langDir: 'locales',
@@ -81,36 +80,28 @@ export default defineNuxtConfig({
         '/en/tools/how-much-is-your-saas-worth'
       ],
       crawlLinks: false
-    },
-    vercel: {
-      config: {
-        bypassToken: isrBypassToken
-      }
     }
   },
   routeRules: {
     '/cuanto-vale-tu-saas': { redirect: { to: '/herramientas/cuanto-vale-tu-saas', statusCode: 301 } },
     '/_nuxt/**': { cache: { maxAge: 60 * 60 * 24 * 365 } },
-    // Public content stays static until a successful domain mutation invokes
-    // the Vercel ISR bypass token. It is not polled every minute.
-    '/': { isr: true },
-    '/stats': { isr: true },
-    '/saas': { isr: true },
-    '/saas/**': { isr: true },
+    // Public pages are rendered dynamically. Keeping them out of ISR avoids
+    // durable HTML/payload writes and makes confirmed mutations visible on the
+    // next request without a fan-out of cache invalidation requests.
+    '/': { headers: dynamicPageHeaders },
+    '/stats': { headers: dynamicPageHeaders },
+    '/saas': { headers: dynamicPageHeaders },
+    '/saas/**': { headers: dynamicPageHeaders },
     '/saas/**/edit': { ssr: false },
-    '/ranking': { isr: true },
-    '/en': { isr: true },
-    '/en/stats': { isr: true },
-    '/en/saas': { isr: true },
-    '/en/saas/**': { isr: true },
+    '/ranking': { headers: dynamicPageHeaders },
+    '/en': { headers: dynamicPageHeaders },
+    '/en/stats': { headers: dynamicPageHeaders },
+    '/en/saas': { headers: dynamicPageHeaders },
+    '/en/saas/**': { headers: dynamicPageHeaders },
     '/en/saas/**/edit': { ssr: false },
-    '/en/ranking': { isr: true }
+    '/en/ranking': { headers: dynamicPageHeaders }
   },
   runtimeConfig: {
-    isrBypassToken,
-      // Preview may target its alias explicitly. Production always invalidates
-      // the canonical domain cache, never the deployment-only hostname.
-      isrRevalidationOrigin,
     encryptionKey: process.env.NUXT_ENCRYPTION_KEY,
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,

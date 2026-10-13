@@ -47,8 +47,7 @@ export default defineEventHandler(async (event) => {
   const { data: saasRows, error: saasErr } = await supabase
     .from('saas_entries')
     .select(
-      'id, name, slug, logo_url, website_url, startup_type, founder_name, mrr, currency, views, published_at, is_incognito,' +
-      'saas_metrics_cache ( history_cache ),' +
+      'id, name, slug, logo_url, website_url, startup_type, founder_name, mrr, revenue, currency, views, published_at, is_incognito,' +
       'countries!saas_countries (id, name, slug, flag, iso_code ),' +
       'categories!saas_categories (name, slug)'
     )
@@ -136,34 +135,11 @@ export default defineEventHandler(async (event) => {
     }
 
     const isIncognito = Boolean(row.is_incognito)
-    const cacheData = row.saas_metrics_cache
-    const cacheObj = Array.isArray(cacheData) ? cacheData[0] : cacheData
-    const history = cacheObj?.history_cache
-
     let mrrVal = row.mrr !== null && row.mrr !== undefined ? Number(row.mrr) : null
-    let realAllTimeRevenue = 0
-
-    if (history) {
-      if (history.charges?.length) {
-        realAllTimeRevenue = history.charges.reduce((sum: number, c: any) => sum + (Number(c.amount) || 0), 0)
-      }
-      if (history.subscriptions?.length) {
-        const nowSec = Math.floor(Date.now() / 1000)
-        let currentMrr = 0
-        for (const sub of history.subscriptions) {
-          if (sub.created <= nowSec && (sub.canceledAt === null || sub.canceledAt > nowSec)) {
-            currentMrr += Number(sub.mrr) || 0
-          }
-        }
-        if (currentMrr > 0) {
-          mrrVal = Math.round(currentMrr)
-        }
-      }
-    }
 
     let revenueVal: number | null = null
-    if (realAllTimeRevenue > 0) {
-      revenueVal = realAllTimeRevenue
+    if (row.revenue !== null && row.revenue !== undefined && Number(row.revenue) > 0) {
+      revenueVal = Number(row.revenue)
     } else if (mrrVal !== null && mrrVal > 0) {
       revenueVal = mrrVal * 12
     } else if (mrrVal === 0) {

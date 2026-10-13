@@ -7,8 +7,8 @@ let onWindowFocus: (() => void) | null = null
 
 export function useAdsSlots() {
   // The server plugin preloads this state and Nuxt serializes it in the HTML.
-  // Keep it as the hydration source so an extracted ISR payload cannot replace
-  // a fresh server-rendered marquee with an older snapshot during hydration.
+  // Keep it as the hydration source so the browser never replaces the
+  // server-rendered marquee with a second, conflicting response.
   const slotsState = useState<AdSlot[]>('facto_ads_slots_data', () => [])
   const { data: fetchedSlots, pending, refresh } = useFetch<AdSlot[]>('/api/ads/slots', {
     key: 'facto_ads_slots_fetch',

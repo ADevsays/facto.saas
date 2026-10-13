@@ -88,9 +88,9 @@ function getWeekKey(d: Date): { key: string; label: string } {
 
 export default defineEventHandler(async (event): Promise<StatsOverviewResponse> => {
   setResponseHeaders(event, {
-    'Cache-Control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=300',
-    'CDN-Cache-Control': 'max-age=60, stale-while-revalidate=300',
-    'Vercel-CDN-Cache-Control': 's-maxage=60, stale-while-revalidate=300'
+    'Cache-Control': 'private, no-store, max-age=0',
+    'CDN-Cache-Control': 'no-store',
+    'Vercel-CDN-Cache-Control': 'no-store'
   })
 
   const query = getQuery(event)
@@ -109,7 +109,7 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
         id, name, slug, mrr, revenue, currency, views, published_at, is_incognito,
         categories!saas_categories ( name, slug ),
         countries!saas_countries ( id, name, slug, flag, iso_code ),
-        saas_metrics_cache ( created_at, history_synced_at, history_cache )
+        saas_metrics_cache ( created_at, history_synced_at )
       `)
       .eq('status', 'published')
       .range(from, from + PAGE_SIZE - 1)
@@ -137,14 +137,9 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
       ? new Date(cache.created_at).toISOString()
       : (cache?.history_synced_at ? new Date(cache.history_synced_at).toISOString() : validDate)
 
-    const history = cache?.history_cache
-    let realAllTimeRevenue = 0
-    if (history?.charges?.length) {
-      realAllTimeRevenue = history.charges.reduce((sum: number, c: any) => sum + (Number(c.amount) || 0), 0)
-    }
-    const revenue = realAllTimeRevenue > 0
-      ? Math.round(realAllTimeRevenue)
-      : (row.revenue && Number(row.revenue) > 0 ? Math.round(Number(row.revenue)) : (mrr ?? 0))
+    const revenue = row.revenue && Number(row.revenue) > 0
+      ? Math.round(Number(row.revenue))
+      : (mrr ?? 0)
 
     return {
       id: row.id,

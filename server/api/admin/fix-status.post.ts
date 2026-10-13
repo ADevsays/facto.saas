@@ -1,5 +1,4 @@
 import { supabase } from '~/server/lib/supabase'
-import { relationSlug, revalidateISRPaths, saasRevalidationPaths } from '~/server/utils/isr-revalidation'
 
 export default defineEventHandler(async (event) => {
   const adminKey = getHeader(event, 'x-admin-key')
@@ -37,15 +36,6 @@ export default defineEventHandler(async (event) => {
   if (error) throw createError({ statusCode: 500, message: error.message })
 
   const fixedNames = pending.filter(e => saasIdsWithCategories.includes(e.id)).map(e => e.name)
-
-  const paths = pending
-    .filter(e => saasIdsWithCategories.includes(e.id))
-    .flatMap(entry => saasRevalidationPaths({
-      slug: entry.slug || '',
-      categorySlugs: (entry.saas_categories || []).map((row: any) => row.categories?.slug).filter(Boolean),
-      countrySlug: relationSlug((entry.saas_countries || [])[0]?.countries),
-    }))
-  await revalidateISRPaths(event, 'saas', paths)
 
   return {
     message: `Fixed ${fixedNames.length} entries`,

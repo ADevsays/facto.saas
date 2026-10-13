@@ -7,6 +7,22 @@ const SORT_COLUMN: Record<SortOption, string> = {
   views: 'views',
 }
 
+export function formatPersistedRevenue(revenue: unknown, mrr: number | null): string {
+  const numericRevenue = typeof revenue === 'number'
+    ? revenue
+    : typeof revenue === 'string' && revenue.trim() !== ''
+      ? Number(revenue)
+      : Number.NaN
+  const value = Number.isFinite(numericRevenue)
+    ? numericRevenue
+    : mrr === null ? null : mrr * 12
+
+  if (value === null) return '—'
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`.replace('.0', '')
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`
+  return `$${Math.round(value)}`
+}
+
 function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasListItem {
   const cats = (row.categories as { name: string; slug: string }[]) || []
   let selectedCat = cats[0]
@@ -26,7 +42,8 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
     websiteUrl: row.website_url as string | null,
     founderName: row.founder_name as string | null,
     isIncognito: row.is_incognito as boolean,
-    mrr: row.mrr as number | null,
+    mrr: row.mrr === null ? null : Number(row.mrr),
+    revenue: formatPersistedRevenue(row.revenue, row.mrr === null ? null : Number(row.mrr)),
     currency: row.currency as string,
     category: selectedCat?.name ?? '',
     categorySlug: selectedCat?.slug ?? '',
@@ -46,11 +63,10 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
 
   const selectQuery = `
     id, name, slug, logo_url, website_url, founder_name, startup_type,
-    is_incognito, mrr, currency, views, published_at,
+    is_incognito, mrr, revenue, currency, views, published_at,
     categories!saas_categories${category ? '!inner' : ''} ( name, slug ),
     countries!saas_countries${country ? '!inner' : ''} ( name, slug, flag, iso_code ),
-    payment_providers ( name, slug ),
-    saas_metrics_cache ( history_cache )
+    payment_providers ( name, slug )
   `
 
   const isExplicitLimited = typeof limit === 'number' && limit < 1000
@@ -105,61 +121,5 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
     }
   }
 
-  const items = rawData.map(row => {
-    const item = mapRow(row as unknown as Record<string, unknown>, category)
-    const cacheData = (row as any).saas_metrics_cache
-    if (cacheData) {
-      const cacheObj = Array.isArray(cacheData) ? cacheData[0] : cacheData
-      if (cacheObj && cacheObj.history_cache) {
-        const history = cacheObj.history_cache
-        let mrrVal = item.mrr
-        let realAllTimeRevenue = 0
-
-        if (history.charges?.length) {
-          realAllTimeRevenue = history.charges.reduce((sum: number, c: any) => sum + c.amount, 0)
-        }
-        if (history.subscriptions?.length) {
-          const nowSec = Math.floor(Date.now() / 1000)
-          let currentMrr = 0
-          for (const s of history.subscriptions) {
-            if (s.created <= nowSec && (s.canceledAt === null || s.canceledAt > nowSec)) {
-              currentMrr += s.mrr
-            }
-          }
-          mrrVal = Math.round(currentMrr)
-        }
-
-        let allTimeRev = '—'
-        if (realAllTimeRevenue > 0) {
-          if (realAllTimeRevenue >= 1000000) allTimeRev = `$${(realAllTimeRevenue / 1000000).toFixed(1)}M`.replace('.0', '')
-          else if (realAllTimeRevenue >= 1000) allTimeRev = `$${(realAllTimeRevenue / 1000).toFixed(0)}K`
-          else allTimeRev = `$${Math.round(realAllTimeRevenue)}`
-        } else if (mrrVal !== null && mrrVal > 0) {
-          const annual = mrrVal * 12
-          if (annual >= 1000000) allTimeRev = `$${(annual / 1000000).toFixed(1)}M`.replace('.0', '')
-          else if (annual >= 1000) allTimeRev = `$${(annual / 1000).toFixed(0)}K`
-          else allTimeRev = `$${annual}`
-        } else if (mrrVal === 0) {
-          allTimeRev = '$0'
-        }
-
-        item.mrr = mrrVal
-        item.revenue = allTimeRev
-      }
-    } else {
-      let allTimeRev = '—'
-      if (item.mrr !== null && item.mrr > 0) {
-        const annual = item.mrr * 12
-        if (annual >= 1000000) allTimeRev = `$${(annual / 1000000).toFixed(1)}M`.replace('.0', '')
-        else if (annual >= 1000) allTimeRev = `$${(annual / 1000).toFixed(0)}K`
-        else allTimeRev = `$${annual}`
-      } else if (item.mrr === 0) {
-        allTimeRev = '$0'
-      }
-      item.revenue = allTimeRev
-    }
-    return item
-  })
-
-  return items
+  return rawData.map(row => mapRow(row as unknown as Record<string, unknown>, category))
 }

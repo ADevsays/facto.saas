@@ -6,9 +6,8 @@ import type { SaasListItem } from '~/modules/ranking/types'
 const { t } = useI18n()
 const { defineWebSite } = useAppSchema()
 
-// Home is an ISR document, so its catalog must resolve before the response is
-// cached. Leaving the request exclusively to child components produced an ISR
-// shell with skeletons that only filled after browser hydration.
+// Resolve the lightweight catalog during SSR so direct loads render complete
+// content and hydration reuses the exact same payload without another request.
 await useFetch<SaasListItem[]>('/api/ranking/list?limit=1000', {
   key: 'facto-saas-list-data',
   server: true,

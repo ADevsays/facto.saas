@@ -55,10 +55,9 @@ export default defineEventHandler(async (event) => {
   let saasQuery = supabase
     .from('saas_entries')
     .select(
-      'id, name, slug, logo_url, website_url, startup_type, is_incognito, mrr, currency, views, published_at,' +
+      'id, name, slug, logo_url, website_url, startup_type, is_incognito, mrr, revenue, currency, views, published_at,' +
       'categories!saas_categories ( name, slug ),' +
-      'countries!saas_countries ( name, slug, flag, iso_code ),' +
-      'saas_metrics_cache ( history_cache )'
+      'countries!saas_countries ( name, slug, flag, iso_code )'
     )
     .eq('status', 'published')
 
@@ -75,34 +74,11 @@ export default defineEventHandler(async (event) => {
 
   const startups = (saasList || []).map((s: any) => {
     const isIncognito = Boolean(s.is_incognito)
-    const cacheData = s.saas_metrics_cache
-    const cacheObj = Array.isArray(cacheData) ? cacheData[0] : cacheData
-    const history = cacheObj?.history_cache
-
     let mrrVal = s.mrr !== null && s.mrr !== undefined ? Number(s.mrr) : null
-    let realAllTimeRevenue = 0
-
-    if (history) {
-      if (history.charges?.length) {
-        realAllTimeRevenue = history.charges.reduce((sum: number, c: any) => sum + (Number(c.amount) || 0), 0)
-      }
-      if (history.subscriptions?.length) {
-        const nowSec = Math.floor(Date.now() / 1000)
-        let currentMrr = 0
-        for (const sub of history.subscriptions) {
-          if (sub.created <= nowSec && (sub.canceledAt === null || sub.canceledAt > nowSec)) {
-            currentMrr += Number(sub.mrr) || 0
-          }
-        }
-        if (currentMrr > 0) {
-          mrrVal = Math.round(currentMrr)
-        }
-      }
-    }
 
     let revenueVal: number | null = null
-    if (realAllTimeRevenue > 0) {
-      revenueVal = realAllTimeRevenue
+    if (s.revenue !== null && s.revenue !== undefined && Number(s.revenue) > 0) {
+      revenueVal = Number(s.revenue)
     } else if (mrrVal !== null && mrrVal > 0) {
       revenueVal = mrrVal * 12
     } else if (mrrVal === 0) {

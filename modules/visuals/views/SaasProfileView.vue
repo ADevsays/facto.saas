@@ -11,6 +11,7 @@ import ClaimFounderModal from '../components/ClaimFounderModal.vue'
 import InputMrrView from '../../input-mrr/views/InputMrrView.vue'
 import BentoFeaturesSection from '../components/BentoFeaturesSection.vue'
 import { useFounderSession } from '~/composables/useFounderSession'
+import type { HistoryData } from '../composables/useRevenueChart'
 
 interface Props {
   saas: {
@@ -57,6 +58,31 @@ const { isOwnerOf, checkSession, isAuthenticated, startups } = useFounderSession
 const showClaimModal = useState('claim-founder-modal-open', () => false)
 const claimIntent = ref<'founder' | 'mrr'>('founder')
 const verifiedEmail = ref<string | null>(null)
+const history = ref<HistoryData | null>(null)
+const historyMrr = ref<number | null>(props.saas.mrr)
+const historyLastSyncedAt = ref<number | null>(null)
+const historyResolved = ref(false)
+
+const effectiveMrr = computed(() => historyResolved.value ? historyMrr.value : props.saas.mrr)
+
+async function loadHistory() {
+  const slug = (route.params.slug as string) || (props.saas as any)?.slug
+  if (!slug) return
+
+  try {
+    const data = await $fetch<{
+      history: HistoryData | null
+      lastSyncedAt: number | null
+      mrr: number | null
+    }>(`/api/saas/${encodeURIComponent(slug)}/history`)
+    history.value = data.history
+    historyMrr.value = data.mrr
+    historyLastSyncedAt.value = data.lastSyncedAt
+    historyResolved.value = true
+  } catch (error) {
+    console.error('[saas profile] Unable to load financial history:', error)
+  }
+}
 
 const isVerifiedOwner = computed(() => {
   const currentSlug = (props.saas as any)?.slug || (route.params.slug as string)
@@ -68,20 +94,22 @@ const isVerifiedOwner = computed(() => {
 })
 
 onMounted(async () => {
+  const historyRequest = loadHistory()
   await checkSession()
-  if (isVerifiedOwner.value) return
-
-  const stored = localStorage.getItem(`facto_founder_verified_${props.saas.id}`)
-  if (stored) {
-    try {
-      const data = JSON.parse(stored)
-      if (data.email && data.expires > Date.now()) {
-        verifiedEmail.value = data.email
-      } else {
-        localStorage.removeItem(`facto_founder_verified_${props.saas.id}`)
-      }
-    } catch {}
+  if (!isVerifiedOwner.value) {
+    const stored = localStorage.getItem(`facto_founder_verified_${props.saas.id}`)
+    if (stored) {
+      try {
+        const data = JSON.parse(stored)
+        if (data.email && data.expires > Date.now()) {
+          verifiedEmail.value = data.email
+        } else {
+          localStorage.removeItem(`facto_founder_verified_${props.saas.id}`)
+        }
+      } catch {}
+    }
   }
+  await historyRequest
 })
 
 async function handleClaimFounder() {
@@ -141,7 +169,7 @@ async function handleClaim() {
     <SaasBreadcrumb :name="saas.name" />
     <SaasHeaderSection :saas="saas" :is-verified-owner="isVerifiedOwner" @edit="handleClaimFounder" />
     <SaasMetricsSection :saas="saas" :is-verified-owner="isVerifiedOwner" @claim-founder="handleClaimFounder" />
-    <SaasRevenueChart :mrr="saas.mrr" :currency="saas.currency" :history="saas.history" :provider="saas.provider" :last-synced-at="saas.lastSyncedAt" :founder-name="saas.founderName" :is-verified-owner="isVerifiedOwner" :views="saas.views" @claim="handleClaim" @claim-founder="handleClaimFounder" />
+    <SaasRevenueChart :mrr="effectiveMrr" :currency="saas.currency" :history="history" :provider="saas.provider" :last-synced-at="historyLastSyncedAt" :founder-name="saas.founderName" :is-verified-owner="isVerifiedOwner" :views="saas.views" @claim="handleClaim" @claim-founder="handleClaimFounder" />
     
     <!-- Bento Features Section -->
     <BentoFeaturesSection :saas="saas" />
