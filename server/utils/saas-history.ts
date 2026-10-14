@@ -17,6 +17,62 @@ export interface SaasHistorySummary {
   formattedRevenue: string
 }
 
+export interface SaasLegacyFinancialSnapshot {
+  mrr: number | null
+  revenue: number | null
+  source?: string
+}
+
+export function getLegacyFinancialSnapshot(value: unknown): SaasLegacyFinancialSnapshot | null {
+  if (!value || typeof value !== 'object') return null
+  const snapshot = (value as Record<string, unknown>).legacySnapshot
+  if (!snapshot || typeof snapshot !== 'object') return null
+  const raw = snapshot as Record<string, unknown>
+  const mrr = raw.mrr === null ? null : Number(raw.mrr)
+  const revenue = raw.revenue === null ? null : Number(raw.revenue)
+  if (mrr !== null && !Number.isFinite(mrr)) return null
+  if (revenue !== null && !Number.isFinite(revenue)) return null
+  return { mrr, revenue, source: typeof raw.source === 'string' ? raw.source : undefined }
+}
+
+export function normalizeSaasHistory(value: unknown): SaasHistoryData | null {
+  if (!value || typeof value !== 'object') return null
+
+  const raw = value as Record<string, unknown>
+  const subscriptions = Array.isArray(raw.subscriptions)
+    ? raw.subscriptions.flatMap((item) => {
+        if (!item || typeof item !== 'object') return []
+        const row = item as Record<string, unknown>
+        const created = Number(row.created)
+        const mrr = Number(row.mrr)
+        if (!Number.isFinite(created) || !Number.isFinite(mrr)) return []
+        const canceledAt = row.canceledAt === null || row.canceledAt === undefined
+          ? null
+          : Number(row.canceledAt)
+        return [{
+          created,
+          status: typeof row.status === 'string' ? row.status : undefined,
+          canceledAt: Number.isFinite(canceledAt as number) ? canceledAt : null,
+          mrr,
+        }]
+      })
+    : []
+  const charges = Array.isArray(raw.charges)
+    ? raw.charges.flatMap((item) => {
+        if (!item || typeof item !== 'object') return []
+        const row = item as Record<string, unknown>
+        const created = Number(row.created)
+        const amount = Number(row.amount)
+        if (!Number.isFinite(created) || !Number.isFinite(amount)) return []
+        return [{ created, amount }]
+      })
+    : []
+
+  return subscriptions.length > 0 || charges.length > 0
+    ? { subscriptions, charges }
+    : null
+}
+
 export function hasFinancialHistory(history: SaasHistoryData | null | undefined): boolean {
   return Boolean(
     (Array.isArray(history?.subscriptions) && history.subscriptions.length > 0)
@@ -27,7 +83,7 @@ export function hasFinancialHistory(history: SaasHistoryData | null | undefined)
 export function formatRevenue(value: number | null): string {
   if (value === null) return '—'
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`.replace('.0', '')
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(1).replace('.0', '')}K`
   return `$${Math.round(value)}`
 }
 

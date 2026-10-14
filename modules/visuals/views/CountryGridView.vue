@@ -21,6 +21,7 @@ function formatCurrency(val: number | null, curr: string = 'USD') {
   if (val === null || val === undefined) return '—'
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: curr, maximumFractionDigits: 0 }).format(val)
 }
+
 </script>
 
 <template>
@@ -189,7 +190,7 @@ function formatCurrency(val: number | null, curr: string = 'USD') {
               <div class="flex items-center gap-4 shrink-0">
                 <div class="text-right min-w-[75px]">
                   <span class="font-mono text-xs md:text-sm font-medium text-white">
-                    <template v-if="startup.revenue && startup.revenue !== '—'">
+                    <template v-if="startup.revenue && startup.revenue !== '—' && !startup.isIncognito">
                       {{ startup.revenue }}
                     </template>
                     <IncognitoIcon v-else-if="startup.isIncognito" class="w-4 h-4 text-neutral-500 inline" />

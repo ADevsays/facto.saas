@@ -34,7 +34,7 @@ const COUNTRY_ISO_MAP: Record<string, string> = {
 function formatRevenue(val: number | null): string {
   if (val === null || val === undefined) return '—'
   if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`.replace('.0', '')
-  if (val >= 1000) return `$${(val / 1000).toFixed(0)}K`
+  if (val >= 1000) return `$${(val / 1000).toFixed(1).replace('.0', '')}K`
   return `$${Math.round(val)}`
 }
 
@@ -154,8 +154,6 @@ export default defineEventHandler(async (event) => {
       revenueVal = Number(row.revenue)
     } else if (cachedSummary?.revenue !== null && cachedSummary?.revenue !== undefined && cachedSummary.revenue > 0) {
       revenueVal = cachedSummary.revenue
-    } else if (mrrVal !== null && mrrVal > 0) {
-      revenueVal = mrrVal * 12
     } else if (mrrVal === 0) {
       revenueVal = 0
     }

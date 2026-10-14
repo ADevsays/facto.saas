@@ -54,7 +54,7 @@
     "arr_est": "ARR (Est.)"
   },
   "best_section": {
-    "title": "Mejores SaaS",
+    "title": "Mejores startups",
     "view_all": "Ver todos"
   },
   "recently_section": {
@@ -118,6 +118,8 @@
       "mrr_label": "MRR",
       "mrr_tooltip": "El dinero fijo que gana la startup al mes por suscriptores. No incluye pagos únicos.",
       "mrr_desc": "Ingresos mensuales",
+      "key_invalid": "Clave de pago inválida, vencida o revocada",
+      "key_permissions": "Permisos de la clave insuficientes",
       "revenue_label": "Ingresos Totales",
       "revenue_tooltip": "Todo el dinero que ha ganado la startup en total desde el primer día.",
       "revenue_desc": "Ingresos acumulados",
@@ -130,6 +132,9 @@
       "hq_default": "Sede central"
     },
     "chart": {
+      "history_unavailable": "Historial financiero no disponible",
+      "key_invalid": "La clave de Stripe es inválida, venció o fue revocada. El fundador debe reconectarla.",
+      "key_permissions": "La clave de Stripe no tiene permisos para consultar estos datos.",
       "owner_question": "¿Eres el dueño?",
       "edit_startup": "Editar startup",
       "claim_startup": "Reclama esta startup",
@@ -198,7 +203,8 @@
       "err_save": "Error al guardar. Intenta de nuevo."
     },
     "verification": {
-      "verified_with": "Verificado con {provider} API Key. Última actualización: {date}"
+      "verified_with": "Verificado con {provider} API Key. Última actualización: {date}",
+      "key_outdated": "API Key de Stripe desactualizada. Los datos pueden tener fallos"
     },
     "overlay": {
       "unverified_mrr": "MRR no verificado",

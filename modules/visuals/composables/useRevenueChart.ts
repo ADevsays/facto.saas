@@ -10,7 +10,6 @@ export interface HistoryData {
 
 export function useRevenueChart(
   history: Ref<HistoryData | null | undefined>,
-  baseMrr: Ref<number>,
   activeMetric: Ref<Metric>,
   activeTimeframe: Ref<Timeframe>
 ) {
@@ -22,33 +21,9 @@ export function useRevenueChart(
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
-  function generateSeries(days: number, mrr: number) {
-    const steps = Math.min(Math.max(days <= 7 ? days : Math.ceil(days / 7), 5), 12)
-    const stepMs = (days * 24 * 60 * 60 * 1000) / (steps - 1 || 1)
-    const daysPerStep = stepMs / (24 * 60 * 60 * 1000)
-
-    return Array.from({ length: steps }, (_, idx) => {
-      const dayOffset = Math.round(((steps - 1 - idx) / (steps - 1 || 1)) * days)
-      const targetDate = new Date()
-      targetDate.setDate(targetDate.getDate() - dayOffset)
-
-      const progress = idx / (steps - 1 || 1)
-      const factor = 0.75 + progress * 0.22 + Math.sin(idx) * 0.03
-      
-      const currentMrr = Math.round(mrr * factor)
-      // Coherecy Fix: simulate revenue based on bucket size rather than annualized
-      const bucketRevenue = Math.round((currentMrr / 30) * daysPerStep * 0.95)
-
-      return {
-        label: getDateFormat(days, targetDate),
-        mrr: currentMrr,
-        revenue: bucketRevenue
-      }
-    })
-  }
-
   function getRealSeries(days: number, historyData: HistoryData) {
-    const { subscriptions, charges } = historyData
+    const subscriptions = Array.isArray(historyData.subscriptions) ? historyData.subscriptions : []
+    const charges = Array.isArray(historyData.charges) ? historyData.charges : []
     const steps = 10
     const series = []
     
@@ -106,9 +81,10 @@ export function useRevenueChart(
       days = Math.max(365, daysSinceOldest)
     }
 
-    const series = history.value
-      ? getRealSeries(days, history.value)
-      : generateSeries(days, baseMrr.value)
+    // Never invent a historical curve when provider data is unavailable.
+    if (!history.value) return []
+
+    const series = getRealSeries(days, history.value)
 
     return series.map(pt => ({
       label: pt.label,

@@ -39,9 +39,6 @@ const formattedMrr = computed(() => {
 
 const annualRevenue = computed(() => {
   if (props.saas.isIncognito) return '—'
-  if (props.saas.revenue && props.saas.revenue !== '—' && props.saas.revenue !== '‐' && props.saas.revenue !== '-') {
-    return props.saas.revenue
-  }
   if (props.saas.mrr === null) return '—'
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -187,7 +184,7 @@ const countryFlagSrc = computed(() => {
           </span>
         </div>
         <div class="flex flex-col items-end">
-          <span class="text-[9px] font-sans font-extralight tracking-[0.08em] text-neutral-500 uppercase">{{ saas.revenue ? 'Revenue' : t.gem_card.arr_est }}</span>
+          <span class="text-[9px] font-sans font-extralight tracking-[0.08em] text-neutral-500 uppercase">{{ t.gem_card.arr_est }}</span>
           <span class="text-sm font-mono text-neutral-300 mt-1">
             <template v-if="!saas.isIncognito && annualRevenue !== '—'">{{ annualRevenue }}</template>
             <IncognitoIcon v-else class="w-4 h-4 text-[#00D4FF]/60 inline" />

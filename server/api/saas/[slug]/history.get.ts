@@ -2,7 +2,8 @@ import { supabase } from '~/server/lib/supabase'
 import { stripeService } from '~/modules/add-saas/server/services/stripe.service'
 import { mercadopagoService } from '~/modules/add-saas/server/services/mercadopago.service'
 import { whopService } from '~/modules/add-saas/server/services/whop.service'
-import { hasFinancialHistory, summarizeSaasHistory, type SaasHistoryData } from '~/server/utils/saas-history'
+import { notifyProviderKeyExpiredOnce } from '~/modules/add-saas/server/services/providerKeyExpiredEmail'
+import { getLegacyFinancialSnapshot, hasFinancialHistory, normalizeSaasHistory, summarizeSaasHistory } from '~/server/utils/saas-history'
 
 const HISTORY_TTL_MS = 48 * 60 * 60 * 1000
 
@@ -18,7 +19,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: entry, error: entryError } = await supabase
     .from('saas_entries')
-    .select('id, mrr, provider_key_encrypted, payment_providers ( slug )')
+    .select('id, name, slug, founder_email, mrr, revenue, provider_key_encrypted, payment_providers ( slug )')
     .eq('slug', slug)
     .eq('status', 'published')
     .maybeSingle()
@@ -49,7 +50,8 @@ export default defineEventHandler(async (event) => {
   const cachedAt = cacheRow?.history_synced_at
     ? new Date(cacheRow.history_synced_at).getTime()
     : 0
-  let history = cacheRow?.history_cache as SaasHistoryData | null | undefined
+  let history = normalizeSaasHistory(cacheRow?.history_cache)
+  const legacySnapshot = getLegacyFinancialSnapshot(cacheRow?.history_cache)
   let lastSyncedAt = cachedAt || null
   const cacheIsFresh = Boolean(history && cachedAt && nowMs - cachedAt < HISTORY_TTL_MS)
 
@@ -67,6 +69,7 @@ export default defineEventHandler(async (event) => {
         history = await whopService.getHistory(apiKey)
       }
 
+      history = normalizeSaasHistory(history)
       if (hasFinancialHistory(history)) {
         const summary = summarizeSaasHistory(history, fallbackMrr)
         const syncedAt = new Date(nowMs).toISOString()
@@ -84,6 +87,38 @@ export default defineEventHandler(async (event) => {
         lastSyncedAt = nowMs
       }
     } catch (error) {
+      const status = (error as { response?: { status?: number }; statusCode?: number })?.response?.status
+        ?? (error as { statusCode?: number })?.statusCode
+      if (status === 401 || status === 403) {
+        const cachedHistory = hasFinancialHistory(history) ? history : null
+        const hasPriorFinancialData = Boolean(
+          cachedHistory
+          || legacySnapshot
+          || (entry.mrr !== null && Number(entry.mrr) > 0)
+          || (entry.revenue !== null && Number(entry.revenue) > 0),
+        )
+        if (status === 401 && hasPriorFinancialData && entry.founder_email) {
+          await notifyProviderKeyExpiredOnce({
+            saasId: entry.id,
+            startupName: entry.name || entry.slug,
+            startupSlug: entry.slug,
+            founderEmail: entry.founder_email,
+            lastSyncedAt,
+          }).catch(notificationError => {
+            console.error('[saas history] Unable to notify founder about expired provider key:', notificationError)
+          })
+        }
+        return {
+          history: cachedHistory,
+          lastSyncedAt,
+          ...(legacySnapshot && !cachedHistory ? {
+            mrr: legacySnapshot.mrr,
+            revenue: legacySnapshot.revenue,
+            formattedRevenue: legacySnapshot.revenue === null ? '—' : `$${(legacySnapshot.revenue / 1000).toFixed(1).replace('.0', '')}K`,
+          } : summarizeSaasHistory(cachedHistory, fallbackMrr)),
+          keyStatus: status === 401 ? 'invalid' : 'permissions',
+        }
+      }
       console.error('[saas history] Unable to refresh provider history:', error)
     }
   }
@@ -92,5 +127,6 @@ export default defineEventHandler(async (event) => {
     history: history || null,
     lastSyncedAt,
     ...summarizeSaasHistory(history, fallbackMrr),
+    keyStatus: 'ok',
   }
 })

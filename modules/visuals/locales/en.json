@@ -54,7 +54,7 @@
     "arr_est": "ARR (Est.)"
   },
   "best_section": {
-    "title": "Top SaaS",
+    "title": "Top startups",
     "view_all": "View all"
   },
   "recently_section": {
@@ -118,6 +118,8 @@
       "mrr_label": "MRR",
       "mrr_tooltip": "The fixed money the startup earns per month from subscribers. Excludes one-off payments.",
       "mrr_desc": "Monthly revenue",
+      "key_invalid": "Payment key invalid, expired, or revoked",
+      "key_permissions": "Insufficient key permissions",
       "revenue_label": "Total Revenue",
       "revenue_tooltip": "All the money the startup has earned in total since day one.",
       "revenue_desc": "Accumulated revenue",
@@ -130,6 +132,9 @@
       "hq_default": "Headquarters"
     },
     "chart": {
+      "history_unavailable": "Financial history unavailable",
+      "key_invalid": "The Stripe key is invalid, expired, or revoked. The founder must reconnect it.",
+      "key_permissions": "The Stripe key lacks permission to read this data.",
       "owner_question": "Are you the owner?",
       "edit_startup": "Edit startup",
       "claim_startup": "Claim this startup",
@@ -198,7 +203,8 @@
       "err_save": "Error saving. Please try again."
     },
     "verification": {
-      "verified_with": "Verified with {provider} API Key. Last updated: {date}"
+      "verified_with": "Verified with {provider} API Key. Last updated: {date}",
+      "key_outdated": "Stripe API Key outdated. Data may contain inaccuracies"
     },
     "overlay": {
       "unverified_mrr": "Unverified MRR",

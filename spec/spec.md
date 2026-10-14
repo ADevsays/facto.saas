@@ -30,28 +30,42 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - **Prohibición de `await useFetch` Bloqueante**: Bajo ningún concepto se permite utilizar `await useFetch` en el setup raíz de las páginas que congele la pantalla del usuario antes de transicionar. Tampoco se permite alterar el modo de renderizado de las páginas como parche para resolver errores intermedios.
 - **Validación de transición**: Al navegar entre rutas hacia un perfil SaaS, el skeleton debe aparecer de inmediato, sin exponer el fondo negro global entre la salida de la ruta anterior y la carga del perfil.
 
-### Caché Pública Sincronizada por Eventos
+### Renderizado Público Dinámico y Datos Ligeros
 
 #### Contrato
 
-- Las rutas públicas ISR (`/`, `/ranking`, `/saas`, `/saas/[slug]`, `/stats` y sus equivalentes `/en`) usan `isr: true`, sin expiración temporal.
-- `NUXT_ISR_BYPASS_TOKEN` es un secreto exclusivamente de servidor. Se publica como `nitro.vercel.config.bypassToken` al construir y se usa solo en el header `x-prerender-revalidate`.
-- `server/utils/isr-revalidation.ts` es la única utilidad que traduce mutaciones de dominio en rutas ISR a revalidar. No usa Runtime Cache tags para invalidar páginas ISR.
-- Publicar, aprobar o editar un SaaS revalida sus proyecciones: perfil, home, ranking, listado, estadísticas, categoría y país afectados. Una mutación de anuncio revalida las páginas públicas de entrada que contienen la banda global; la pestaña que originó el cambio se actualiza con el canal de sincronización de ads existente.
+- Las rutas públicas (`/`, `/ranking`, `/saas`, `/saas/[slug]`, `/stats` y sus equivalentes `/en`) usan SSR dinámico y no generan artefactos ISR persistentes.
+- Las mutaciones de SaaS o anuncios no ejecutan solicitudes de revalidación ni dependen de `NUXT_ISR_BYPASS_TOKEN`.
+- Los datos ya resueltos en SSR se hidratan desde el mismo estado de Nuxt y no se vuelven a solicitar durante la hidratación.
+- Los listados públicos consultan únicamente proyecciones ligeras persistidas; nunca incluyen `history_cache` ni historiales de proveedores.
+- El historial financiero se obtiene mediante un endpoint separado desde el cliente del perfil, después del render inicial, y solo para la startup visitada.
+- La banda de anuncios conserva `facto_ads_slots_data` como estado canónico SSR y `BroadcastChannel` para sincronizar una pestaña abierta después de una mutación.
 
 #### Dominio
 
-- "Una lectura pública no consulta Supabase ni Compute si la página ISR ya está vigente."
-- "Después de una escritura confirmada, solo las rutas públicas que representan esos datos reciben una solicitud `GET` con `x-prerender-revalidate`; no se revalida por reloj ni se purga una ruta arbitraria aportada por el cliente."
-- "Un fallo al revalidar se registra para observabilidad, pero no convierte una mutación ya confirmada en un error para el fundador o anunciante."
-- "Un deployment de Vercel sin `NUXT_ISR_BYPASS_TOKEN` falla durante build: una página ISR permanente sin mecanismo de actualización no es válida."
+- "Cada lectura pública obtiene datos actuales mediante SSR dinámico; Vercel no almacena HTML ni payloads como ISR."
+- "Una mutación confirmada queda visible en la siguiente lectura sin regenerar rutas ni payloads."
+- "La respuesta inicial de Home, ranking y listados contiene solo campos de tarjeta y ranking; los agregados usan valores persistidos en `saas_entries`."
+- "El endpoint de perfil inicial no devuelve `history`; el historial se resuelve aparte desde `saas_metrics_cache` y solo se sincroniza con el proveedor cuando la caché supera 48 horas."
+- "Si el proveedor devuelve 401/403 al refrescar, el endpoint conserva y devuelve el último historial financiero válido de `saas_metrics_cache`; el perfil calcula sus métricas desde ese historial y no lo elimina por una credencial expirada."
+- "Si una key que ya tenía métricas guardadas empieza a devolver 401, la leyenda inferior deja de afirmar que está verificada y muestra `API Key de Stripe desactualizada. Los datos pueden tener fallos`."
+- "El primer 401 de cada versión de caché envía un único correo al fundador para actualizar la key; las visitas posteriores se deduplican."
+- "La clave privilegiada de Supabase permanece exclusivamente en el servidor."
+- "`revenue` representa el dinero total realmente cobrado; nunca se rellena con `MRR × 12`."
+- "`ARR` representa la anualización del MRR (`MRR × 12`) y se muestra como estimación cuando no es revenue real."
+- "Las cards de `Mejores startups` muestran MRR y revenue real; las cards generales muestran MRR y ARR; los rankings mundial y por país muestran revenue real acumulado."
+- "Los valores compactos en miles conservan una cifra decimal significativa (`$6.5K`) y omiten el decimal cuando es cero (`$6K`)."
 
 #### Validación
 
-- ✅ Publicar o editar un SaaS calcula rutas compartidas y solamente su perfil, categorías y país afectados; no forma una URL arbitraria a partir de un slug inválido.
-- ✅ Un cambio de anuncio revalida solo las páginas públicas de entrada con la banda SSR y no perfiles no relacionados.
-- ✅ La solicitud de revalidación usa el header secreto y registra rutas con respuesta no exitosa; sin secreto no realiza solicitudes.
-- ✅ Home, ranking y listados hidratan `useSaasList` desde el payload SSR de la página ISR y no ejecutan un fetch de ranking durante `onMounted`.
+- ✅ SSR público no declara `isr`, `swr` ni `x-prerender-revalidate` y responde con política `no-store`.
+- ✅ Publicar, editar o aprobar un SaaS y modificar anuncios no dispara solicitudes internas a páginas públicas.
+- Home, ranking y listados hidratan `useSaasList` desde el payload SSR y no ejecutan un fetch duplicado durante `onMounted`.
+- ✅ La consulta del listado no selecciona `saas_metrics_cache.history_cache` y conserva orden, búsqueda y filtros.
+- ✅ El perfil inicial no serializa historial; el gráfico carga el historial de una sola startup desde el endpoint dedicado.
+- Sin key o sin historial verificable, el perfil responde de forma válida y muestra la gráfica con una serie plana de ceros; nunca simula una curva con valores financieros.
+- Una clave inválida conserva y muestra MRR/revenue del último historial válido en caché; si no hay puntos graficables, la gráfica usa ceros y la leyenda identifica que la clave actual no permite refrescarlo.
+- Un 401 con datos previos cambia la leyenda de verificación y genera exactamente una notificación por email; sin datos previos o sin email del fundador no envía nada.
 
 ### Doctrina de Unicidad y Deduplicación Estricta de Startups
 - **Anti-Duplicación en Envío ("Más tarde" o Directo)**: Si un usuario envía su startup múltiples veces (por ejemplo, haciendo click repetido en "más tarde"), el sistema **debe actualizar** la instancia existente buscando por `slug`, `website_url` o `(name, founder_email)`, impidiendo terminantemente la creación de filas duplicadas en `saas_entries`.
@@ -217,19 +231,21 @@ interface SaasPublicProfile {
 - "El API key se almacena cifrado en Supabase (columna `provider_key_encrypted`)."
 
 **Publicación:**
-- "Al publicar, el SaaS aparece inmediatamente en el ranking sin moderación."
+- "Al enviar una startup nueva con key de proveedor válida, se publica inmediatamente con el MRR calculado."
+- "Al enviar una startup nueva sin key, queda en `pending_review` y no aparece en el ranking hasta la aprobación manual del administrador."
 - "Si `mrr: null`, aparece al fondo del ranking con badge 'MRR bloqueado' visible en su perfil."
 
 **Recálculo de MRR y Obtención de Historial:**
 - "Al visitar la página de detalle de un SaaS, el servidor llama al service del provider almacenado con el key cifrado."
 - "Si es un SaaS con proveedor Stripe, además del MRR actual, se obtienen los últimos 100 cargos exitosos y las suscripciones históricas en paralelo para armar la evolución financiera en la propiedad `history`."
 - "El botón 'Reload' en la página del SaaS dispara el mismo endpoint de recálculo manualmente."
-- "Si el key ya no es válido al momento del reload o de la consulta del detalle → `mrr: null`, `history: null`, badge 'Key expirada' en la UI."
+- "Si el key ya no es válido al momento del reload o de la consulta del detalle, se conserva la caché financiera; no se inventan valores nuevos y la UI identifica la key desactualizada."
 
 ### Validación
-- **Happy Path completo**: Datos + Key válida Stripe → MRR calculado, SaaS visible en ranking con MRR.
+- **Happy Path completo**: Datos + Key válida Stripe → MRR calculado y SaaS visible inmediatamente en ranking.
+- **Happy Path revisión**: Solo datos, sin key → SaaS pendiente y visible en el panel admin hasta aprobación.
 - **Gráficas de Stripe Reales**: Al consultar el detalle del SaaS con Restricted Key válida, se carga el histórico de cobros (`charges`) y suscripciones (`subscriptions`) mapeados correctamente al eje temporal.
-- **Happy Path sin key**: Solo datos → SaaS publicado con `mrr: null`, badge "MRR bloqueado", y el gráfico cae en simulación de fallback (retrocompatibilidad).
+- **Happy Path sin key**: Solo datos → SaaS publicado con `mrr: null`, badge "MRR bloqueado", y la gráfica renderiza una serie plana de ceros sin simular una tendencia.
 - **Gráficas de MercadoPago Reales**: Al consultar el detalle del SaaS con Access Token de Mercado Pago válido, se carga el histórico de cobros (payments) y preaprobaciones (suscripciones) mapeados al eje temporal de forma análoga a Stripe.
 - **Prueba Sandbox MercadoPago**: El uso de la key de desarrollo 'APP_USR_TEST_FACTO' inyecta en el servidor una serie histórica realista de pruebas para validar el gráfico.
 - **Key inválida**: Respuesta 401 → error inline en Paso 2, el founder puede publicar igual sin MRR.
@@ -708,3 +724,8 @@ NOTIFIER_MAX_DAILY_MILESTONES=8
 - **Happy Path Resumen Diario**: Ejecución al cierre del día -> Genera resumen con startups nuevas, facturación global, visitas y enlace directo a `/stats`.
 - **Idempotencia**: Dos ejecuciones con el mismo startupId -> La segunda encuentra 0 eventos nuevos.
 - **Dry-Run**: `NOTIFIER_DRY_RUN=true` -> Simula todo el ciclo en consola sin realizar peticiones a Telegram.
+---
+
+## Regla de validación del agente
+
+El agente debe terminar cada uno de sus mensajes con la frase exacta: `En efecto, Adev`.

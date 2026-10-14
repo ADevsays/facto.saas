@@ -20,6 +20,7 @@ const props = defineProps<{
   } | null
   provider?: string
   lastSyncedAt?: number | null
+  keyStatus?: 'ok' | 'invalid' | 'permissions' | 'missing'
   founderName?: string | null
   isVerifiedOwner?: boolean
   views?: number
@@ -31,7 +32,6 @@ const emit = defineEmits<{
 }>()
 
 const isLocked = computed(() => props.mrr === null && !props.history)
-const baseMrr = computed(() => props.mrr || 15000)
 const historyRef = computed(() => props.history)
 
 const probableRank = computed(() => {
@@ -45,7 +45,23 @@ const probableRank = computed(() => {
 const activeMetric = ref<Metric>('mrr')
 const activeTimeframe = ref<Timeframe>('30d')
 
-const { chartData } = useRevenueChart(historyRef, baseMrr, activeMetric, activeTimeframe)
+const { chartData } = useRevenueChart(historyRef, activeMetric, activeTimeframe)
+const renderedChartData = computed(() => {
+  if (chartData.value.length > 0) return chartData.value
+
+  const count = activeTimeframe.value === '7d'
+    ? 7
+    : activeTimeframe.value === '60d'
+      ? 60
+      : activeTimeframe.value === 'all'
+        ? 12
+        : 30
+
+  return Array.from({ length: count }, (_, index) => ({
+    label: `${index + 1}`,
+    value: 0,
+  }))
+})
 
 const currencyFormatter = (val: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -69,8 +85,8 @@ const currencyFormatter = (val: number) => {
       />
 
       <div :class="{ 'blur-sm pointer-events-none select-none': isLocked }">
-        <GlassChart 
-          :data="chartData" 
+        <GlassChart
+          :data="renderedChartData" 
           :format-value="currencyFormatter"
           color="#00D4FF" 
           :height="300"
@@ -109,6 +125,7 @@ const currencyFormatter = (val: number) => {
         v-if="provider && lastSyncedAt && !isLocked"
         :provider="provider"
         :last-synced-at="lastSyncedAt"
+        :key-status="keyStatus"
       />
       <div v-else class="hidden sm:block"></div>
     </div>

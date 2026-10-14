@@ -1,5 +1,12 @@
 # Changelog
 
+## Separación de Revenue y ARR / Resiliencia de claves Stripe
+- **Separación semántica de métricas:** `revenue` representa únicamente el dinero total realmente cobrado. Nunca se rellena con `MRR × 12`; esa anualización pertenece exclusivamente a `ARR`.
+- **Cards y rankings:** “Mejores startups” muestra MRR y revenue real; las cards generales muestran MRR y ARR estimado; el ranking mundial/por país usa siempre revenue real acumulado.
+- **Caché ante credenciales inválidas:** Un `401`/`403` de Stripe conserva los últimos datos financieros válidos en caché, cambia la leyenda a `API Key de Stripe desactualizada. Los datos pueden tener fallos` y envía una única notificación por versión de caché.
+- **Gráfica sin historial graficable:** La gráfica mantiene su estructura y recibe una serie plana de ceros; no muestra texto de error dentro del área ni inventa una curva financiera.
+- **Correcciones asociadas:** Se eliminó el fallback de `MRR × 12` en endpoints que exponían ese valor como `revenue`, se renombró “Mejores SaaS” a “Mejores startups” y se corrigió la exposición del prop `mrrStatus` en `SaasMetricsSection`.
+
 ## Notificaciones en Telegram (@factosaas)
 - **Notificación Reactiva de Nuevas Startups con Posición en Ranking**: Se implementó el disparo reactivo e inmediato en `publish.post.ts` y en la aprobación manual de `review.post.ts` hacia el canal de Telegram, calculando en tiempo real la posición del SaaS en el ranking global (#1, Top 3, Top 10 o puesto general) con deduplicación idempotente (`new_startup:<id>`).
 - **Resumen Diario (Daily Digest) con Enlace a `/stats`**: Se reconfiguró la plantilla del resumen diario para apuntar al módulo de estadísticas `/stats` con parámetros UTM, conectando el cálculo de visitas diarias a `getDailyViewsMap()`.

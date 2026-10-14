@@ -166,12 +166,12 @@ export default defineEventHandler(async (event) => {
           let allTimeRev = '$0'
           if (realAllTimeRevenue > 0) {
             if (realAllTimeRevenue >= 1000000) allTimeRev = `$${(realAllTimeRevenue / 1000000).toFixed(1)}M`.replace('.0', '')
-            else if (realAllTimeRevenue >= 1000) allTimeRev = `$${(realAllTimeRevenue / 1000).toFixed(0)}K`
+            else if (realAllTimeRevenue >= 1000) allTimeRev = `$${(realAllTimeRevenue / 1000).toFixed(1).replace('.0', '')}K`
             else allTimeRev = `$${Math.round(realAllTimeRevenue)}`
           } else if (mrrVal > 0) {
             const annual = mrrVal * 12
             if (annual >= 1000000) allTimeRev = `$${(annual / 1000000).toFixed(1)}M`.replace('.0', '')
-            else if (annual >= 1000) allTimeRev = `$${(annual / 1000).toFixed(0)}K`
+            else if (annual >= 1000) allTimeRev = `$${(annual / 1000).toFixed(1).replace('.0', '')}K`
             else allTimeRev = `$${annual}`
           }
 

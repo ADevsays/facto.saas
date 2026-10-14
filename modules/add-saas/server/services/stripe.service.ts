@@ -144,10 +144,19 @@ export const stripeService: PaymentProviderService = {
 
     try {
       const headers = { Authorization: `Bearer ${apiKey}` }
+      // Invoices are an optional precision source. Restricted keys supported by
+      // Facto only require subscriptions and charges, so an invoice 401 must not
+      // invalidate an otherwise usable history response. The existing charge
+      // heuristic below remains the fallback for those keys.
       let [subsData, chargesData, invoicesData] = await Promise.all([
         fetchAllStripe<any>('https://api.stripe.com/v1/subscriptions?status=all&limit=100', headers),
         fetchAllStripe<any>('https://api.stripe.com/v1/charges?limit=100', headers),
         fetchAllStripe<any>('https://api.stripe.com/v1/invoices?status=paid&limit=100', headers)
+          .catch((error: unknown) => {
+            const status = (error as { response?: { status?: number } })?.response?.status
+            console.warn(`[Stripe API Warning] Invoice history unavailable${status ? ` (${status})` : ''}; using charge fallback.`)
+            return []
+          })
       ])
 
       if (productId) {
@@ -256,6 +265,11 @@ export const stripeService: PaymentProviderService = {
 
       return { subscriptions, charges }
     } catch (error) {
+      const status = (error as { response?: { status?: number }; statusCode?: number })?.response?.status
+        ?? (error as { statusCode?: number })?.statusCode
+      if (status === 401 || status === 403) {
+        throw Object.assign(new Error('Stripe rejected the stored API key.'), { statusCode: status })
+      }
       console.error('[Stripe API Error (getHistory)]:', error)
       return null
     }

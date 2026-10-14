@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import test from 'node:test'
-import { summarizeSaasHistory } from '../../../server/utils/saas-history'
+import { formatRevenue, normalizeSaasHistory, summarizeSaasHistory } from '../../../server/utils/saas-history'
 
 const projectRoot = resolve(import.meta.dirname, '../../..')
 const readProjectFile = (path: string) => readFileSync(resolve(projectRoot, path), 'utf8')
@@ -37,6 +37,48 @@ test('initial profile stays light and history has a dedicated endpoint', () => {
   assert.equal(existsSync(historyEndpoint), true)
 })
 
+test('invalid provider credentials fall back to cached history without discarding it', () => {
+  const historyEndpoint = readProjectFile('server/api/saas/[slug]/history.get.ts')
+  const metricsSection = readProjectFile('modules/visuals/sections/SaasMetricsSection.vue')
+  const profileView = readProjectFile('modules/visuals/views/SaasProfileView.vue')
+
+  assert.match(historyEndpoint, /const cachedHistory = hasFinancialHistory\(history\) \? history : null/)
+  assert.match(historyEndpoint, /history: cachedHistory,[\s\S]*?summarizeSaasHistory\(cachedHistory, fallbackMrr\)/)
+  assert.doesNotMatch(historyEndpoint, /update\(\{ mrr: null, revenue: null \}\)/)
+  assert.match(metricsSection, /!props\.saas\.hasCachedHistory\) return false/)
+  assert.match(profileView, /historyRevenue\.value = data\.revenue/)
+})
+
+test('an expired key with prior data changes the verification legend and sends one deduplicated email', () => {
+  const historyEndpoint = readProjectFile('server/api/saas/[slug]/history.get.ts')
+  const legend = readProjectFile('modules/visuals/components/VerificationLegend.vue')
+  const emailService = readProjectFile('modules/add-saas/server/services/providerKeyExpiredEmail.ts')
+
+  assert.match(historyEndpoint, /status === 401 && hasPriorFinancialData && entry\.founder_email/)
+  assert.match(historyEndpoint, /notifyProviderKeyExpiredOnce/)
+  assert.match(legend, /keyStatus === 'invalid'/)
+  assert.match(legend, /key_outdated/)
+  assert.match(emailService, /provider-key-expired-email:/)
+  assert.match(emailService, /reservationError\?\.code === '23505'/)
+})
+
+test('Stripe history keeps restricted-key fallback when invoices are unauthorized', () => {
+  const stripeService = readProjectFile('modules/add-saas/server/services/stripe.service.ts')
+  assert.match(stripeService, /invoices\?status=paid&limit=100[\s\S]*?\.catch\(/)
+  assert.match(stripeService, /using charge fallback/)
+})
+
+test('ranking financial fallback reads cached history without requesting provider APIs', () => {
+  const financials = readProjectFile('server/utils/saas-financials.ts')
+  assert.doesNotMatch(financials, /getProvider|decryptProviderKey|provider_key_encrypted/)
+})
+
+test('revenue chart does not fabricate matching MRR and revenue curves without provider history', () => {
+  const chart = readProjectFile('modules/visuals/composables/useRevenueChart.ts')
+  assert.match(chart, /if \(!history\.value\) return \[\]/)
+  assert.doesNotMatch(chart, /generateSeries|bucketRevenue/)
+})
+
 test('history summary calculates active MRR and charged revenue', () => {
   const summary = summarizeSaasHistory({
     subscriptions: [
@@ -67,6 +109,29 @@ test('history summary never annualizes MRR as all-time revenue', () => {
     mrr: null,
     revenue: null,
     formattedRevenue: '—',
+  })
+})
+
+test('compact revenue keeps one decimal for thousands', () => {
+  assert.equal(formatRevenue(6500), '$6.5K')
+  assert.equal(formatRevenue(6000), '$6K')
+})
+
+test('legacy financial snapshots can restore summary values without fabricating history', () => {
+  const history = readProjectFile('server/utils/saas-history.ts')
+  const financials = readProjectFile('server/utils/saas-financials.ts')
+  assert.match(history, /getLegacyFinancialSnapshot/)
+  assert.match(financials, /getLegacyFinancialSnapshot\(row\.history_cache\)/)
+})
+
+test('invalid or partial cached history is rejected before chart hydration', () => {
+  assert.equal(normalizeSaasHistory({ subscriptions: [{ created: 'bad', mrr: 500 }] }), null)
+  assert.deepEqual(normalizeSaasHistory({
+    subscriptions: [{ created: '10', canceledAt: null, mrr: '125' }],
+    charges: [{ created: '20', amount: '900' }],
+  }), {
+    subscriptions: [{ created: 10, canceledAt: null, mrr: 125, status: undefined }],
+    charges: [{ created: 20, amount: 900 }],
   })
 })
 

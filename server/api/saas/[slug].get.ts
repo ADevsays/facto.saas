@@ -124,7 +124,7 @@ export default defineEventHandler(async (event) => {
     let allTimeRev = '—'
     if (revenueValue !== null) {
       if (revenueValue >= 1_000_000) allTimeRev = `$${(revenueValue / 1_000_000).toFixed(1)}M`.replace('.0', '')
-      else if (revenueValue >= 1_000) allTimeRev = `$${(revenueValue / 1_000).toFixed(0)}K`
+      else if (revenueValue >= 1_000) allTimeRev = `$${(revenueValue / 1_000).toFixed(1).replace('.0', '')}K`
       else allTimeRev = `$${Math.round(revenueValue)}`
     }
 
@@ -141,7 +141,7 @@ export default defineEventHandler(async (event) => {
       founderId: dbEntry.founder_id,
       hasFounderEmail: !!dbEntry.founder_email,
       description: dbEntry.startup_type || `Detalle de ${dbEntry.name || 'SaaS'}.`,
-      isIncognito: dbEntry.is_incognito,
+      isIncognito: dbEntry.is_incognito === true || dbEntry.is_incognito === 'true',
       mrr: mrrVal,
       currency: dbEntry.currency,
       category: (dbEntry.categories as any[])?.[0]?.name ?? 'Software',

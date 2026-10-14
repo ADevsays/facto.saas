@@ -37,8 +37,8 @@ export function decryptProviderKey(encoded: string): string {
       decrypted += decipher.final('utf8')
       return decrypted
     } catch (error) {
-      console.error('[Decryption] Falló el descifrado AES, intentando fallback a Base64:', error)
-      return Buffer.from(encoded, 'base64').toString('utf-8')
+      console.error('[Decryption] AES provider key could not be decrypted; check NUXT_ENCRYPTION_KEY consistency.')
+      throw createError({ statusCode: 500, statusMessage: 'Provider key decryption failed' })
     }
   }
   

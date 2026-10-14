@@ -2,7 +2,7 @@
 import SaasCard from '../components/SaasCard.vue'
 import SaasCardSkeleton from '../components/SaasCardSkeleton.vue'
 import { useSaasList } from '~/composables/useSaasList'
-import { formatMrrValue, formatRevenueValue } from '~/utils/format'
+import { formatMrrValue } from '~/utils/format'
 
 import es from '../locales/es.json'
 import en from '../locales/en.json'
@@ -36,10 +36,10 @@ const { bestItems, loading } = useSaasList()
           :category="item.category"
           :categorySlug="item.categorySlug"
           :index="index"
-          :mrr="item.revenue || formatRevenueValue(item.mrr)"
-          :revenue="formatMrrValue(item.mrr)"
-          labelLeft="REVENUE"
-          labelRight="MRR"
+          :mrr="formatMrrValue(item.mrr)"
+          :revenue="item.revenue"
+          labelLeft="MRR"
+          labelRight="REVENUE"
           :logoUrl="item.logoUrl"
           :isIncognito="item.isIncognito"
           :websiteUrl="item.websiteUrl"

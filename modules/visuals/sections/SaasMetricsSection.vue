@@ -9,6 +9,7 @@ const { t } = useLanguage({ es, en })
 const localePath = useLocalePath()
 
 const props = defineProps<{
+  mrrStatus?: 'ok' | 'invalid' | 'permissions' | 'missing'
   saas: {
     slug?: string
     isIncognito?: boolean
@@ -17,6 +18,7 @@ const props = defineProps<{
     founderName: string | null
     publishedAt: string
     allTimeRevenue?: string
+    hasCachedHistory?: boolean
     country?: string
     countrySlug?: string
     countryFlag?: string
@@ -41,6 +43,7 @@ function formatDate(dateStr: string) {
 
 const hasAllTimeRevenue = computed(() => {
   if (props.saas.isIncognito) return false
+  if ((props.mrrStatus === 'invalid' || props.mrrStatus === 'permissions') && !props.saas.hasCachedHistory) return false
   const rev = props.saas.allTimeRevenue
   if (!rev) return false
   const str = String(rev).trim()
@@ -68,10 +71,13 @@ const founderLink = computed(() => {
       <div class="w-full flex justify-center">
         <span class="text-xl md:text-2xl font-serif text-white font-semibold">
           <template v-if="!saas.isIncognito && saas.mrr !== null">{{ formatCurrency(saas.mrr, saas.currency) }}</template>
+          <span v-else-if="!saas.isIncognito && mrrStatus && mrrStatus !== 'ok'" class="text-neutral-500">—</span>
           <IncognitoIcon v-else class="w-6 h-6 text-neutral-500" />
         </span>
       </div>
-      <span class="text-[9px] font-sans font-extralight tracking-wider text-neutral-400 mt-2">{{ t.profile.metrics.mrr_desc }}</span>
+      <span class="text-[9px] font-sans font-extralight tracking-wider text-neutral-400 mt-2">
+        {{ mrrStatus === 'invalid' ? t.profile.metrics.key_invalid : mrrStatus === 'permissions' ? t.profile.metrics.key_permissions : t.profile.metrics.mrr_desc }}
+      </span>
     </div>
 
     <!-- Revenue -->

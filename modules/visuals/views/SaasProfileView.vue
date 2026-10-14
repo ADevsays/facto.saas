@@ -60,10 +60,24 @@ const claimIntent = ref<'founder' | 'mrr'>('founder')
 const verifiedEmail = ref<string | null>(null)
 const history = ref<HistoryData | null>(null)
 const historyMrr = ref<number | null>(props.saas.mrr)
+const historyRevenue = ref<number | null>(null)
 const historyLastSyncedAt = ref<number | null>(null)
 const historyResolved = ref(false)
+const providerKeyStatus = ref<'ok' | 'invalid' | 'permissions' | 'missing'>('ok')
 
 const effectiveMrr = computed(() => historyResolved.value ? historyMrr.value : props.saas.mrr)
+const effectiveAllTimeRevenue = computed(() => {
+  if (!historyResolved.value) return props.saas.allTimeRevenue
+  if (historyRevenue.value === null || historyRevenue.value <= 0) return props.saas.allTimeRevenue || '—'
+  if (historyRevenue.value >= 1_000_000) return `$${(historyRevenue.value / 1_000_000).toFixed(1)}M`.replace('.0', '')
+  if (historyRevenue.value >= 1_000) return `$${(historyRevenue.value / 1_000).toFixed(1).replace('.0', '')}K`
+  return `$${Math.round(historyRevenue.value)}`
+})
+const metricsSaas = computed(() => ({
+  ...props.saas,
+  allTimeRevenue: effectiveAllTimeRevenue.value,
+  hasCachedHistory: Boolean(history.value || (historyRevenue.value !== null && historyRevenue.value > 0) || props.saas.allTimeRevenue),
+}))
 
 async function loadHistory() {
   const slug = (route.params.slug as string) || (props.saas as any)?.slug
@@ -74,10 +88,14 @@ async function loadHistory() {
       history: HistoryData | null
       lastSyncedAt: number | null
       mrr: number | null
+      revenue: number | null
+      keyStatus?: 'ok' | 'invalid' | 'permissions' | 'missing'
     }>(`/api/saas/${encodeURIComponent(slug)}/history`)
     history.value = data.history
     historyMrr.value = data.mrr
+    historyRevenue.value = data.revenue
     historyLastSyncedAt.value = data.lastSyncedAt
+    providerKeyStatus.value = data.keyStatus ?? 'ok'
     historyResolved.value = true
   } catch (error) {
     console.error('[saas profile] Unable to load financial history:', error)
@@ -168,8 +186,8 @@ async function handleClaim() {
 
     <SaasBreadcrumb :name="saas.name" />
     <SaasHeaderSection :saas="saas" :is-verified-owner="isVerifiedOwner" @edit="handleClaimFounder" />
-    <SaasMetricsSection :saas="saas" :is-verified-owner="isVerifiedOwner" @claim-founder="handleClaimFounder" />
-    <SaasRevenueChart :mrr="effectiveMrr" :currency="saas.currency" :history="history" :provider="saas.provider" :last-synced-at="historyLastSyncedAt" :founder-name="saas.founderName" :is-verified-owner="isVerifiedOwner" :views="saas.views" @claim="handleClaim" @claim-founder="handleClaimFounder" />
+    <SaasMetricsSection :saas="metricsSaas" :mrr-status="providerKeyStatus" :is-verified-owner="isVerifiedOwner" @claim-founder="handleClaimFounder" />
+    <SaasRevenueChart :mrr="effectiveMrr" :currency="saas.currency" :history="history" :provider="saas.provider" :key-status="providerKeyStatus" :last-synced-at="historyLastSyncedAt" :founder-name="saas.founderName" :is-verified-owner="isVerifiedOwner" :views="saas.views" @claim="handleClaim" @claim-founder="handleClaimFounder" />
     
     <!-- Bento Features Section -->
     <BentoFeaturesSection :saas="saas" />

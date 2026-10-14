@@ -19,7 +19,7 @@ export function formatPersistedRevenue(revenue: unknown, _mrr: number | null): s
 
   if (value === null) return '—'
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`.replace('.0', '')
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(1).replace('.0', '')}K`
   return `$${Math.round(value)}`
 }
 
@@ -48,7 +48,7 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
     logoUrl: row.logo_url as string | null,
     websiteUrl: row.website_url as string | null,
     founderName: row.founder_name as string | null,
-    isIncognito: row.is_incognito as boolean,
+    isIncognito: row.is_incognito === true || row.is_incognito === 'true',
     mrr: row.mrr === null ? null : Number(row.mrr),
     revenue: formatPersistedRevenue(row.revenue, row.mrr === null ? null : Number(row.mrr)),
     currency: row.currency as string,
@@ -155,8 +155,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
         item.revenue = cachedFinancials.formattedRevenue
       }
     } else if (Number(row.mrr) > 0 && Number(row.revenue) === Number(row.mrr) * 12) {
-      // An exact MRR × 12 value was created by the former annualisation fallback,
-      // not by a verified charge history. Do not present it as all-time revenue.
+      // This exact value is the legacy MRR × 12 estimate, not verified charges.
       item.revenue = '—'
     }
 

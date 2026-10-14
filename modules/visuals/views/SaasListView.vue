@@ -27,6 +27,7 @@ const { categories, fetchCategories } = useCategories()
 const { countries, fetchCountries } = useCountries()
 const { locale } = useI18n()
 
+
 const currentCategoryName = computed(() => {
   if (!category.value || category.value === 'all') return null
   const cat = categories.value.find(c => c.slug === category.value)

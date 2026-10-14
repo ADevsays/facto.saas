@@ -92,8 +92,6 @@ export default defineEventHandler(async (event) => {
       revenueVal = Number(s.revenue)
     } else if (cachedSummary?.revenue !== null && cachedSummary?.revenue !== undefined && cachedSummary.revenue > 0) {
       revenueVal = cachedSummary.revenue
-    } else if (mrrVal !== null && mrrVal > 0) {
-      revenueVal = mrrVal * 12
     } else if (mrrVal === 0) {
       revenueVal = 0
     }
@@ -101,7 +99,7 @@ export default defineEventHandler(async (event) => {
     let formattedRevenue = '—'
     if (revenueVal !== null && !isIncognito) {
       if (revenueVal >= 1000000) formattedRevenue = `$${(revenueVal / 1000000).toFixed(1)}M`.replace('.0', '')
-      else if (revenueVal >= 1000) formattedRevenue = `$${(revenueVal / 1000).toFixed(0)}K`
+      else if (revenueVal >= 1000) formattedRevenue = `$${(revenueVal / 1000).toFixed(1).replace('.0', '')}K`
       else formattedRevenue = `$${Math.round(revenueVal)}`
 
       totalRevenue += revenueVal
@@ -136,7 +134,7 @@ export default defineEventHandler(async (event) => {
   let totalRevenueFormatted = '—'
   if (hasAnyPublicRevenue) {
     if (totalRevenue >= 1000000) totalRevenueFormatted = `$${(totalRevenue / 1000000).toFixed(1)}M`.replace('.0', '')
-    else if (totalRevenue >= 1000) totalRevenueFormatted = `$${(totalRevenue / 1000).toFixed(0)}K`
+    else if (totalRevenue >= 1000) totalRevenueFormatted = `$${(totalRevenue / 1000).toFixed(1).replace('.0', '')}K`
     else totalRevenueFormatted = `$${Math.round(totalRevenue)}`
   }
 
