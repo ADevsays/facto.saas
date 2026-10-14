@@ -37,6 +37,51 @@ test('initial profile stays light and history has a dedicated endpoint', () => {
   assert.equal(existsSync(historyEndpoint), true)
 })
 
+test('profile OG image uses only serializable Island props', () => {
+  const profilePage = readProjectFile('pages/saas/[slug]/index.vue')
+
+  assert.match(profilePage, /defineOgImageComponent\('SaasProfile'/)
+  assert.doesNotMatch(profilePage, /mrr:\s*serverSaas\.mrr\s*\?\s*Number\(serverSaas\.mrr\)\s*:\s*null/)
+  assert.doesNotMatch(profilePage, /mrr:\s*null/)
+})
+
+test('og-island-compat plugin reconciles legacy nuxt-og-image hash in event.$fetch with Nuxt island hash algorithm', async () => {
+  const plugin = (await import('../../../server/plugins/og-island-compat')).default
+  const { hash } = await import('ohash')
+
+  let requestHook: ((event: any) => void) | undefined
+  const fakeNitroApp = {
+    hooks: {
+      hook: (name: string, fn: any) => {
+        if (name === 'request') requestHook = fn
+      }
+    }
+  }
+
+  plugin(fakeNitroApp as any)
+  assert.equal(typeof requestHook, 'function')
+
+  const component = 'OgImageSaasProfile'
+  const props = { name: 'GastroFlow', revenue: '$12K' }
+  const legacyHash = hash([component, props]).replaceAll('_', '-')
+  const expectedHash = hash([component, props, {}, undefined]).replace(/[-_]/g, '')
+
+  let calledUrl = ''
+  const fakeEvent: any = {
+    $fetch: (url: string) => {
+      calledUrl = url
+      return Promise.resolve({ ok: true })
+    }
+  }
+
+  requestHook!(fakeEvent)
+
+  const legacyUrl = `/__nuxt_island/${component}_${legacyHash}.json`
+  await fakeEvent.$fetch(legacyUrl, { params: { props: JSON.stringify(props) } })
+
+  assert.equal(calledUrl, `/__nuxt_island/${component}_${expectedHash}.json`)
+})
+
 test('invalid provider credentials fall back to cached history without discarding it', () => {
   const historyEndpoint = readProjectFile('server/api/saas/[slug]/history.get.ts')
   const metricsSection = readProjectFile('modules/visuals/sections/SaasMetricsSection.vue')
@@ -139,7 +184,17 @@ test('new submissions publish with a valid provider key and review without one',
   const service = readProjectFile('modules/add-saas/server/services/saas.service.ts')
 
   assert.match(service, /let status = pData\.hasProvider \? 'published' : 'pending_review'/)
-  assert.match(service, /body\.id && existingEntry\?\.status === 'published'/)
+  assert.match(service, /existingEntry\?\.status === 'published' && !pData\.hasProvider/)
+  assert.match(service, /const isDuplicateRegistration = !body\.id && !!existingEntry/)
+  assert.match(service, /if \(isDuplicateRegistration\) \{\s*entry = existingEntry/)
+})
+
+test('replayed registrations cannot resend notifications or update an existing startup anonymously', () => {
+  const publishEndpoint = readProjectFile('modules/add-saas/server/api/publish.post.ts')
+
+  assert.match(publishEndpoint, /if \(body\.id\) await assertFounderCanUpdate\(event, body\.id\)/)
+  assert.match(publishEndpoint, /if \(finalEntry\.created && finalEntry\.status === 'pending_review'\)/)
+  assert.match(publishEndpoint, /if \(finalEntry\.created && body\.founderEmail\?\.trim\(\)\)/)
 })
 
 test('admin review endpoint requires the admin key sent by the panel', () => {

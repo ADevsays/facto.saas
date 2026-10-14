@@ -55,6 +55,8 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - "`ARR` representa la anualización del MRR (`MRR × 12`) y se muestra como estimación cuando no es revenue real."
 - "Las cards de `Mejores startups` muestran MRR y revenue real; las cards generales muestran MRR y ARR; los rankings mundial y por país muestran revenue real acumulado."
 - "Los valores compactos en miles conservan una cifra decimal significativa (`$6.5K`) y omiten el decimal cuando es cero (`$6K`)."
+- "En el ranking mundial, una startup sin revenue confirmado muestra el icono vectorial `HelpCircle` en lugar de una línea vacía o texto plano."
+- "En el ranking mundialista por país, las startups en modo incógnito (anónimas) quedan excluidas del listado visual y del conteo de startups por país."
 
 #### Validación
 
@@ -68,7 +70,7 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - Un 401 con datos previos cambia la leyenda de verificación y genera exactamente una notificación por email; sin datos previos o sin email del fundador no envía nada.
 
 ### Doctrina de Unicidad y Deduplicación Estricta de Startups
-- **Anti-Duplicación en Envío ("Más tarde" o Directo)**: Si un usuario envía su startup múltiples veces (por ejemplo, haciendo click repetido en "más tarde"), el sistema **debe actualizar** la instancia existente buscando por `slug`, `website_url` o `(name, founder_email)`, impidiendo terminantemente la creación de filas duplicadas en `saas_entries`.
+- **Anti-Duplicación en Envío ("Más tarde" o Directo)**: Si un registro público coincide con una startup existente por `slug`, `website_url` o `(name, founder_email)`, se considera un reintento: no crea filas, no modifica la fila existente y no vuelve a disparar correos ni notificaciones. Las actualizaciones requieren una sesión válida del founder propietario.
 - **Consistencia de Rutas**: Una slug en `saas_entries` es única; el endpoint `/api/saas/[slug]` resuelve con prioridad de publicación y resiliencia `maybeSingle()`.
 
 
@@ -233,6 +235,7 @@ interface SaasPublicProfile {
 **Publicación:**
 - "Al enviar una startup nueva con key de proveedor válida, se publica inmediatamente con el MRR calculado."
 - "Al enviar una startup nueva sin key, queda en `pending_review` y no aparece en el ranking hasta la aprobación manual del administrador."
+- "Una startup `published` no puede volver a `pending_review` desde el endpoint de registro. El correo administrativo de revisión se envía únicamente al crear una nueva startup pendiente."
 - "Si `mrr: null`, aparece al fondo del ranking con badge 'MRR bloqueado' visible en su perfil."
 
 **Recálculo de MRR y Obtención de Historial:**
@@ -429,10 +432,14 @@ interface ListQueryParams {
 - "Backlink/UTM: Al renderizar el link hacia el sitio de la startup, se debe agregar dinamicamente el parametro ?ref=facto, utm_source=factosaas.com y utm_medium=ranking para que el founder pueda identificar el trafico entrante en sus analiticas."
 - "Compartir SaaS: Se debe mostrar un boton 'Compartir' que abre un modal con opciones para compartir el perfil de la startup en X, LinkedIn, Facebook, y copiar enlace (para Instagram). El texto predefinido es 'Ahora [nombre] esta en Facto' junto con la URL de la pagina en Facto."
 - "Los metadatos Open Graph del perfil deben resolverse con datos del SaaS durante SSR para que Telegram y otros crawlers rendericen su vista previa, sin bloquear la navegación cliente ni el skeleton."
+- "La imagen Open Graph dinámica del perfil recibe únicamente props JSON serializables y estables; valores opcionales nulos no se envían a la Island de Nuxt para que su hash coincida con la petición de imagen."
+- "Las peticiones internas a `/__nuxt_island/` originadas por `nuxt-og-image` reconcilian automáticamente su hash de ruta mediante `server/plugins/og-island-compat.ts` en `event.$fetch` para garantizar compatibilidad con el algoritmo de verificación de islas de Nuxt 3.21 sin generar respuestas 400."
 
 ### ValidaciÃ³n
 - âœ… **Happy Path**: SaaS publicados â†’ Ranking muestra ordenados por MRR, Recently los 6 mÃ¡s nuevos, Best los 6 con mayor MRR.
 - âœ… **SaaS IncÃ³gnito**: `is_incognito: true` â†’ Aparece con 'â€” AnÃ³nimo â€”', sin logo, sin link.
+- **Open Graph en Telegram**: Un perfil sin MRR genera una `og:image` descargable (`200 image/png`), sin afectar el enlace con UTM que usa el modal Compartir.
+- **Compatibilidad Island Hash**: El plugin Nitro reconcilia el hash heredado de `nuxt-og-image` con el hash calculado por el handler de islas de Nuxt.
 - âœ… **MRR null**: SaaS con key invÃ¡lida â†’ Aparece al final del ranking con 'â€”'.
 - âœ… **Listado vacÃ­o**: Sin SaaS publicados â†’ Cada secciÃ³n muestra estado vacÃ­o.
 - âœ… **Filtro por categorÃ­a**: Tab seleccionado â†’ `useStartupSearch` filtra el array en memoria.
@@ -724,6 +731,29 @@ NOTIFIER_MAX_DAILY_MILESTONES=8
 - **Happy Path Resumen Diario**: Ejecución al cierre del día -> Genera resumen con startups nuevas, facturación global, visitas y enlace directo a `/stats`.
 - **Idempotencia**: Dos ejecuciones con el mismo startupId -> La segunda encuentra 0 eventos nuevos.
 - **Dry-Run**: `NOTIFIER_DRY_RUN=true` -> Simula todo el ciclo en consola sin realizar peticiones a Telegram.
+---
+
+## Integración PostHog
+
+### Contrato
+
+- El cliente de PostHog se inicializa únicamente en el navegador y solo si existen `NUXT_PUBLIC_POSTHOG_PROJECT_TOKEN` y `NUXT_PUBLIC_POSTHOG_HOST`.
+- Las sesiones autenticadas se identifican con el `founders.id` estable. El correo y el nombre son propiedades de la persona; nunca se usan como identificador ni se capturan secretos, códigos OTP, formularios completos o adjuntos.
+- Al cerrar sesión o cambiar de cuenta, PostHog ejecuta `reset()` antes de asociar eventos a otra persona.
+- Se capturan los resultados exitosos de inicio de sesión, publicación/edición de startups, inicio de checkout de anuncios, feedback, facturas y valoración SaaS. Los errores Vue no controlados se envían mediante la integración global.
+
+### Dominio
+
+- `plugins/posthog.client.ts` mantiene la única instancia de `posthog-js` y la expone como `$posthog`.
+- `runtimeConfig.public.posthog` recibe exclusivamente el token de proyecto público y el host desde el entorno; `.env.example` documenta las variables sin valores.
+- Los eventos de conversión incluyen solo propiedades operativas mínimas, por ejemplo proveedor, número de categorías, estado de envío, posición y valor de una puja.
+
+### Validación
+
+- Sin variables públicas configuradas, la aplicación continúa sin analítica y muestra el diagnóstico solo en desarrollo.
+- Una sesión válida identifica una vez al founder; logout o cambio de founder elimina la identidad anterior.
+- `npm run build` y `npm test` deben completarse antes de publicar la integración.
+
 ---
 
 ## Regla de validación del agente

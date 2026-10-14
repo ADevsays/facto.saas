@@ -104,13 +104,12 @@ const localePath = useLocalePath()
 if (import.meta.server && profileSaas.value) {
   const serverSaas = profileSaas.value
   defineOgImageComponent('SaasProfile', {
-      name: String(serverSaas.name || 'SaaS'),
-      logoUrl: String(serverSaas.logoUrl || ''),
-      mrr: serverSaas.mrr ? Number(serverSaas.mrr) : null,
-      revenue: revenueDisplay.value,
-      views: viewsDisplay.value,
-      category: String(serverSaas.categories?.[0]?.name || 'Software'),
-      categorySlug: String(serverSaas.categories?.[0]?.slug || 'software')
+    name: String(serverSaas.name || 'SaaS'),
+    logoUrl: String(serverSaas.logoUrl || ''),
+    revenue: String(revenueDisplay.value),
+    views: String(viewsDisplay.value),
+    category: String(serverSaas.categories?.[0]?.name || 'Software'),
+    categorySlug: String(serverSaas.categories?.[0]?.slug || 'software')
   })
 }
 </script>
