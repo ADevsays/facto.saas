@@ -17,6 +17,13 @@ export interface SaasHistorySummary {
   formattedRevenue: string
 }
 
+export function hasFinancialHistory(history: SaasHistoryData | null | undefined): boolean {
+  return Boolean(
+    (Array.isArray(history?.subscriptions) && history.subscriptions.length > 0)
+    || (Array.isArray(history?.charges) && history.charges.length > 0),
+  )
+}
+
 export function formatRevenue(value: number | null): string {
   if (value === null) return '—'
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`.replace('.0', '')
@@ -45,9 +52,7 @@ export function summarizeSaasHistory(
     (sum, charge) => sum + (Number(charge.amount) || 0),
     0,
   ))
-  const revenue = chargedRevenue > 0
-    ? chargedRevenue
-    : mrr === null ? null : mrr * 12
+  const revenue = chargedRevenue > 0 ? chargedRevenue : null
 
   return {
     mrr,

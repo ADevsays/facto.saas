@@ -1,5 +1,5 @@
 import { supabase } from '~/server/lib/supabase'
-import { summarizeSaasHistory, type SaasHistorySummary, type SaasHistoryData } from '~/server/utils/saas-history'
+import { hasFinancialHistory, summarizeSaasHistory, type SaasHistorySummary, type SaasHistoryData } from '~/server/utils/saas-history'
 import { decryptProviderKey } from '~/server/utils/encryption'
 import { getProvider } from '~/modules/add-saas/server/services/provider.factory'
 import type { PaymentProvider } from '~/modules/add-saas/types'
@@ -23,7 +23,7 @@ export async function fetchCachedFinancialSummaries(
 
   const rowsWithHistory = new Set<string>()
   for (const row of data ?? []) {
-    if (row.history_cache) {
+    if (hasFinancialHistory(row.history_cache as SaasHistoryData | null)) {
       summaries.set(row.saas_id, summarizeSaasHistory(row.history_cache as SaasHistoryData, null))
       rowsWithHistory.add(row.saas_id)
     }

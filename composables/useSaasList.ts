@@ -4,8 +4,8 @@ import { getCategoryDisplayName } from '~/utils/categories'
 
 let pendingRequest: Promise<void> | null = null
 
-const parseRevenue = (value?: string, fallbackMrr?: number | null) => {
-  if (!value || value === '—') return (fallbackMrr || 0) * 12
+const parseRevenue = (value?: string, _fallbackMrr?: number | null) => {
+  if (!value || value === '—') return 0
   const amount = Number.parseFloat(value.replace(/[^0-9.]/g, ''))
   const multiplier = value.includes('M') ? 1_000_000 : value.includes('K') ? 1_000 : 1
   return (amount * multiplier) || 0

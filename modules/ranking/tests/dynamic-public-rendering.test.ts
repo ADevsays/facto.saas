@@ -57,11 +57,11 @@ test('history summary calculates active MRR and charged revenue', () => {
   })
 })
 
-test('history summary preserves lightweight fallback without history', () => {
+test('history summary never annualizes MRR as all-time revenue', () => {
   assert.deepEqual(summarizeSaasHistory(null, 125, 100), {
     mrr: 125,
-    revenue: 1500,
-    formattedRevenue: '$2K',
+    revenue: null,
+    formattedRevenue: '—',
   })
   assert.deepEqual(summarizeSaasHistory(null, null, 100), {
     mrr: null,

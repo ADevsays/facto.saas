@@ -9,15 +9,13 @@ const SORT_COLUMN: Record<SortOption, string> = {
   views: 'views',
 }
 
-export function formatPersistedRevenue(revenue: unknown, mrr: number | null): string {
+export function formatPersistedRevenue(revenue: unknown, _mrr: number | null): string {
   const numericRevenue = typeof revenue === 'number'
     ? revenue
     : typeof revenue === 'string' && revenue.trim() !== ''
       ? Number(revenue)
       : Number.NaN
-  const value = Number.isFinite(numericRevenue)
-    ? numericRevenue
-    : mrr === null ? null : mrr * 12
+  const value = Number.isFinite(numericRevenue) && numericRevenue > 0 ? numericRevenue : null
 
   if (value === null) return '—'
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`.replace('.0', '')
@@ -25,8 +23,8 @@ export function formatPersistedRevenue(revenue: unknown, mrr: number | null): st
   return `$${Math.round(value)}`
 }
 
-function parseFormattedRevenue(revenue: string | undefined, mrr: number | null): number {
-  if (!revenue || revenue === '—') return (mrr || 0) * 12
+function parseFormattedRevenue(revenue: string | undefined, _mrr: number | null): number {
+  if (!revenue || revenue === '—') return 0
   const amount = Number.parseFloat(revenue.replace(/[^0-9.]/g, ''))
   const multiplier = revenue.includes('M') ? 1_000_000 : revenue.includes('K') ? 1_000 : 1
   return (amount * multiplier) || 0
@@ -133,6 +131,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
   const rowsMissingFinancials = rawData.filter((row) => (
     row.mrr === null || row.mrr === undefined || Number(row.mrr) <= 0
     || row.revenue === null || row.revenue === undefined || Number(row.revenue) <= 0
+    || (Number(row.mrr) > 0 && Number(row.revenue) === Number(row.mrr) * 12)
   ))
   const cachedFinancialsBySaasId = new Map<string, SaasHistorySummary>()
 
@@ -155,6 +154,10 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
         && (row.revenue === null || row.revenue === undefined || Number(row.revenue) <= 0)) {
         item.revenue = cachedFinancials.formattedRevenue
       }
+    } else if (Number(row.mrr) > 0 && Number(row.revenue) === Number(row.mrr) * 12) {
+      // An exact MRR × 12 value was created by the former annualisation fallback,
+      // not by a verified charge history. Do not present it as all-time revenue.
+      item.revenue = '—'
     }
 
     return item

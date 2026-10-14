@@ -99,7 +99,8 @@ export default defineEventHandler(async (event) => {
     // cached provider history. Read that cache as a server-side fallback, but
     // keep the history itself out of the initial profile payload. The dedicated
     // history endpoint remains responsible for refreshing stale provider data.
-    if (mrrVal === null || mrrVal <= 0 || persistedRevenue === null || persistedRevenue <= 0) {
+    const hasEstimatedRevenue = mrrVal !== null && mrrVal > 0 && persistedRevenue === mrrVal * 12
+    if (mrrVal === null || mrrVal <= 0 || persistedRevenue === null || persistedRevenue <= 0 || hasEstimatedRevenue) {
       const cachedFinancials = await fetchCachedFinancialSummaries([dbEntry.id])
       const summary = cachedFinancials.get(dbEntry.id)
       if (summary) {
@@ -109,12 +110,17 @@ export default defineEventHandler(async (event) => {
         if ((persistedRevenue === null || persistedRevenue <= 0) && summary.revenue !== null && summary.revenue > 0) {
           persistedRevenue = summary.revenue
         }
+        if (hasEstimatedRevenue) {
+          persistedRevenue = summary.revenue !== null && summary.revenue > 0 ? summary.revenue : null
+        }
+      } else if (hasEstimatedRevenue) {
+        persistedRevenue = null
       }
     }
 
-    const revenueValue = persistedRevenue !== null && Number.isFinite(persistedRevenue)
+    const revenueValue = persistedRevenue !== null && Number.isFinite(persistedRevenue) && persistedRevenue > 0
       ? persistedRevenue
-      : mrrVal === null ? null : mrrVal * 12
+      : null
     let allTimeRev = '—'
     if (revenueValue !== null) {
       if (revenueValue >= 1_000_000) allTimeRev = `$${(revenueValue / 1_000_000).toFixed(1)}M`.replace('.0', '')

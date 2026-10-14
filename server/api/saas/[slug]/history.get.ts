@@ -2,7 +2,7 @@ import { supabase } from '~/server/lib/supabase'
 import { stripeService } from '~/modules/add-saas/server/services/stripe.service'
 import { mercadopagoService } from '~/modules/add-saas/server/services/mercadopago.service'
 import { whopService } from '~/modules/add-saas/server/services/whop.service'
-import { summarizeSaasHistory, type SaasHistoryData } from '~/server/utils/saas-history'
+import { hasFinancialHistory, summarizeSaasHistory, type SaasHistoryData } from '~/server/utils/saas-history'
 
 const HISTORY_TTL_MS = 48 * 60 * 60 * 1000
 
@@ -67,7 +67,7 @@ export default defineEventHandler(async (event) => {
         history = await whopService.getHistory(apiKey)
       }
 
-      if (history) {
+      if (hasFinancialHistory(history)) {
         const summary = summarizeSaasHistory(history, fallbackMrr)
         const syncedAt = new Date(nowMs).toISOString()
         await Promise.all([

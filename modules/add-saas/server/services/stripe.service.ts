@@ -56,8 +56,8 @@ async function fetchAllStripe<T extends { id: string }>(baseUrl: string, headers
     const sep = baseUrl.includes('?') ? '&' : '?'
     if (startingAfter) url += `${sep}starting_after=${startingAfter}`
 
-    const res = await $fetch<any>(url, { headers }).catch(() => null)
-    if (!res || !res.data || !Array.isArray(res.data) || res.data.length === 0) break
+    const res = await $fetch<any>(url, { headers })
+    if (!res.data || !Array.isArray(res.data) || res.data.length === 0) break
 
     for (const item of res.data) {
       if (item.id && !allMap.has(item.id)) allMap.set(item.id, item)
@@ -255,7 +255,8 @@ export const stripeService: PaymentProviderService = {
         })))
 
       return { subscriptions, charges }
-    } catch {
+    } catch (error) {
+      console.error('[Stripe API Error (getHistory)]:', error)
       return null
     }
   },
