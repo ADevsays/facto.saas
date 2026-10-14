@@ -25,6 +25,13 @@ export function formatPersistedRevenue(revenue: unknown, mrr: number | null): st
   return `$${Math.round(value)}`
 }
 
+function parseFormattedRevenue(revenue: string | undefined, mrr: number | null): number {
+  if (!revenue || revenue === '—') return (mrr || 0) * 12
+  const amount = Number.parseFloat(revenue.replace(/[^0-9.]/g, ''))
+  const multiplier = revenue.includes('M') ? 1_000_000 : revenue.includes('K') ? 1_000 : 1
+  return (amount * multiplier) || 0
+}
+
 function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasListItem {
   const cats = (row.categories as { name: string; slug: string }[]) || []
   let selectedCat = cats[0]
@@ -124,7 +131,8 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
   }
 
   const rowsMissingFinancials = rawData.filter((row) => (
-    row.mrr === null || row.mrr === undefined || row.revenue === null || row.revenue === undefined
+    row.mrr === null || row.mrr === undefined || Number(row.mrr) <= 0
+    || row.revenue === null || row.revenue === undefined || Number(row.revenue) <= 0
   ))
   const cachedFinancialsBySaasId = new Map<string, SaasHistorySummary>()
 
@@ -135,15 +143,28 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
     }
   }
 
-  return rawData.map((row) => {
+  const items = rawData.map((row) => {
     const item = mapRow(row as unknown as Record<string, unknown>, category)
     const cachedFinancials = cachedFinancialsBySaasId.get(row.id)
 
     if (cachedFinancials) {
-      item.mrr = cachedFinancials.mrr ?? item.mrr
-      item.revenue = cachedFinancials.formattedRevenue
+      if ((item.mrr === null || item.mrr <= 0) && cachedFinancials.mrr !== null && cachedFinancials.mrr > 0) {
+        item.mrr = cachedFinancials.mrr
+      }
+      if (cachedFinancials.revenue !== null && cachedFinancials.revenue > 0
+        && (row.revenue === null || row.revenue === undefined || Number(row.revenue) <= 0)) {
+        item.revenue = cachedFinancials.formattedRevenue
+      }
     }
 
     return item
   })
+
+  if (sort === 'mrr') {
+    items.sort((a, b) => {
+      return parseFormattedRevenue(b.revenue, b.mrr) - parseFormattedRevenue(a.revenue, a.mrr)
+    })
+  }
+
+  return items
 }

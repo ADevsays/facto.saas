@@ -71,7 +71,8 @@ export default defineEventHandler(async (event) => {
   const { data: saasList } = await saasQuery.order('mrr', { ascending: false, nullsFirst: false })
   const cachedFinancials = await fetchCachedFinancialSummaries(
     ((saasList as any[]) || [])
-      .filter(row => row.mrr === null || row.mrr === undefined || row.revenue === null || row.revenue === undefined)
+      .filter(row => row.mrr === null || row.mrr === undefined || Number(row.mrr) <= 0
+        || row.revenue === null || row.revenue === undefined || Number(row.revenue) <= 0)
       .map(row => row.id),
   )
 
@@ -82,12 +83,14 @@ export default defineEventHandler(async (event) => {
     const isIncognito = Boolean(s.is_incognito)
     let mrrVal = s.mrr !== null && s.mrr !== undefined ? Number(s.mrr) : null
     const cachedSummary = cachedFinancials.get(s.id)
-    if (cachedSummary && mrrVal === null) mrrVal = cachedSummary.mrr
+    if (cachedSummary && (mrrVal === null || mrrVal <= 0) && cachedSummary.mrr !== null && cachedSummary.mrr > 0) {
+      mrrVal = cachedSummary.mrr
+    }
 
     let revenueVal: number | null = null
     if (s.revenue !== null && s.revenue !== undefined && Number(s.revenue) > 0) {
       revenueVal = Number(s.revenue)
-    } else if (cachedSummary?.revenue !== null && cachedSummary?.revenue !== undefined) {
+    } else if (cachedSummary?.revenue !== null && cachedSummary?.revenue !== undefined && cachedSummary.revenue > 0) {
       revenueVal = cachedSummary.revenue
     } else if (mrrVal !== null && mrrVal > 0) {
       revenueVal = mrrVal * 12

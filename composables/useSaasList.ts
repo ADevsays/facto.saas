@@ -4,13 +4,11 @@ import { getCategoryDisplayName } from '~/utils/categories'
 
 let pendingRequest: Promise<void> | null = null
 
-const parseRev = (val?: string, fallbackMrr?: number | null) => {
-  if (!val || val === '—') return (fallbackMrr || 0) * 12
-  let num = val.replace(/[^0-9.]/g, '')
-  let multi = 1
-  if (val.includes('M')) multi = 1000000
-  else if (val.includes('K')) multi = 1000
-  return (parseFloat(num) * multi) || 0
+const parseRevenue = (value?: string, fallbackMrr?: number | null) => {
+  if (!value || value === '—') return (fallbackMrr || 0) * 12
+  const amount = Number.parseFloat(value.replace(/[^0-9.]/g, ''))
+  const multiplier = value.includes('M') ? 1_000_000 : value.includes('K') ? 1_000 : 1
+  return (amount * multiplier) || 0
 }
 
 export function useSaasList(options: { server?: boolean } = {}) {
@@ -84,7 +82,7 @@ export function useSaasList(options: { server?: boolean } = {}) {
         if (a.mrr === null && b.mrr === null) return (b.views ?? 0) - (a.views ?? 0)
         if (a.mrr === null) return 1
         if (b.mrr === null) return -1
-        return parseRev(b.revenue, b.mrr) - parseRev(a.revenue, a.mrr)
+        return parseRevenue(b.revenue, b.mrr) - parseRevenue(a.revenue, a.mrr)
       })
   )
 
@@ -98,7 +96,7 @@ export function useSaasList(options: { server?: boolean } = {}) {
     const withMrr = localizedItems.value.filter((i) => i.mrr !== null)
     if (withMrr.length >= 3) {
       return withMrr.sort((a, b) => {
-        return parseRev(b.revenue, b.mrr) - parseRev(a.revenue, a.mrr)
+        return parseRevenue(b.revenue, b.mrr) - parseRevenue(a.revenue, a.mrr)
       }).slice(0, 6)
     }
     return [...localizedItems.value]

@@ -99,12 +99,16 @@ export default defineEventHandler(async (event) => {
     // cached provider history. Read that cache as a server-side fallback, but
     // keep the history itself out of the initial profile payload. The dedicated
     // history endpoint remains responsible for refreshing stale provider data.
-    if (mrrVal === null || persistedRevenue === null) {
+    if (mrrVal === null || mrrVal <= 0 || persistedRevenue === null || persistedRevenue <= 0) {
       const cachedFinancials = await fetchCachedFinancialSummaries([dbEntry.id])
       const summary = cachedFinancials.get(dbEntry.id)
       if (summary) {
-        mrrVal = summary.mrr
-        persistedRevenue = summary.revenue
+        if ((mrrVal === null || mrrVal <= 0) && summary.mrr !== null && summary.mrr > 0) {
+          mrrVal = summary.mrr
+        }
+        if ((persistedRevenue === null || persistedRevenue <= 0) && summary.revenue !== null && summary.revenue > 0) {
+          persistedRevenue = summary.revenue
+        }
       }
     }
 
