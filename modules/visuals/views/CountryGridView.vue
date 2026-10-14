@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { HelpCircle } from 'lucide-vue-next'
 import SaasBreadcrumb from '../components/SaasBreadcrumb.vue'
 import InputMrrView from '../../input-mrr/views/InputMrrView.vue'
 import SaasLogo from '~/ui/components/SaasLogo.vue'
-import IncognitoIcon from '~/ui/components/IncognitoIcon.vue'
 import { preloadLogo } from '~/utils/preloadLogo'
 
 import es from '../locales/es.json'
@@ -22,6 +22,10 @@ function formatCurrency(val: number | null, curr: string = 'USD') {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: curr, maximumFractionDigits: 0 }).format(val)
 }
 
+function getVisibleStartups(startups: any[]) {
+  if (!Array.isArray(startups)) return []
+  return startups.filter(s => !s.isIncognito)
+}
 </script>
 
 <template>
@@ -156,9 +160,9 @@ function formatCurrency(val: number | null, curr: string = 'USD') {
           </div>
 
           <!-- Internal Startups List (Fully Clickable Cards) -->
-          <div v-if="item.startups && item.startups.length" class="mt-6 flex flex-col gap-2.5">
+          <div v-if="getVisibleStartups(item.startups).length" class="mt-6 flex flex-col gap-2.5">
             <NuxtLink 
-              v-for="startup in item.startups" 
+              v-for="startup in getVisibleStartups(item.startups)" 
               :key="startup.id"
               :to="localePath('/saas/' + startup.slug)"
               class="flex items-center justify-between gap-4 p-3 md:p-3.5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/5 hover:border-white/15 transition-all duration-300 group/startup cursor-pointer"
@@ -166,7 +170,7 @@ function formatCurrency(val: number | null, curr: string = 'USD') {
             >
               <div class="flex items-center gap-3.5 min-w-0">
                 <SaasLogo 
-                  :src="!startup.isIncognito ? startup.logoUrl : null" 
+                  :src="startup.logoUrl" 
                   :alt="startup.name" 
                   :initial="startup.name ? startup.name.slice(0, 1).toUpperCase() : '?'"
                   size="md"
@@ -176,7 +180,7 @@ function formatCurrency(val: number | null, curr: string = 'USD') {
                 />
                 <div class="min-w-0">
                   <div class="font-sans text-sm md:text-base font-medium text-neutral-200 group-hover/startup:text-[#00D4FF] transition-colors truncate">
-                    {{ startup.isIncognito ? t.gem_card.incognito : startup.name }}
+                    {{ startup.name }}
                   </div>
                   <div v-if="startup.founderName" class="text-xs font-sans text-neutral-400 font-extralight truncate mt-0.5">
                     {{ startup.founderName }}
@@ -189,12 +193,16 @@ function formatCurrency(val: number | null, curr: string = 'USD') {
 
               <div class="flex items-center gap-4 shrink-0">
                 <div class="text-right min-w-[75px]">
-                  <span class="font-mono text-xs md:text-sm font-medium text-white">
-                    <template v-if="startup.revenue && startup.revenue !== '—' && !startup.isIncognito">
+                  <span class="font-mono text-xs md:text-sm font-medium text-white inline-flex items-center justify-end">
+                    <template v-if="startup.revenue && startup.revenue !== '—'">
                       {{ startup.revenue }}
                     </template>
-                    <IncognitoIcon v-else-if="startup.isIncognito" class="w-4 h-4 text-neutral-500 inline" />
-                    <span v-else class="text-neutral-400 font-sans text-xs md:text-sm">—</span>
+                    <HelpCircle 
+                      v-else 
+                      class="w-5 h-5 text-neutral-400 hover:text-neutral-200 transition-colors cursor-help" 
+                      title="Revenue no confirmado" 
+                      aria-label="Revenue no confirmado" 
+                    />
                   </span>
                   <span class="text-[10px] block text-neutral-500 font-sans tracking-wider uppercase mt-0.5">{{ t.country_leaderboard.revenue }}</span>
                 </div>

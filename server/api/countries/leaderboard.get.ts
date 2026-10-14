@@ -119,6 +119,7 @@ export default defineEventHandler(async (event) => {
   }
 
   for (const row of ((saasRows as any[]) || [])) {
+    if (row.is_incognito) continue
     const countries = (row.saas_countries as any[]) || (row.countries as any[]) || []
     const country = countries[0]
     if (!country || country.slug === 'global') continue

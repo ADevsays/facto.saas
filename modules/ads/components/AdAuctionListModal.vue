@@ -102,8 +102,12 @@ function onReclaimSlot(slot: AdSlot) {
             :class="[
               'flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border transition-all duration-300',
               s.isAvailable
-                ? 'border-dashed border-white/10 bg-white/[0.015] hover:border-[#00D4FF]/30 hover:bg-[#00D4FF]/[0.02]'
-                : 'border-white/10 bg-white/[0.03] hover:border-white/20'
+                ? (s.position === 1
+                    ? 'border-dashed border-amber-500/30 bg-amber-500/[0.02] hover:border-amber-500/50 hover:bg-amber-500/[0.04]'
+                    : 'border-dashed border-white/10 bg-white/[0.015] hover:border-[#00D4FF]/30 hover:bg-[#00D4FF]/[0.02]')
+                : (s.position === 1
+                    ? 'border-amber-500/30 bg-amber-500/[0.02] hover:border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.05)]'
+                    : 'border-white/10 bg-white/[0.03] hover:border-white/20')
             ]"
           >
             <!-- Slot Info & Startup Details -->
@@ -178,7 +182,12 @@ function onReclaimSlot(slot: AdSlot) {
                 v-if="!s.isAvailable"
                 type="button"
                 @click="onReclaimSlot(s)"
-                class="w-full sm:w-auto group flex items-center justify-center gap-2 bg-[#00D4FF]/10 hover:bg-[#00D4FF] text-[#00D4FF] hover:text-black border border-[#00D4FF]/30 font-bold uppercase tracking-wider text-[10px] px-4 py-2.5 rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                :class="[
+                  'w-full sm:w-auto group flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-[10px] px-4 py-2.5 rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]',
+                  s.position === 1
+                    ? 'bg-[#FFD700]/15 hover:bg-[#FFD700] text-[#FFD700] hover:text-black border border-[#FFD700]/40 shadow-[0_0_15px_rgba(255,215,0,0.2)]'
+                    : 'bg-[#00D4FF]/10 hover:bg-[#00D4FF] text-[#00D4FF] hover:text-black border border-[#00D4FF]/30'
+                ]"
               >
                 <Flame class="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
                 <span>{{ t.auction_modal.reclaim_btn.replace('{price}', String(s.nextPrice)) }}</span>

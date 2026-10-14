@@ -1,5 +1,16 @@
 # Changelog
 
+## Integración de analítica con PostHog
+- Se añadió el cliente PostHog para Nuxt, configurado mediante variables públicas de entorno y sin exponer secretos en el repositorio.
+- Las sesiones de founders se identifican con su ID estable y se reinician al cerrar sesión o cambiar de cuenta.
+- Se instrumentaron eventos de conversión para acceso, publicación de startups, checkout de anuncios, feedback, facturas y valoración SaaS; los errores globales de Vue se capturan de forma centralizada.
+- Se dejaron fuera las conexiones de Supabase, Brevo y Whop, además de observabilidad de IA y captura de logs.
+
+## Ranking Mundialista: Exclusión de Startups Anónimas e Icono de Interrogación
+- **Exclusión de Startups Anónimas:** Se eliminaron las startups en modo incógnito/anónimo del listado y conteo de startups por país tanto en la API (`/api/countries/leaderboard`) como en la vista `CountryGridView.vue`.
+- **Icono Vectorial de Revenue No Confirmado:** Se reemplazó el carácter textual `?` por el icono vectorial `HelpCircle` de Lucide con alineación vertical perfecta (`inline-flex items-center justify-end`) y tooltip nativo accesible.
+- **Puesto #1 en Modal de Subasta:** Se conservó el color amarillo dorado (`#FFD700`) característico para el Puesto #1 en el botón de "Reclamar" y el borde de su tarjeta en `AdAuctionListModal.vue`.
+
 ## Separación de Revenue y ARR / Resiliencia de claves Stripe
 - **Separación semántica de métricas:** `revenue` representa únicamente el dinero total realmente cobrado. Nunca se rellena con `MRR × 12`; esa anualización pertenece exclusivamente a `ARR`.
 - **Cards y rankings:** “Mejores startups” muestra MRR y revenue real; las cards generales muestran MRR y ARR estimado; el ranking mundial/por país usa siempre revenue real acumulado.
