@@ -75,9 +75,7 @@ const founderLink = computed(() => {
           <IncognitoIcon v-else class="w-6 h-6 text-neutral-500" />
         </span>
       </div>
-      <span class="text-[9px] font-sans font-extralight tracking-wider text-neutral-400 mt-2">
-        {{ mrrStatus === 'invalid' ? t.profile.metrics.key_invalid : mrrStatus === 'permissions' ? t.profile.metrics.key_permissions : t.profile.metrics.mrr_desc }}
-      </span>
+      <span class="text-[9px] font-sans font-extralight tracking-wider text-neutral-400 mt-2">{{ t.profile.metrics.mrr_desc }}</span>
     </div>
 
     <!-- Revenue -->
