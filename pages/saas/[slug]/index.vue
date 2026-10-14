@@ -101,11 +101,36 @@ useHead(() => {
 
 const localePath = useLocalePath()
 
+function resolveOgLogoUrl(logoUrl?: string | null, websiteUrl?: string | null): string {
+  if (!logoUrl && !websiteUrl) return ''
+  const raw = String(logoUrl || '').trim()
+
+  if (raw.includes('icons.duckduckgo.com/ip3/')) {
+    const match = raw.match(/ip3\/(.+?)\.ico/)
+    if (match?.[1]) {
+      return `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${match[1]}&size=128`
+    }
+  }
+
+  const clean = raw.toLowerCase().split('?')[0]
+  if (clean.endsWith('.ico') || clean.endsWith('.webp')) {
+    if (websiteUrl) {
+      try {
+        const domain = new URL(websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`).hostname.replace(/^www\./, '')
+        return `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=128`
+      } catch {}
+    }
+    return ''
+  }
+
+  return raw
+}
+
 if (import.meta.server && profileSaas.value) {
   const serverSaas = profileSaas.value
   defineOgImageComponent('SaasProfile', {
     name: String(serverSaas.name || 'SaaS'),
-    logoUrl: String(serverSaas.logoUrl || ''),
+    logoUrl: resolveOgLogoUrl(serverSaas.logoUrl, serverSaas.websiteUrl),
     revenue: String(revenueDisplay.value),
     views: String(viewsDisplay.value),
     category: String(serverSaas.categories?.[0]?.name || 'Software'),

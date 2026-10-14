@@ -39,7 +39,7 @@ const gemColor = computed(() => {
 const hasValidLogo = computed(() => {
   if (!props.logoUrl) return false
   const clean = props.logoUrl.toLowerCase().split('?')[0]
-  return !clean.endsWith('.webp')
+  return !clean.endsWith('.webp') && !clean.endsWith('.ico')
 })
 </script>
 
