@@ -35,4 +35,5 @@ export interface ListQueryParams {
   q?: string
   limit?: number
   offset?: number
+  excludeIncognito?: boolean
 }

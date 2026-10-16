@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@getbrevo/brevo": "^4.0.1",
-    "@microsoft/clarity": "^1.0.2",
     "@nuxtjs/google-fonts": "^3.2.0",
     "@nuxtjs/i18n": "^10.6.0",
     "@nuxtjs/seo": "^3.4.0",

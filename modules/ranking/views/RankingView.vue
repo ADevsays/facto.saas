@@ -5,9 +5,10 @@ defineProps<{
   limit?: number
   showViewAll?: boolean
   hideTitle?: boolean
+  scope?: 'home' | 'ranking'
 }>()
 </script>
 
 <template>
-  <RankingSection :limit="limit" :show-view-all="showViewAll" :hide-title="hideTitle" />
+  <RankingSection :limit="limit" :show-view-all="showViewAll" :hide-title="hideTitle" :scope="scope" />
 </template>

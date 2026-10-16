@@ -32,11 +32,6 @@ const saasForSeo = computed(() => profileSaas.value)
 
 
 const { defineSaasProfile } = useAppSchema()
-const { checkSession } = useFounderSession()
-
-onMounted(() => {
-  checkSession()
-})
 
 watchEffect(() => {
   if (profileSaas.value) {

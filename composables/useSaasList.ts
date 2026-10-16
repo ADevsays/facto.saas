@@ -2,8 +2,6 @@ import { computed, watch } from 'vue'
 import type { SaasListItem, SaasListState } from '~/modules/ranking/types'
 import { getCategoryDisplayName } from '~/utils/categories'
 
-let pendingRequest: Promise<void> | null = null
-
 const parseRevenue = (value?: string, _fallbackMrr?: number | null) => {
   if (!value || value === '—') return 0
   const amount = Number.parseFloat(value.replace(/[^0-9.]/g, ''))
@@ -11,25 +9,28 @@ const parseRevenue = (value?: string, _fallbackMrr?: number | null) => {
   return (amount * multiplier) || 0
 }
 
-export function useSaasList(options: { server?: boolean } = {}) {
+type SaasListScope = 'home' | 'ranking' | 'catalog' | 'recommendations'
+
+const listRequests: Record<SaasListScope, { key: string; endpoint: string }> = {
+  home: { key: 'facto-saas-home-data', endpoint: '/api/ranking/list?scope=home' },
+  ranking: { key: 'facto-saas-ranking-data', endpoint: '/api/ranking/list?limit=100&excludeIncognito=true' },
+  catalog: { key: 'facto-saas-catalog-data', endpoint: '/api/ranking/list?limit=200' },
+  recommendations: { key: 'facto-saas-recommendations-data', endpoint: '/api/ranking/list?limit=24' },
+}
+
+export function useSaasList(options: { server?: boolean; scope?: SaasListScope } = {}) {
   const { locale } = useI18n()
-  const state = useState<SaasListState>('facto-saas-list', () => ({
+  const { key, endpoint } = listRequests[options.scope ?? 'catalog']
+  const state = useState<SaasListState>(key, () => ({
     items: [],
     loading: true,
     error: null,
   }))
-  const { data, pending, error, refresh } = useFetch<SaasListItem[]>('/api/ranking/list?limit=1000', {
-    key: 'facto-saas-list-data',
+  const { data, pending, error, refresh } = useLazyFetch<SaasListItem[]>(endpoint, {
+    key,
     server: options.server !== false,
     immediate: options.server !== false,
     default: () => [],
-    // SSR embeds this once in Nuxt's payload. Hydration reuses it instead of
-    // re-requesting the ranking from the browser.
-    // An empty payload can be produced while Supabase is temporarily
-    // unavailable. Do not treat that snapshot as authoritative:
-    // allow useFetch to recover from the origin instead of freezing Home with
-    // “No se encontraron resultados”. Non-empty payloads remain fully
-    // hydrated and avoid the extra request.
     getCachedData: (key, nuxtApp) => {
       const cached = nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
       return Array.isArray(cached) && cached.length === 0 ? undefined : cached
@@ -44,10 +45,6 @@ export function useSaasList(options: { server?: boolean } = {}) {
     state.value.error = value instanceof Error ? value.message : value ? String(value) : null
   }, { immediate: true })
 
-  // `watch` callbacks are not guaranteed to run before an SSR render. Render
-  // from the async-data ref itself so direct entries to /saas use the same
-  // branch on the server and client; keep useState only as cross-route
-  // fallback once the client has already loaded the list.
   const sourceItems = computed(() => data.value.length > 0 ? data.value : state.value.items)
 
   const localizedItems = computed(() => {
@@ -59,25 +56,17 @@ export function useSaasList(options: { server?: boolean } = {}) {
 
   async function fetchAll(force = false) {
     if (!force && sourceItems.value.length > 0) return
-    if (pendingRequest) return pendingRequest
-
-    pendingRequest = (async () => {
-      state.value.error = null
-
-      try {
-        await refresh()
-      } catch (e: unknown) {
-        state.value.error = e instanceof Error ? e.message : 'Error cargando el ranking'
-      } finally {
-        pendingRequest = null
-      }
-    })()
-
-    return pendingRequest
+    state.value.error = null
+    try {
+      await refresh()
+    } catch (e: unknown) {
+      state.value.error = e instanceof Error ? e.message : 'Error cargando el ranking'
+    }
   }
 
   const rankingItems = computed(() =>
     [...localizedItems.value]
+      .filter(item => !item.isIncognito)
       .sort((a, b) => {
         if (a.mrr === null && b.mrr === null) return (b.views ?? 0) - (a.views ?? 0)
         if (a.mrr === null) return 1

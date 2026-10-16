@@ -3,7 +3,7 @@ import { stripeService } from '~/modules/add-saas/server/services/stripe.service
 import { mercadopagoService } from '~/modules/add-saas/server/services/mercadopago.service'
 import { whopService } from '~/modules/add-saas/server/services/whop.service'
 import { notifyProviderKeyExpiredOnce } from '~/modules/add-saas/server/services/providerKeyExpiredEmail'
-import { getLegacyFinancialSnapshot, hasFinancialHistory, normalizeSaasHistory, summarizeSaasHistory } from '~/server/utils/saas-history'
+import { buildSaasHistoryChart, getLegacyFinancialSnapshot, hasFinancialHistory, normalizeSaasHistory, summarizeSaasHistory } from '~/server/utils/saas-history'
 
 const HISTORY_TTL_MS = 48 * 60 * 60 * 1000
 
@@ -109,7 +109,7 @@ export default defineEventHandler(async (event) => {
           })
         }
         return {
-          history: cachedHistory,
+          history: buildSaasHistoryChart(cachedHistory, nowMs),
           lastSyncedAt,
           ...(legacySnapshot && !cachedHistory ? {
             mrr: legacySnapshot.mrr,
@@ -124,7 +124,7 @@ export default defineEventHandler(async (event) => {
   }
 
   return {
-    history: history || null,
+    history: buildSaasHistoryChart(history, nowMs),
     lastSyncedAt,
     ...summarizeSaasHistory(history, fallbackMrr),
     keyStatus: 'ok',

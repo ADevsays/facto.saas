@@ -12,15 +12,17 @@ const props = withDefaults(
     limit?: number
     showViewAll?: boolean
     hideTitle?: boolean
+    scope?: 'home' | 'ranking'
   }>(),
   {
     limit: undefined,
     showViewAll: false,
-    hideTitle: false
+    hideTitle: false,
+    scope: 'ranking'
   }
 )
 
-const { rankingItems, loading, error } = useSaasList()
+const { rankingItems, loading, error } = useSaasList({ scope: props.scope })
 
 const filteredItems = computed(() => {
   if (props.limit && props.limit > 0) {

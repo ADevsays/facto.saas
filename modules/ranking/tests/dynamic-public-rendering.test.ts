@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import test from 'node:test'
-import { formatRevenue, normalizeSaasHistory, summarizeSaasHistory } from '../../../server/utils/saas-history'
+import { buildSaasHistoryChart, formatRevenue, normalizeSaasHistory, summarizeSaasHistory } from '../../../server/utils/saas-history'
 
 const projectRoot = resolve(import.meta.dirname, '../../..')
 const readProjectFile = (path: string) => readFileSync(resolve(projectRoot, path), 'utf8')
@@ -19,10 +19,37 @@ test('public routes do not declare ISR or a revalidation bypass token', () => {
 
 test('public list keeps history out of the primary projection and restores missing financials from cache', () => {
   const rankingService = readProjectFile('modules/ranking/server/services/ranking.ts')
+  const publicLogo = readProjectFile('server/utils/public-logo.ts')
 
   assert.match(rankingService, /fetchCachedFinancialSummaries/)
   assert.match(rankingService, /rowsMissingFinancials/)
   assert.match(rankingService, /\bmrr, revenue, currency\b/)
+  assert.match(rankingService, /getPublicLogoUrl\(row\.logo_url\)/)
+  assert.match(publicLogo, /32 \* 1024/)
+})
+
+test('home uses a bounded union while ranking and recommendations request only what they render', () => {
+  const endpoint = readProjectFile('modules/ranking/server/api/ranking/list.get.ts')
+  const home = readProjectFile('pages/index.vue')
+  const list = readProjectFile('composables/useSaasList.ts')
+  const catalog = readProjectFile('modules/visuals/views/SaasListView.vue')
+  const recent = readProjectFile('modules/visuals/sections/RecentlySection.vue')
+  const best = readProjectFile('modules/visuals/sections/BestSection.vue')
+  const homeView = readProjectFile('modules/visuals/views/VisualsView.vue')
+  const recommendations = readProjectFile('modules/visuals/sections/MoreStartupsSection.vue')
+
+  assert.match(endpoint, /query\.scope === 'home'/)
+  assert.match(endpoint, /sort: 'mrr', limit: 30/)
+  assert.match(endpoint, /sort: 'latest', limit: 6/)
+  assert.match(home, /useSaasList\(\{ scope: 'home' \}\)/)
+  assert.doesNotMatch(home, /await useFetch/)
+  assert.match(list, /useLazyFetch<SaasListItem\[]>/)
+  assert.match(list, /catalog: \{[^}]*limit=200/)
+  assert.match(catalog, /scope: 'catalog'/)
+  assert.match(recent, /scope: 'home'/)
+  assert.match(best, /scope: 'home'/)
+  assert.match(homeView, /scope="home"/)
+  assert.match(recommendations, /server: false, scope: 'recommendations'/)
 })
 
 test('initial profile stays light and history has a dedicated endpoint', () => {
@@ -35,6 +62,8 @@ test('initial profile stays light and history has a dedicated endpoint', () => {
   assert.match(profilePage, /useLazyFetch/)
   assert.doesNotMatch(profilePage, /\?seo=1/)
   assert.equal(existsSync(historyEndpoint), true)
+  assert.match(profileEndpoint, /founder:founders!saas_entries_founder_id_fkey/)
+  assert.doesNotMatch(profileEndpoint, /\.from\('founders'\)/)
 })
 
 test('profile OG image uses only serializable Island props', () => {
@@ -88,7 +117,7 @@ test('invalid provider credentials fall back to cached history without discardin
   const profileView = readProjectFile('modules/visuals/views/SaasProfileView.vue')
 
   assert.match(historyEndpoint, /const cachedHistory = hasFinancialHistory\(history\) \? history : null/)
-  assert.match(historyEndpoint, /history: cachedHistory,[\s\S]*?summarizeSaasHistory\(cachedHistory, fallbackMrr\)/)
+  assert.match(historyEndpoint, /history: buildSaasHistoryChart\(cachedHistory, nowMs\),[\s\S]*?summarizeSaasHistory\(cachedHistory, fallbackMrr\)/)
   assert.doesNotMatch(historyEndpoint, /update\(\{ mrr: null, revenue: null \}\)/)
   assert.match(metricsSection, /!props\.saas\.hasCachedHistory\) return false/)
   assert.match(profileView, /historyRevenue\.value = data\.revenue/)
@@ -122,6 +151,32 @@ test('revenue chart does not fabricate matching MRR and revenue curves without p
   const chart = readProjectFile('modules/visuals/composables/useRevenueChart.ts')
   assert.match(chart, /if \(!history\.value\) return \[\]/)
   assert.doesNotMatch(chart, /generateSeries|bucketRevenue/)
+})
+
+test('provider history is reduced to four ten-point chart series', () => {
+  const chart = buildSaasHistoryChart({
+    subscriptions: [{ created: 10, canceledAt: null, mrr: 100, status: 'active' }],
+    charges: [{ created: 50, amount: 400 }, { created: 70, amount: 600 }],
+  }, 100_000)
+
+  assert.ok(chart)
+  assert.deepEqual(Object.keys(chart), ['7d', '30d', '60d', 'all'])
+  assert.equal(Object.values(chart).every(points => points.length === 10), true)
+  assert.deepEqual(chart['7d'].at(-1), { at: 100_000, mrr: 100, revenue: 1000 })
+})
+
+test('SSR ads, anonymous sessions and missing logos avoid repeated internal requests', () => {
+  const ads = readProjectFile('modules/ads/composables/useAdsSlots.ts')
+  const session = readProjectFile('composables/useFounderSession.ts')
+  const profile = readProjectFile('modules/visuals/views/SaasProfileView.vue')
+  const logo = readProjectFile('ui/components/SaasLogo.vue')
+
+  assert.doesNotMatch(ads, /useFetch<AdSlot\[]>/)
+  assert.match(session, /isInitialized\.value && !force/)
+  assert.doesNotMatch(profile, /const historyRequest = loadHistory\(\)\s+await checkSession\(\)/)
+  assert.doesNotMatch(logo, /\/api\/favicon/)
+  assert.match(logo, /drop_404_icon=true/)
+  assert.match(logo, /\/favicon\.ico/)
 })
 
 test('history summary calculates active MRR and charged revenue', () => {

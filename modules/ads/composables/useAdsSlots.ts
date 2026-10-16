@@ -1,32 +1,26 @@
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { AdSlot } from '../types'
 
 let syncChannel: BroadcastChannel | null = null
 let activeListeners = 0
-let onWindowFocus: (() => void) | null = null
 
 export function useAdsSlots() {
   // The server plugin preloads this state and Nuxt serializes it in the HTML.
   // Keep it as the hydration source so the browser never replaces the
   // server-rendered marquee with a second, conflicting response.
   const slotsState = useState<AdSlot[]>('facto_ads_slots_data', () => [])
-  const { data: fetchedSlots, pending, refresh } = useFetch<AdSlot[]>('/api/ads/slots', {
-    key: 'facto_ads_slots_fetch',
-    server: true,
-    immediate: import.meta.server,
-    default: () => slotsState.value,
-    // Keep the synchronous SSR cache contract while preferring the canonical
-    // state when it was preloaded by the server plugin or hydrated from HTML.
-    getCachedData: (key, nuxtApp) => {
-      if (slotsState.value.length === 20) return slotsState.value
-      return nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
-    },
-    transform: (data) => Array.isArray(data) && data.length === 20 ? data : [],
-  })
+  const pending = ref(false)
 
-  watch(fetchedSlots, (value) => {
-    if (Array.isArray(value) && value.length === 20) slotsState.value = value
-  }, { immediate: true })
+  const refresh = async () => {
+    if (pending.value) return
+    pending.value = true
+    try {
+      const slots = await $fetch<AdSlot[]>('/api/ads/slots')
+      if (slots.length === 20) slotsState.value = slots
+    } finally {
+      pending.value = false
+    }
+  }
 
   if (import.meta.client) {
     onMounted(() => {
@@ -37,17 +31,10 @@ export function useAdsSlots() {
           syncChannel = new BroadcastChannel('facto_ads_sync')
           syncChannel.onmessage = (event) => {
             if (event.data?.type === 'AD_UPDATED') {
-              refresh()
+              refresh().catch(() => {})
             }
           }
         } catch {}
-      }
-
-      if (!onWindowFocus) {
-        onWindowFocus = () => {
-          refresh()
-        }
-        window.addEventListener('focus', onWindowFocus)
       }
 
       onUnmounted(() => {
@@ -55,10 +42,6 @@ export function useAdsSlots() {
         if (activeListeners <= 0 && syncChannel) {
           syncChannel.close()
           syncChannel = null
-        }
-        if (activeListeners <= 0 && onWindowFocus) {
-          window.removeEventListener('focus', onWindowFocus)
-          onWindowFocus = null
         }
       })
     })

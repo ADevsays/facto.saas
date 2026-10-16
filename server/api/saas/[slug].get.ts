@@ -2,6 +2,7 @@ import { supabase } from '~/server/lib/supabase'
 import { checkAndNotifyAchievement } from '~/modules/achievements/server/services/achievements'
 import { recordDailyView } from '~/server/lib/dailyViews'
 import { fetchCachedFinancialSummaries } from '~/server/utils/saas-financials'
+import { getPublicLogoUrl } from '~/server/utils/public-logo'
  
 export default defineEventHandler(async (event) => {
   setResponseHeaders(event, {
@@ -28,7 +29,8 @@ export default defineEventHandler(async (event) => {
         value_proposition, problem_solved, tech_stack, acquisition_channels, facto_message, faq, github_repo,
         categories!saas_categories ( name, slug ),
         countries!saas_countries ( name, slug, flag, iso_code ),
-        payment_providers ( slug )
+        payment_providers ( slug ),
+        founder:founders!saas_entries_founder_id_fkey ( avatar_url, bio, twitter_url, linkedin_url, instagram_url )
       `)
       .eq('slug', slug)
       .order('published_at', { ascending: false })
@@ -43,7 +45,8 @@ export default defineEventHandler(async (event) => {
           id, name, slug, logo_url, website_url, founder_name, founder_id, founder_email, startup_type, is_incognito, mrr, revenue, currency, views, published_at,
           categories!saas_categories ( name, slug ),
           countries!saas_countries ( name, slug, flag, iso_code ),
-          payment_providers ( slug )
+          payment_providers ( slug ),
+          founder:founders!saas_entries_founder_id_fkey ( avatar_url, bio, twitter_url, linkedin_url, instagram_url )
         `)
         .eq('slug', slug)
         .order('published_at', { ascending: false })
@@ -135,7 +138,7 @@ export default defineEventHandler(async (event) => {
       id: dbEntry.id,
       name: dbEntry.name,
       slug: dbEntry.slug,
-      logoUrl: dbEntry.logo_url,
+      logoUrl: getPublicLogoUrl(dbEntry.logo_url),
       websiteUrl: dbEntry.website_url,
       founderName: dbEntry.founder_name,
       founderId: dbEntry.founder_id,
@@ -168,24 +171,15 @@ export default defineEventHandler(async (event) => {
       githubRepo: dbEntry.github_repo || null
     }
 
-    if (dbEntry.founder_id) {
-      try {
-        const { data: founderData } = await supabase
-          .from('founders')
-          .select('avatar_url, bio, twitter_url, linkedin_url, instagram_url')
-          .eq('id', dbEntry.founder_id)
-          .single()
-        
-        if (founderData) {
-          result.founderAvatar = founderData.avatar_url || null
-          result.founderBio = founderData.bio || null
-          result.founderSocials = {
-            twitterUrl: founderData.twitter_url,
-            linkedinUrl: founderData.linkedin_url,
-            instagramUrl: founderData.instagram_url
-          }
-        }
-      } catch(e) {}
+    const founderData = Array.isArray(dbEntry.founder) ? dbEntry.founder[0] : dbEntry.founder
+    if (founderData) {
+      result.founderAvatar = founderData.avatar_url || null
+      result.founderBio = founderData.bio || null
+      result.founderSocials = {
+        twitterUrl: founderData.twitter_url,
+        linkedinUrl: founderData.linkedin_url,
+        instagramUrl: founderData.instagram_url
+      }
     }
 
     return result

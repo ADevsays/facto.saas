@@ -20,7 +20,7 @@ export function useFounderSession() {
   const isInitialized = useState<boolean>('facto_founder_init', () => false)
 
   const checkSession = async (force = false) => {
-    if (isInitialized.value && !force && isAuthenticated.value) return
+    if (isInitialized.value && !force) return
     try {
       const headers = import.meta.server ? useRequestHeaders(['cookie']) : undefined
       const data = await $fetch<{ authenticated: boolean; email?: string; founder: FounderProfile | null; startups: any[] }>('/api/founder/session', { headers })

@@ -19,7 +19,7 @@ import en from '../locales/en.json'
 const { t } = useLanguage({ es, en })
 
 
-const { items, loading, error } = useSaasList()
+const { items, loading, error } = useSaasList({ scope: 'catalog' })
 const { category, filterByCategory } = useCategoryFilter()
 const { country, filterByCountry, isOnContinentRoute, continent } = useCountryFilter()
 const { sort, sortItems } = useSortFilter()

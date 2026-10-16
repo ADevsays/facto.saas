@@ -12,7 +12,6 @@ import en from '../locales/en.json'
 
 const { t } = useLanguage({ es, en })
 
-const { items, fetchAll } = useSaasList()
 const { categories: dbCategories, fetchCategories } = useCategories()
 const { open: openAddModal } = useAddSaasModal()
 const router = useRouter()
@@ -26,7 +25,6 @@ const showDropdown = ref(false)
 const searchContainer = ref<HTMLElement | null>(null)
 
 onMounted(async () => {
-  fetchAll()
   await fetchCategories()
 })
 

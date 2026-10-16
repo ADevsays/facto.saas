@@ -26,60 +26,37 @@ const currentSrc = ref<string | null>(null)
 const imgRef = ref<HTMLImageElement | null>(null)
 let attemptIndex = 0
 
-function extractDomain(url: string | null | undefined): string | null {
-  if (!url) return null
-  try {
-    const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`)
-    return urlObj.hostname.replace('www.', '')
-  } catch {
-    return null
-  }
-}
-
-function extractDomainFromGoogleFavicon(url: string | null | undefined): string | null {
-  if (!url) return null
-  try {
-    const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`)
-    return urlObj.searchParams.get('domain') || null
-  } catch {
-    return null
-  }
-}
-
-function isGoogleFaviconUrl(url: string | null | undefined): boolean {
+function isGeneratedFaviconUrl(url: string | null | undefined): boolean {
   if (!url) return false
-  return url.includes('googleusercontent.com/s2/favicons') || 
-         url.includes('google.com/s2/favicons') || 
-         url.includes('gstatic.com/faviconV2')
+  return url.includes('googleusercontent.com/s2/favicons') ||
+         url.includes('google.com/s2/favicons') ||
+         url.includes('gstatic.com/faviconV2') ||
+         url.includes('icons.duckduckgo.com/ip3/') ||
+         url.includes('icon.horse/icon/')
+}
+
+function extractDomain(value: string | null | undefined): string | null {
+  if (!value) return null
+  try {
+    const parsed = new URL(value.startsWith('http') ? value : `https://${value}`)
+    const target = parsed.searchParams.get('domain') || parsed.searchParams.get('url')
+    if (target) return new URL(target.startsWith('http') ? target : `https://${target}`).hostname.replace(/^www\./, '')
+    if (parsed.hostname === 'icons.duckduckgo.com') return parsed.pathname.replace(/^\/ip3\//, '').replace(/\.ico$/, '')
+    if (parsed.hostname === 'icon.horse') return parsed.pathname.replace(/^\/icon\//, '')
+    return parsed.hostname.replace(/^www\./, '')
+  } catch {
+    return null
+  }
 }
 
 function getCandidateUrls(): string[] {
-  const list: string[] = []
-
-  if (props.src && !isGoogleFaviconUrl(props.src)) {
-    list.push(props.src)
-  }
-
-  let domain = extractDomain(props.websiteUrl)
-  if (!domain && isGoogleFaviconUrl(props.src)) {
-    domain = extractDomainFromGoogleFavicon(props.src)
-  }
-
+  const urls = props.src && !isGeneratedFaviconUrl(props.src) ? [props.src] : []
+  const domain = extractDomain(props.websiteUrl) || (isGeneratedFaviconUrl(props.src) ? extractDomain(props.src) : null)
   if (domain) {
-    const apiFavicon = `/api/favicon/${domain}`
-    if (!list.includes(apiFavicon)) list.push(apiFavicon)
+    urls.push(`https://t0.gstatic.com/faviconV2?client=SOCIAL&drop_404_icon=true&type=FAVICON&size=128&fallback_opts=TYPE,SIZE&url=https://${domain}`)
+    urls.push(`https://${domain}/favicon.ico`)
   }
-
-  if (props.src && !list.includes(props.src)) {
-    list.push(props.src)
-  }
-
-  if (domain) {
-    const googleFallback = `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=128`
-    if (!list.includes(googleFallback)) list.push(googleFallback)
-  }
-
-  return list
+  return [...new Set(urls)]
 }
 
 function initLoad() {
@@ -116,53 +93,12 @@ function initLoad() {
   }
 }
 
-function isPlaceholderImage(img: HTMLImageElement): boolean {
-  try {
-    const canvas = document.createElement('canvas')
-    canvas.width = 16
-    canvas.height = 16
-    const ctx = canvas.getContext('2d', { willReadFrequently: true })
-    if (!ctx) return false
-    
-    ctx.drawImage(img, 0, 0, 16, 16)
-    const imgData = ctx.getImageData(0, 0, 16, 16).data
-    
-    let grayCount = 0
-    let fallbackColorCount = 0
-    const totalPixels = 16 * 16
-
-    for (let i = 0; i < imgData.length; i += 4) {
-      const r = imgData[i]
-      const g = imgData[i + 1]
-      const b = imgData[i + 2]
-      const a = imgData[i + 3]
-
-      if (a < 10) continue
-
-      if (Math.abs(r - g) <= 4 && Math.abs(g - b) <= 4) {
-        grayCount++
-        if (r >= 210 && r <= 242) {
-          fallbackColorCount++
-        }
-      }
-    }
-
-    return (fallbackColorCount / totalPixels) > 0.4 && (grayCount / totalPixels) > 0.85
-  } catch {
-    return false
-  }
-}
-
 function checkImageStatus() {
   const img = imgRef.value
   if (!img) return
 
   if (img.complete) {
     if (img.naturalWidth > 0) {
-      if (currentSrc.value?.includes('icon.horse') && isPlaceholderImage(img)) {
-        onImageError()
-        return
-      }
       if (currentSrc.value) {
         loadedLogoCache.add(currentSrc.value)
       }
@@ -174,14 +110,7 @@ function checkImageStatus() {
   }
 }
 
-function onImageLoad(event?: Event) {
-  const target = (event?.target as HTMLImageElement | null) || imgRef.value
-
-  if (target && currentSrc.value?.includes('icon.horse') && isPlaceholderImage(target)) {
-    onImageError()
-    return
-  }
-
+function onImageLoad() {
   if (currentSrc.value) {
     loadedLogoCache.add(currentSrc.value)
   }
@@ -285,7 +214,6 @@ const sizeMap = {
       ref="imgRef"
       :src="currentSrc"
       :alt="alt"
-      :crossorigin="currentSrc?.includes('icon.horse') ? 'anonymous' : undefined"
       class="absolute inset-0 w-full h-full object-cover"
       :class="[
         loaded ? 'opacity-100' : 'opacity-0',

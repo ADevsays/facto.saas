@@ -29,7 +29,7 @@ const router = useRouter()
 const localePath = useLocalePath()
 const { t } = useLanguage({ es, en })
 const { open: openOtpModal } = useOtpModal()
-const { founder } = useFounderSession()
+const { founder, checkSession } = useFounderSession()
 
 const { isOpen, mode, selectedSlot, targetPrice, targetAdName, setupToken, verifiedEmail, close, openForSetup } = useAddAdModal()
 const { slots, refresh: refreshSlots } = useAdsSlots()
@@ -149,6 +149,8 @@ watch(isOpen, async (val) => {
     syncBidWithMin()
 
     if (mode.value === 'setup') {
+      if (!verifiedEmail.value && !founder.value) await checkSession()
+      if (!isOpen.value) return
       const tokenToValidate = setupToken.value || (typeof route.query.token === 'string' ? route.query.token : null)
       if (tokenToValidate) {
         await validateToken(tokenToValidate)

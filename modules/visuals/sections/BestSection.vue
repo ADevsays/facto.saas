@@ -10,7 +10,7 @@ import en from '../locales/en.json'
 const { t } = useLanguage({ es, en })
 const localePath = useLocalePath()
 
-const { bestItems, loading } = useSaasList()
+const { bestItems, loading } = useSaasList({ scope: 'home' })
 </script>
 
 <template>

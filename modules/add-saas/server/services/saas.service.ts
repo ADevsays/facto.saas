@@ -2,7 +2,6 @@ import { supabase } from '~/server/lib/supabase'
 import type { SaasSubmission, SaasPublicProfile } from '~/modules/add-saas/types'
 import { getProvider } from './provider.factory'
 import { slugify } from '~/utils/slugify'
-import { fetchClearbitLogo } from '../utils/clearbit'
 import { fetchWebsiteMetaDescription } from '../utils/scraper'
 
 export interface ProviderData {
@@ -71,10 +70,7 @@ export async function upsertSaasEntry(
   
   const getMappedValue = <T>(val: T | undefined | null) => (isIncognito ? null : (val ?? null))
   
-  let logoUrl = getMappedValue(body.logoUrl)
-  if (!isIncognito && websiteUrl && !logoUrl && !body.id) {
-    logoUrl = await fetchClearbitLogo(websiteUrl)
-  }
+  const logoUrl = getMappedValue(body.logoUrl)
 
   let startupType = getMappedValue(body.startupType)
   if (!isIncognito && websiteUrl && !startupType && !body.id) {

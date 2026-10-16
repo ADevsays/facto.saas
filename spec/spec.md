@@ -16,7 +16,7 @@ AdemÃ¡s de su funciÃ³n principal maneja tools orbitantes Ãºtiles para los 
 
 ## DiseÃ±o Global (Layout)
 
-El diseÃ±o de Facto es minimalista, oscuro y premium. 
+El diseÃ±o de Facto es minimalista, oscuro y premium.
 
 ### Banda de Anuncios (Ads Banner)
 - **Persistencia**: La banda de anuncios (`AdsBandSection.vue`) es un elemento global ubicado en el layout `default.vue`.
@@ -38,7 +38,11 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - Las mutaciones de SaaS o anuncios no ejecutan solicitudes de revalidación ni dependen de `NUXT_ISR_BYPASS_TOKEN`.
 - Los datos ya resueltos en SSR se hidratan desde el mismo estado de Nuxt y no se vuelven a solicitar durante la hidratación.
 - Los listados públicos consultan únicamente proyecciones ligeras persistidas; nunca incluyen `history_cache` ni historiales de proveedores.
+- Los logos `data:` mayores de 32 KiB no se serializan en respuestas públicas.
+- Home recibe como máximo la unión única del top 30 y las 6 startups más recientes.
 - El historial financiero se obtiene mediante un endpoint separado desde el cliente del perfil, después del render inicial, y solo para la startup visitada.
+- El endpoint de historial entrega series agregadas para la gráfica y nunca serializa cargos o suscripciones sin procesar.
+- La gráfica conserva su altura y dibuja una línea de carga de izquierda a derecha hasta resolver el historial financiero.
 - La banda de anuncios conserva `facto_ads_slots_data` como estado canónico SSR y `BroadcastChannel` para sincronizar una pestaña abierta después de una mutación.
 
 #### Dominio
@@ -46,6 +50,7 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - "Cada lectura pública obtiene datos actuales mediante SSR dinámico; Vercel no almacena HTML ni payloads como ISR."
 - "Una mutación confirmada queda visible en la siguiente lectura sin regenerar rutas ni payloads."
 - "La respuesta inicial de Home, ranking y listados contiene solo campos de tarjeta y ranking; los agregados usan valores persistidos en `saas_entries`."
+- "El perfil resuelve startup y founder público mediante una relación de la consulta principal."
 - "El endpoint de perfil inicial no devuelve `history`; el historial se resuelve aparte desde `saas_metrics_cache` y solo se sincroniza con el proveedor cuando la caché supera 48 horas."
 - "Si el proveedor devuelve 401/403 al refrescar, el endpoint conserva y devuelve el último historial financiero válido de `saas_metrics_cache`; el perfil calcula sus métricas desde ese historial y no lo elimina por una credencial expirada."
 - "Si una key que ya tenía métricas guardadas empieza a devolver 401, la leyenda inferior deja de afirmar que está verificada y muestra `API Key de Stripe desactualizada. Los datos pueden tener fallos`."
@@ -63,11 +68,30 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - ✅ SSR público no declara `isr`, `swr` ni `x-prerender-revalidate` y responde con política `no-store`.
 - ✅ Publicar, editar o aprobar un SaaS y modificar anuncios no dispara solicitudes internas a páginas públicas.
 - Home, ranking y listados hidratan `useSaasList` desde el payload SSR y no ejecutan un fetch duplicado durante `onMounted`.
+- Home transporta un máximo de 36 startups únicas; ranking transporta 100, catálogo 200 y las recomendaciones del perfil 24.
+- Navegar Home → `/saas` → Home conserva consultas independientes y muestra el skeleton de destino sin bloquear la transición.
 - ✅ La consulta del listado no selecciona `saas_metrics_cache.history_cache` y conserva orden, búsqueda y filtros.
 - ✅ El perfil inicial no serializa historial; el gráfico carga el historial de una sola startup desde el endpoint dedicado.
+- El historial público contiene cuatro series de diez puntos y no expone los arrays originales del proveedor.
+- La banda de anuncios se consulta una vez durante SSR y `/api/ads/slots` se usa después únicamente para refrescos explícitos.
+- Una sesión anónima ya comprobada no vuelve a consultar `/api/founder/session` sin `force`.
+- La gráfica no produce cambios de altura durante la carga y reemplaza el loader tanto al resolver como al fallar el historial.
 - Sin key o sin historial verificable, el perfil responde de forma válida y muestra la gráfica con una serie plana de ceros; nunca simula una curva con valores financieros.
 - Una clave inválida conserva y muestra MRR/revenue del último historial válido en caché; si no hay puntos graficables, la gráfica usa ceros y la leyenda identifica que la clave actual no permite refrescarlo.
 - Un 401 con datos previos cambia la leyenda de verificación y genera exactamente una notificación por email; sin datos previos o sin email del fundador no envía nada.
+
+### Respaldo visual de logos
+
+#### Contrato
+- `SaasLogo` intenta el logo persistido cuando es propio, Google con `drop_404_icon=true` y después `/favicon.ico` directamente en el dominio; URLs heredadas de DuckDuckGo, Google o Icon Horse entran al mismo flujo.
+
+#### Dominio
+- Si ambos logos faltan o fallan al cargar, se conserva el placeholder de inicial con color de gema.
+- La presentación del placeholder no emite peticiones a proveedores de iconos ni al proxy `/api/favicon`.
+- El proxy legado `/api/favicon` responde vacío con `410` y caché larga sin consultar proveedores externos.
+
+#### Validación
+- Un logo válido se muestra; Google responde `404` en lugar de entregar su icono genérico y una respuesta ausente o no decodificable conserva la inicial sin solicitar `/api/favicon`.
 
 ### Doctrina de Unicidad y Deduplicación Estricta de Startups
 - **Anti-Duplicación en Envío ("Más tarde" o Directo)**: Si un registro público coincide con una startup existente por `slug`, `website_url` o `(name, founder_email)`, se considera un reintento: no crea filas, no modifica la fila existente y no vuelve a disparar correos ni notificaciones. Las actualizaciones requieren una sesión válida del founder propietario.
@@ -730,7 +754,7 @@ NOTIFIER_MAX_DAILY_MILESTONES=8
 - **Happy Path Reactivo**: Nueva startup agregada -> Notificada reactivamente al canal con posición de ranking.
 - **Happy Path Resumen Diario**: Ejecución al cierre del día -> Genera resumen con startups nuevas, facturación global, visitas y enlace directo a `/stats`.
 - **Idempotencia**: Dos ejecuciones con el mismo startupId -> La segunda encuentra 0 eventos nuevos.
-- **Dry-Run**: `NOTIFIER_DRY_RUN=true` -> Simula todo el ciclo en consola sin realizar peticiones a Telegram.
+- **Dry-Run**: `NOTIFIER_DRY_RUN=true` -> Simula todo el ciclo en consola sin realizar peticiones a Telegram.
 ---
 
 ## Integración PostHog

@@ -110,7 +110,6 @@ export default defineNuxtConfig({
     mpClientSecret: process.env.MP_CLIENT_SECRET,
     mpRedirectUri: process.env.MP_REDIRECT_URI || 'http://localhost:3000/api/auth/mercadopago/callback',
     public: {
-      clarityProjectId: process.env.CLARITY_PROJECT_ID || '',
       whopPlanId: process.env.WHOP_PLAN_ID,
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     }

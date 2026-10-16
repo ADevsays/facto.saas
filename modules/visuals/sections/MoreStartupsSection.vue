@@ -13,7 +13,7 @@ const props = defineProps<{
   currentSaasId: string
 }>()
 
-const { items, fetchAll } = useSaasList({ server: false })
+const { items, fetchAll } = useSaasList({ server: false, scope: 'recommendations' })
 
 const moreStartups = computed(() => {
   const filtered = items.value.filter(s => s.id !== props.currentSaasId)

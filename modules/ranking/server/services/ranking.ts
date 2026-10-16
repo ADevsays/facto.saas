@@ -2,6 +2,7 @@ import { supabase } from '~/server/lib/supabase'
 import type { SaasListItem, ListQueryParams, SortOption } from '~/modules/ranking/types'
 import { fetchCachedFinancialSummaries } from '~/server/utils/saas-financials'
 import type { SaasHistorySummary } from '~/server/utils/saas-history'
+import { getPublicLogoUrl } from '~/server/utils/public-logo'
 
 const SORT_COLUMN: Record<SortOption, string> = {
   mrr: 'mrr',
@@ -45,7 +46,7 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
     id: row.id as string,
     name: row.name as string | null,
     slug: (row.slug as string) || null,
-    logoUrl: row.logo_url as string | null,
+    logoUrl: getPublicLogoUrl(row.logo_url),
     websiteUrl: row.website_url as string | null,
     founderName: row.founder_name as string | null,
     isIncognito: row.is_incognito === true || row.is_incognito === 'true',
@@ -64,7 +65,7 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
 }
 
 export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasListItem[]> {
-  const { sort = 'mrr', category, country, q, limit, offset = 0 } = params
+  const { sort = 'mrr', category, country, q, limit, offset = 0, excludeIncognito = false } = params
   const column = SORT_COLUMN[sort]
   const nullsFirst = sort === 'mrr' ? false : false
 
@@ -90,6 +91,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
 
     if (category) query = query.eq('categories.slug', category)
     if (country) query = query.eq('countries.slug', country)
+    if (excludeIncognito) query = query.not('is_incognito', 'is', true)
     if (q?.trim()) {
       const term = `%${q.trim()}%`
       query = query.or(`name.ilike.${term},founder_name.ilike.${term}`)
@@ -113,6 +115,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
 
       if (category) query = query.eq('categories.slug', category)
       if (country) query = query.eq('countries.slug', country)
+      if (excludeIncognito) query = query.not('is_incognito', 'is', true)
       if (q?.trim()) {
         const term = `%${q.trim()}%`
         query = query.or(`name.ilike.${term},founder_name.ilike.${term}`)
@@ -126,6 +129,10 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
       if (data.length < CHUNK_SIZE) break
       currentFrom += CHUNK_SIZE
     }
+  }
+
+  if (excludeIncognito) {
+    rawData = rawData.filter(row => row.is_incognito !== true && row.is_incognito !== 'true')
   }
 
   const rowsMissingFinancials = rawData.filter((row) => (

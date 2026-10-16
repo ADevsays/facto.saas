@@ -96,9 +96,10 @@ async function loadHistory() {
     historyRevenue.value = data.revenue
     historyLastSyncedAt.value = data.lastSyncedAt
     providerKeyStatus.value = data.keyStatus ?? 'ok'
-    historyResolved.value = true
   } catch (error) {
     console.error('[saas profile] Unable to load financial history:', error)
+  } finally {
+    historyResolved.value = true
   }
 }
 
@@ -113,7 +114,6 @@ const isVerifiedOwner = computed(() => {
 
 onMounted(async () => {
   const historyRequest = loadHistory()
-  await checkSession()
   if (!isVerifiedOwner.value) {
     const stored = localStorage.getItem(`facto_founder_verified_${props.saas.id}`)
     if (stored) {
@@ -187,7 +187,7 @@ async function handleClaim() {
     <SaasBreadcrumb :name="saas.name" />
     <SaasHeaderSection :saas="saas" :is-verified-owner="isVerifiedOwner" @edit="handleClaimFounder" />
     <SaasMetricsSection :saas="metricsSaas" :mrr-status="providerKeyStatus" :is-verified-owner="isVerifiedOwner" @claim-founder="handleClaimFounder" />
-    <SaasRevenueChart :mrr="effectiveMrr" :currency="saas.currency" :history="history" :provider="saas.provider" :key-status="providerKeyStatus" :last-synced-at="historyLastSyncedAt" :founder-name="saas.founderName" :is-verified-owner="isVerifiedOwner" :views="saas.views" @claim="handleClaim" @claim-founder="handleClaimFounder" />
+    <SaasRevenueChart :mrr="effectiveMrr" :currency="saas.currency" :history="history" :provider="saas.provider" :key-status="providerKeyStatus" :last-synced-at="historyLastSyncedAt" :founder-name="saas.founderName" :is-verified-owner="isVerifiedOwner" :views="saas.views" :loading="!historyResolved" @claim="handleClaim" @claim-founder="handleClaimFounder" />
     
     <!-- Bento Features Section -->
     <BentoFeaturesSection :saas="saas" />

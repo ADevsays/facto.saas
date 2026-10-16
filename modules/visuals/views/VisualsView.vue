@@ -52,7 +52,7 @@ const widthLayout = "max-w-5xl w-full"
     <!-- Bloque inferior centrado -->
     <div :class="[widthLayout, 'mx-auto px-6 flex flex-col gap-8 min-w-0']">
       <BestSection />
-      <RankingView :limit="30" :show-view-all="true" />
+      <RankingView :limit="30" :show-view-all="true" scope="home" />
     </div>
 
     <!-- Contenedor externo de ancho completo para que las categorías no se rompan -->
@@ -77,7 +77,5 @@ const widthLayout = "max-w-5xl w-full"
       <CountryCardsSection />
     </div>
   </div>
-
-  <!-- Modal modular -->
   <AddSaasModal />
 </template>

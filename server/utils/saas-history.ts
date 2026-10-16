@@ -17,6 +17,16 @@ export interface SaasHistorySummary {
   formattedRevenue: string
 }
 
+export type SaasHistoryTimeframe = '7d' | '30d' | '60d' | 'all'
+
+export interface SaasHistoryPoint {
+  at: number
+  mrr: number
+  revenue: number
+}
+
+export type SaasHistoryChart = Record<SaasHistoryTimeframe, SaasHistoryPoint[]>
+
 export interface SaasLegacyFinancialSnapshot {
   mrr: number | null
   revenue: number | null
@@ -115,4 +125,34 @@ export function summarizeSaasHistory(
     revenue,
     formattedRevenue: formatRevenue(revenue),
   }
+}
+
+export function buildSaasHistoryChart(
+  history: SaasHistoryData | null | undefined,
+  nowMs = Date.now(),
+): SaasHistoryChart | null {
+  if (!hasFinancialHistory(history)) return null
+
+  const subscriptions = history?.subscriptions || []
+  const charges = history?.charges || []
+  const oldest = Math.min(nowMs, ...subscriptions.map(item => item.created * 1000), ...charges.map(item => item.created * 1000))
+  const allDays = Math.max(365, Math.ceil((nowMs - oldest) / 86_400_000))
+  const days: Record<SaasHistoryTimeframe, number> = { '7d': 7, '30d': 30, '60d': 60, all: allDays }
+
+  return Object.fromEntries(Object.entries(days).map(([timeframe, range]) => {
+    const stepMs = range * 86_400_000 / 9
+    const points = Array.from({ length: 10 }, (_, index) => {
+      const at = nowMs - range * 86_400_000 * (1 - index / 9)
+      const atSec = Math.floor(at / 1000)
+      const fromSec = atSec - Math.floor(stepMs / 1000)
+      const mrr = subscriptions.reduce((sum, item) => (
+        item.created <= atSec && (item.canceledAt === null || item.canceledAt > atSec) ? sum + item.mrr : sum
+      ), 0)
+      const revenue = charges.reduce((sum, item) => (
+        item.created > fromSec && item.created <= atSec ? sum + item.amount : sum
+      ), 0)
+      return { at, mrr: Math.round(mrr), revenue: Math.round(revenue) }
+    })
+    return [timeframe, points]
+  })) as SaasHistoryChart
 }

@@ -12,7 +12,6 @@ import GlobalFooter from '~/ui/sections/GlobalFooter.vue'
 import { useAddAdModal } from '~/composables/useAddAdModal'
 import { useLanguage } from '~/composables/useLanguage'
 import { useAdPreferences } from '~/composables/useAdPreferences'
-import { useFounderSession } from '~/composables/useFounderSession'
 import { useLoginModal } from '~/composables/useLoginModal'
 
 const route = useRoute()
@@ -35,7 +34,6 @@ watch(() => route.fullPath, () => {
 const { openForSetup } = useAddAdModal()
 const { detectLanguage } = useLanguage()
 const { showAds, checkPreferences } = useAdPreferences()
-const { checkSession } = useFounderSession()
 const { open: openLoginModal } = useLoginModal()
 
 const checkLoginQuery = () => {
@@ -52,10 +50,7 @@ const checkLoginQuery = () => {
 }
 
 onMounted(async () => {
-  await Promise.all([
-    checkSession(),
-    checkPreferences()
-  ])
+  await checkPreferences()
 
   if (route.path === '/') {
     await detectLanguage()

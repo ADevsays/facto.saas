@@ -10,6 +10,14 @@ export default defineEventHandler(async (event) => {
 
   const query = getQuery(event)
 
+  if (query.scope === 'home') {
+    const [ranking, recent] = await Promise.all([
+      fetchSaasList({ sort: 'mrr', limit: 30, excludeIncognito: true }),
+      fetchSaasList({ sort: 'latest', limit: 6 }),
+    ])
+    return [...new Map([...ranking, ...recent].map(item => [item.id, item])).values()]
+  }
+
   const params: ListQueryParams = {
     sort: (query.sort as SortOption) ?? 'mrr',
     category: query.category as string | undefined,
@@ -17,6 +25,7 @@ export default defineEventHandler(async (event) => {
     q: query.q as string | undefined,
     limit: query.limit ? Number(query.limit) : 1000,
     offset: query.offset ? Number(query.offset) : 0,
+    excludeIncognito: query.excludeIncognito === 'true' || query.scope === 'ranking',
   }
 
   return fetchSaasList(params)

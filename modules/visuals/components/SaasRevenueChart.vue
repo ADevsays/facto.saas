@@ -5,7 +5,7 @@ import GlassChart from '~/ui/components/GlassChart.vue'
 import RevenueChartControls from './RevenueChartControls.vue'
 import VerificationLegend from './VerificationLegend.vue'
 import ProbableRankCallout from './ProbableRankCallout.vue'
-import { useRevenueChart, type Metric, type Timeframe } from '../composables/useRevenueChart'
+import { useRevenueChart, type HistoryData, type Metric, type Timeframe } from '../composables/useRevenueChart'
 
 import es from '../locales/es.json'
 import en from '../locales/en.json'
@@ -14,16 +14,14 @@ const { t } = useLanguage({ es, en })
 const props = defineProps<{
   mrr: number | null
   currency: string
-  history?: {
-    subscriptions: { created: number; status: string; canceledAt: number | null; mrr: number }[]
-    charges: { amount: number; created: number }[]
-  } | null
+  history?: HistoryData | null
   provider?: string
   lastSyncedAt?: number | null
   keyStatus?: 'ok' | 'invalid' | 'permissions' | 'missing'
   founderName?: string | null
   isVerifiedOwner?: boolean
   views?: number
+  loading?: boolean
 }>()
 
 const emit = defineEmits<{ 
@@ -84,13 +82,20 @@ const currencyFormatter = (val: number) => {
         :class="{ 'blur-sm pointer-events-none select-none': isLocked }"
       />
 
-      <div :class="{ 'blur-sm pointer-events-none select-none': isLocked }">
+      <div class="relative" :class="{ 'blur-sm pointer-events-none select-none': isLocked }">
         <GlassChart
           :data="renderedChartData" 
           :format-value="currencyFormatter"
           color="#00D4FF" 
           :height="300"
+          :class="['transition-opacity duration-500', { 'opacity-0': loading }]"
         />
+        <Transition name="chart-loader">
+          <svg v-if="loading" aria-hidden="true" class="absolute inset-0 w-full h-[300px]" viewBox="0 0 800 300" preserveAspectRatio="none">
+            <line v-for="i in 4" :key="i" x1="40" :y1="25 + (i - 1) * 80" x2="770" :y2="25 + (i - 1) * 80" stroke="white" stroke-width="1" stroke-dasharray="3 4" opacity="0.08" />
+            <path class="chart-loader-line" d="M 40 224 L 98 207 L 147 232 L 221 169 L 279 194 L 337 128 L 421 157 L 468 109 L 536 149 L 603 81 L 659 123 L 714 102 L 770 134" pathLength="1" fill="none" stroke="#00D4FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </Transition>
       </div>
     </div> 
 
@@ -131,3 +136,22 @@ const currencyFormatter = (val: number) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.chart-loader-enter-active, .chart-loader-leave-active { transition: opacity 0.35s ease; }
+.chart-loader-enter-from, .chart-loader-leave-to { opacity: 0; }
+.chart-loader-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 2px 5px rgba(0, 212, 255, 0.45));
+  animation: chart-loader-draw 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes chart-loader-draw {
+  0% { stroke-dashoffset: 1; opacity: 0.2; }
+  65% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chart-loader-line { animation: none; stroke-dashoffset: 0; opacity: 0.65; }
+}
+</style>
