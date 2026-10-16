@@ -52,7 +52,7 @@ const filteredAndSortedItems = computed(() => {
   return sortItems(filtered)
 })
 
-const { containerRef, initObserver } = useReveal([category, country, sort])
+const { containerRef, initObserver } = useReveal([category, country, sort, items])
 
 onMounted(async () => {
   await Promise.all([
