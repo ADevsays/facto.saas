@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [Optimización de transferencia y payloads públicos] - 2026-10-16
+
+Commit publicado en `main`: `bdcce66`.
+
+- Home limita la respuesta a la unión única del top 30 y las 6 startups recientes; ranking, catálogo y recomendaciones usan límites de 100, 200 y 24 elementos.
+- El perfil resuelve el founder público en la consulta principal y excluye logos `data:` mayores de 32 KiB del payload.
+- El historial financiero se entrega en un endpoint separado con cuatro series agregadas de diez puntos; la gráfica mantiene su altura y muestra un loader lineal mientras carga.
+- Ads y sesiones anónimas evitan fetches internos duplicados; las mutaciones no generan revalidaciones.
+- Se eliminaron los preload de logos, Clearbit y el proxy de favicons que hacía llamadas desde Vercel. La cascada queda en logo propio, Google con `drop_404_icon=true`, favicon directo del dominio e inicial Facto.
+- El proxy legado `/api/favicon` responde `410` cacheable y no consulta proveedores externos.
+- Se eliminó Microsoft Clarity. `html2pdf` continúa cargándose únicamente mediante importación dinámica al exportar.
+- Validación: build completo de Nuxt/Nitro y 12 pruebas específicas de optimización exitosas. El hook local de push no pudo ejecutar porque faltan `vue-tsc` y `tsx`; el push se completó tras esa validación equivalente.
+
 ## [Estabilidad de Ads Band & Prevención de Layout Shifts] - 2026-10-06
 
 ### Marquesina y Renderizado de Anuncios (`modules/ads`)
