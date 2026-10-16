@@ -32,6 +32,7 @@ export interface ListQueryParams {
   sort?: SortOption
   category?: string
   country?: string
+  countries?: string[]
   q?: string
   limit?: number
   offset?: number

@@ -13,17 +13,17 @@ defineI18nRoute({
 })
 
 const route = useRoute()
-const slug = route.params.slug as string
+const slug = computed(() => route.params.slug as string)
 const { categories, fetchCategories } = useCategories()
 const { getCategoryMeta } = useSaasViewMeta()
 
-await fetchCategories()
+fetchCategories()
 
-const category = computed(() => categories.value.find(c => c.slug === slug))
+const category = computed(() => categories.value.find(c => c.slug === slug.value))
 
 const { locale } = useI18n()
 
-const categoryMeta = computed(() => getCategoryMeta(slug, category.value?.name, locale.value))
+const categoryMeta = computed(() => getCategoryMeta(slug.value, category.value?.name, locale.value))
 
 useAppSeo({
   title: () => categoryMeta.value.seoTitle,

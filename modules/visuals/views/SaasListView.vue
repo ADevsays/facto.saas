@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
-import { useSaasList } from '~/composables/useSaasList'
+import { onMounted, onUnmounted, computed, nextTick, ref, watch } from 'vue'
+import type { SaasListItem } from '~/modules/ranking/types'
+import { getCategoryDisplayName } from '~/utils/categories'
 import { useCategoryFilter } from '~/composables/useCategoryFilter'
 import { useCountryFilter } from '~/composables/useCountryFilter'
 import { useSortFilter } from '~/composables/useSortFilter'
@@ -19,7 +20,6 @@ import en from '../locales/en.json'
 const { t } = useLanguage({ es, en })
 
 
-const { items, loading, error } = useSaasList({ scope: 'catalog' })
 const { category, filterByCategory } = useCategoryFilter()
 const { country, filterByCountry, isOnContinentRoute, continent } = useCountryFilter()
 const { sort, sortItems } = useSortFilter()
@@ -46,21 +46,135 @@ const currentContinentName = computed(() => {
   return continent.value.name[locale.value === 'en' ? 'en' : 'es'] || continent.value.name.es
 })
 
-const filteredAndSortedItems = computed(() => {
-  let filtered = filterByCategory(items.value)
-  filtered = filterByCountry(filtered)
-  return sortItems(filtered)
+const PAGE_SIZE = 12
+const selectedCategory = computed(() => category.value && category.value !== 'all' ? category.value : undefined)
+const selectedCountry = computed(() => country.value && country.value !== 'all' ? country.value : undefined)
+const catalogQuery = computed(() => ({
+  limit: PAGE_SIZE,
+  sort: sort.value,
+  category: selectedCategory.value,
+  country: selectedCountry.value,
+  countries: isOnContinentRoute.value && !selectedCountry.value ? continent.value?.countrySlugs.join(',') : undefined,
+}))
+const catalogFetchKey = computed(() => {
+  const { sort: s, category: cat, country: c, countries: cs, limit } = catalogQuery.value
+  return `facto-saas-catalog:${s || 'latest'}:${cat || 'all'}:${c || 'all'}:${cs || 'all'}:${limit}`
 })
+
+const { data, pending, error } = useLazyFetch<SaasListItem[]>('/api/ranking/list', {
+  key: catalogFetchKey,
+  query: catalogQuery,
+  watch: [catalogQuery],
+  default: () => [],
+  getCachedData: (key, nuxtApp) => {
+    const cached = nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
+    return Array.isArray(cached) && cached.length === 0 ? undefined : cached
+  },
+})
+
+const appendedItems = ref<SaasListItem[]>([])
+const appendedKey = ref(catalogFetchKey.value)
+const hasMoreOverride = ref<boolean | null>(null)
+const loadingMore = ref(false)
+
+const baseItems = computed<SaasListItem[]>(() => {
+  return data.value ?? []
+})
+
+const items = computed<SaasListItem[]>(() => {
+  const firstPage = baseItems.value
+  const extra = appendedKey.value === catalogFetchKey.value ? appendedItems.value : []
+  if (extra.length === 0) return firstPage
+  const seen = new Set(firstPage.map(item => item.id))
+  return [...firstPage, ...extra.filter(item => !seen.has(item.id))]
+})
+
+const hasMore = computed(() => {
+  if (hasMoreOverride.value !== null && appendedKey.value === catalogFetchKey.value) {
+    return hasMoreOverride.value
+  }
+  return baseItems.value.length === PAGE_SIZE
+})
+
+const loading = computed(() => pending.value && items.value.length === 0)
+const errorMessage = computed(() => error.value?.message || null)
+const localizedItems = computed(() => items.value.map(item => ({
+  ...item,
+  category: getCategoryDisplayName(item.categorySlug, item.category, locale.value)
+})))
+const filteredAndSortedItems = computed(() => sortItems(filterByCountry(filterByCategory(localizedItems.value))))
 
 const { containerRef, initObserver } = useReveal([category, country, sort, items])
 
+watch(catalogFetchKey, (newKey) => {
+  appendedKey.value = newKey
+  appendedItems.value = []
+  hasMoreOverride.value = null
+  loadingMore.value = false
+})
+
+watch([data, pending], () => {
+  if (import.meta.client) {
+    nextTick(() => {
+      initObserver()
+      observeMore()
+    })
+  }
+})
+
+const loadMoreRef = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+
+function observeMore() {
+  observer?.disconnect()
+  if (loadMoreRef.value && hasMore.value) {
+    observer?.observe(loadMoreRef.value)
+  }
+}
+
+async function fetchNext() {
+  if (loadingMore.value || pending.value || !hasMore.value) return
+  const requestKey = catalogFetchKey.value
+  loadingMore.value = true
+  try {
+    const page = await $fetch<SaasListItem[]>('/api/ranking/list', {
+      query: { ...catalogQuery.value, offset: items.value.length }
+    })
+    if (requestKey !== catalogFetchKey.value) return
+    appendedKey.value = requestKey
+    appendedItems.value = [...appendedItems.value, ...page]
+    hasMoreOverride.value = page.length === PAGE_SIZE
+  } catch {
+    if (requestKey === catalogFetchKey.value) {
+      hasMoreOverride.value = false
+    }
+  } finally {
+    if (requestKey === catalogFetchKey.value) {
+      loadingMore.value = false
+      nextTick(() => {
+        initObserver()
+        observeMore()
+      })
+    }
+  }
+}
+
 onMounted(async () => {
+  observer = new IntersectionObserver(([entry]) => {
+    if (!entry.isIntersecting) return
+    fetchNext()
+  }, { rootMargin: '650px 0px' })
+
+  initObserver()
+  observeMore()
+
   await Promise.all([
     fetchCategories(),
     fetchCountries()
   ])
-  initObserver()
 })
+
+onUnmounted(() => observer?.disconnect())
 </script>
 
 <template>
@@ -84,13 +198,13 @@ onMounted(async () => {
 
       <!-- Loading State: Startup Cards Skeleton Grid -->
       <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10 animate-fade-in">
-        <SaasGemCardSkeleton v-for="n in 9" :key="'gem-sk-' + n" />
+        <SaasGemCardSkeleton v-for="n in PAGE_SIZE" :key="'gem-sk-' + n" />
       </div>
 
       <!-- Error State -->
-      <div v-else-if="error" class="text-center py-16">
+      <div v-else-if="errorMessage" class="text-center py-16">
         <p class="text-red-400 font-sans text-sm font-light bg-red-400/10 border border-red-500/20 rounded-xl p-4 inline-block">
-          {{ error }}
+          {{ errorMessage }}
         </p>
       </div>
 
@@ -102,13 +216,17 @@ onMounted(async () => {
       <!-- Grid of Cards -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10">
         <SaasGemCard 
-          v-for="(saas, index) in filteredAndSortedItems" 
+          v-for="(saas, index) in filteredAndSortedItems"
           :key="saas.id" 
           :saas="saas"
           :index="index"
           class="reveal-card"
           :class="{ 'is-visible': index < 3 }"
         />
+        <template v-if="loadingMore">
+          <SaasGemCardSkeleton v-for="n in PAGE_SIZE" :key="'gem-more-sk-' + n" class="animate-fade-in" />
+        </template>
+        <div v-if="hasMore" ref="loadMoreRef" class="col-span-full h-px" />
       </div>
 
       <!-- Add MRR Component -->

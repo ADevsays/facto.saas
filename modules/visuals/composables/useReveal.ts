@@ -22,7 +22,7 @@ export function useReveal(dependencies: WatchSource<any>[]) {
     nextTick(() => {
       const cards = containerRef.value?.querySelectorAll('.reveal-card')
       cards?.forEach((card, index) => {
-        if (index < 3) {
+        if (index < 3 || card.classList.contains('is-visible')) {
           card.classList.add('is-visible')
         } else {
           observer?.observe(card)

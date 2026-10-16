@@ -65,7 +65,7 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
 }
 
 export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasListItem[]> {
-  const { sort = 'mrr', category, country, q, limit, offset = 0, excludeIncognito = false } = params
+  const { sort = 'mrr', category, country, countries, q, limit, offset = 0, excludeIncognito = false } = params
   const column = SORT_COLUMN[sort]
   const nullsFirst = sort === 'mrr' ? false : false
 
@@ -73,7 +73,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
     id, name, slug, logo_url, website_url, founder_name, startup_type,
     is_incognito, mrr, revenue, currency, views, published_at,
     categories!saas_categories${category ? '!inner' : ''} ( name, slug ),
-    countries!saas_countries${country ? '!inner' : ''} ( name, slug, flag, iso_code ),
+    countries!saas_countries${country || countries?.length ? '!inner' : ''} ( name, slug, flag, iso_code ),
     payment_providers ( name, slug )
   `
 
@@ -91,6 +91,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
 
     if (category) query = query.eq('categories.slug', category)
     if (country) query = query.eq('countries.slug', country)
+    if (countries?.length) query = query.in('countries.slug', countries)
     if (excludeIncognito) query = query.not('is_incognito', 'is', true)
     if (q?.trim()) {
       const term = `%${q.trim()}%`
@@ -115,6 +116,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
 
       if (category) query = query.eq('categories.slug', category)
       if (country) query = query.eq('countries.slug', country)
+      if (countries?.length) query = query.in('countries.slug', countries)
       if (excludeIncognito) query = query.not('is_incognito', 'is', true)
       if (q?.trim()) {
         const term = `%${q.trim()}%`

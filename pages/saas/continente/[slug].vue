@@ -12,11 +12,11 @@ defineI18nRoute({
 })
 
 const route = useRoute()
-const slug = route.params.slug as string
+const slug = computed(() => route.params.slug as string)
 const { getContinentMeta } = useSaasViewMeta()
 const { locale } = useI18n()
 
-const continentMeta = computed(() => getContinentMeta(slug, locale.value))
+const continentMeta = computed(() => getContinentMeta(slug.value, locale.value))
 
 useAppSeo({
   title: () => continentMeta.value.seoTitle,

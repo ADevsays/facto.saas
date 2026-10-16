@@ -44,8 +44,10 @@ test('home uses a bounded union while ranking and recommendations request only w
   assert.match(home, /useSaasList\(\{ scope: 'home' \}\)/)
   assert.doesNotMatch(home, /await useFetch/)
   assert.match(list, /useLazyFetch<SaasListItem\[]>/)
+  assert.doesNotMatch(list, /useRoute\(\)/)
   assert.match(list, /catalog: \{[^}]*limit=200/)
-  assert.match(catalog, /scope: 'catalog'/)
+  assert.match(catalog, /key: catalogFetchKey/)
+  assert.match(catalog, /getCachedData:/)
   assert.match(recent, /scope: 'home'/)
   assert.match(best, /scope: 'home'/)
   assert.match(homeView, /scope="home"/)
@@ -63,6 +65,7 @@ test('initial profile stays light and history has a dedicated endpoint', () => {
   assert.doesNotMatch(profilePage, /\?seo=1/)
   assert.equal(existsSync(historyEndpoint), true)
   assert.match(profileEndpoint, /founder:founders!saas_entries_founder_id_fkey/)
+  assert.match(profileEndpoint, /saas_achievements \( achievement_type, unlocked_at \)/)
   assert.doesNotMatch(profileEndpoint, /\.from\('founders'\)/)
 })
 
@@ -167,11 +170,13 @@ test('provider history is reduced to four ten-point chart series', () => {
 
 test('SSR ads, anonymous sessions and missing logos avoid repeated internal requests', () => {
   const ads = readProjectFile('modules/ads/composables/useAdsSlots.ts')
+  const adsPlugin = readProjectFile('plugins/ads-slots.server.ts')
   const session = readProjectFile('composables/useFounderSession.ts')
   const profile = readProjectFile('modules/visuals/views/SaasProfileView.vue')
   const logo = readProjectFile('ui/components/SaasLogo.vue')
 
   assert.doesNotMatch(ads, /useFetch<AdSlot\[]>/)
+  assert.match(adsPlugin, /adsService\.getAuctionSlots\(\)/)
   assert.match(session, /isInitialized\.value && !force/)
   assert.doesNotMatch(profile, /const historyRequest = loadHistory\(\)\s+await checkSession\(\)/)
   assert.doesNotMatch(logo, /\/api\/favicon/)

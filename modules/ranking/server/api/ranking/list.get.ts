@@ -22,6 +22,7 @@ export default defineEventHandler(async (event) => {
     sort: (query.sort as SortOption) ?? 'mrr',
     category: query.category as string | undefined,
     country: query.country as string | undefined,
+    countries: typeof query.countries === 'string' ? query.countries.split(',').filter(Boolean) : undefined,
     q: query.q as string | undefined,
     limit: query.limit ? Number(query.limit) : 1000,
     offset: query.offset ? Number(query.offset) : 0,

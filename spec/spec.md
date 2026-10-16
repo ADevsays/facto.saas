@@ -16,7 +16,7 @@ AdemÃ¡s de su funciÃ³n principal maneja tools orbitantes Ãºtiles para los 
 
 ## DiseÃ±o Global (Layout)
 
-El diseÃ±o de Facto es minimalista, oscuro y premium.
+El diseÃ±o de Facto es minimalista, oscuro y premium. 
 
 ### Banda de Anuncios (Ads Banner)
 - **Persistencia**: La banda de anuncios (`AdsBandSection.vue`) es un elemento global ubicado en el layout `default.vue`.
@@ -50,7 +50,7 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - "Cada lectura pública obtiene datos actuales mediante SSR dinámico; Vercel no almacena HTML ni payloads como ISR."
 - "Una mutación confirmada queda visible en la siguiente lectura sin regenerar rutas ni payloads."
 - "La respuesta inicial de Home, ranking y listados contiene solo campos de tarjeta y ranking; los agregados usan valores persistidos en `saas_entries`."
-- "El perfil resuelve startup y founder público mediante una relación de la consulta principal."
+- "El perfil resuelve startup, founder público y achievements mediante relaciones de la consulta principal."
 - "El endpoint de perfil inicial no devuelve `history`; el historial se resuelve aparte desde `saas_metrics_cache` y solo se sincroniza con el proveedor cuando la caché supera 48 horas."
 - "Si el proveedor devuelve 401/403 al refrescar, el endpoint conserva y devuelve el último historial financiero válido de `saas_metrics_cache`; el perfil calcula sus métricas desde ese historial y no lo elimina por una credencial expirada."
 - "Si una key que ya tenía métricas guardadas empieza a devolver 401, la leyenda inferior deja de afirmar que está verificada y muestra `API Key de Stripe desactualizada. Los datos pueden tener fallos`."
@@ -67,9 +67,9 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 
 - ✅ SSR público no declara `isr`, `swr` ni `x-prerender-revalidate` y responde con política `no-store`.
 - ✅ Publicar, editar o aprobar un SaaS y modificar anuncios no dispara solicitudes internas a páginas públicas.
-- Home, ranking y listados hidratan `useSaasList` desde el payload SSR y no ejecutan un fetch duplicado durante `onMounted`.
-- Home transporta un máximo de 36 startups únicas; ranking transporta 100, catálogo 200 y las recomendaciones del perfil 24.
-- Navegar Home → `/saas` → Home conserva consultas independientes y muestra el skeleton de destino sin bloquear la transición.
+- Home, ranking y listados hidratan `useSaasList` (o el payload de página de `/saas`) desde el payload SSR y no ejecutan un fetch duplicado ni destruyen la hidratación al entrar directamente o recargar `/saas`.
+- Home transporta un máximo de 36 startups únicas; ranking transporta 100, el catálogo `/saas` pagina incrementalmente de 12 en 12 (`PAGE_SIZE = 12`) con prefetch anticipado (`rootMargin: '650px 0px'`), skeletons de continuación (`loadingMore`) y animación de entrada progresiva (`.reveal-card`), y las recomendaciones del perfil transportan 24.
+- Navegar Home → `/saas` → Home o entrar directamente a `/saas` conserva consultas independientes, hidrata desde `data` sin desajustes SSR/cliente y muestra el skeleton de destino sin bloquear la transición.
 - ✅ La consulta del listado no selecciona `saas_metrics_cache.history_cache` y conserva orden, búsqueda y filtros.
 - ✅ El perfil inicial no serializa historial; el gráfico carga el historial de una sola startup desde el endpoint dedicado.
 - El historial público contiene cuatro series de diez puntos y no expone los arrays originales del proveedor.
@@ -447,21 +447,21 @@ interface ListQueryParams {
 - `bestItems` â€” top 6 por MRR desc (sin nulls) â†’ `BestSection`
 
 ### Dominio
-- "El composable `useSaasList` hace un Ãºnico fetch al montar la app. Las tres secciones son vistas derivadas del mismo array en memoria."
-- "Si un SaaS tiene `is_incognito: true`, se muestra con nombre 'â€” AnÃ³nimo â€”', sin logo y sin link."
-- "Si `mrr` es `null`, se muestra 'â€”' en lugar de una cifra. El SaaS aparece al fondo del ranking."
+- "El composable `useSaasList` hace un único fetch al montar la app. Las tres secciones son vistas derivadas del mismo array en memoria."
+- "Las startups en modo incógnito (is_incognito: true / anónimas) están completamente excluidas del ranking global de startups (rankingItems y endpoints de ranking)."
+- "Si `mrr` es `null`, se muestra '—' en lugar de una cifra. El SaaS aparece al fondo del ranking."
 - "El filtro por `q` se aplica server-side con `ilike` sobre `name` y `founder_name`. El filtro en memoria de `useStartupSearch` es una capa adicional sin fetch."
-- "Las categorÃ­as disponibles en el buscador se derivan dinÃ¡micamente de los items ya cargados en `useSaasList`, no de un fetch separado."
-- "La secciÃ³n `RecentlySection` y `BestSection` no tienen paginaciÃ³n; muestran mÃ¡ximo 6 items."
+- "Las categorías disponibles en el buscador se derivan dinámicamente de los items ya cargados en `useSaasList`, no de un fetch separado."
+- "La sección `RecentlySection` y `BestSection` no tienen paginación; muestran máximo 6 items."
 - "Backlink/UTM: Al renderizar el link hacia el sitio de la startup, se debe agregar dinamicamente el parametro ?ref=facto, utm_source=factosaas.com y utm_medium=ranking para que el founder pueda identificar el trafico entrante en sus analiticas."
 - "Compartir SaaS: Se debe mostrar un boton 'Compartir' que abre un modal con opciones para compartir el perfil de la startup en X, LinkedIn, Facebook, y copiar enlace (para Instagram). El texto predefinido es 'Ahora [nombre] esta en Facto' junto con la URL de la pagina en Facto."
 - "Los metadatos Open Graph del perfil deben resolverse con datos del SaaS durante SSR para que Telegram y otros crawlers rendericen su vista previa, sin bloquear la navegación cliente ni el skeleton."
 - "La imagen Open Graph dinámica del perfil recibe únicamente props JSON serializables y estables; valores opcionales nulos no se envían a la Island de Nuxt para que su hash coincida con la petición de imagen."
 - "Las peticiones internas a `/__nuxt_island/` originadas por `nuxt-og-image` reconcilian automáticamente su hash de ruta mediante `server/plugins/og-island-compat.ts` en `event.$fetch` para garantizar compatibilidad con el algoritmo de verificación de islas de Nuxt 3.21 sin generar respuestas 400."
 
-### ValidaciÃ³n
-- âœ… **Happy Path**: SaaS publicados â†’ Ranking muestra ordenados por MRR, Recently los 6 mÃ¡s nuevos, Best los 6 con mayor MRR.
-- âœ… **SaaS IncÃ³gnito**: `is_incognito: true` â†’ Aparece con 'â€” AnÃ³nimo â€”', sin logo, sin link.
+### Validación
+- ✅ **Happy Path**: SaaS publicados → Ranking muestra ordenados por MRR, Recently los 6 más nuevos, Best los 6 con mayor MRR.
+- ✅ **SaaS Incógnito Excluido del Ranking**: `is_incognito: true` → No aparece en el ranking ni en los resultados de rankingItems/endpoint.
 - **Open Graph en Telegram**: Un perfil sin MRR genera una `og:image` descargable (`200 image/png`), sin afectar el enlace con UTM que usa el modal Compartir.
 - **Compatibilidad Island Hash**: El plugin Nitro reconcilia el hash heredado de `nuxt-og-image` con el hash calculado por el handler de islas de Nuxt.
 - âœ… **MRR null**: SaaS con key invÃ¡lida â†’ Aparece al final del ranking con 'â€”'.
@@ -704,9 +704,10 @@ interface FeedbackSubmission {
 
 ### Bot de Telegram (Hitos, Notificación Reactiva y Resumen Diario)
 
-Sistema automatizado desacoplado para el canal de Telegram (@factosaas) enfocado en dos funcionalidades principales:
+Sistema automatizado desacoplado para el canal de Telegram (@factosaas) enfocado en tres funcionalidades principales:
 1. **Notificación Reactiva de Nuevas Startups con Posición en Ranking**: Cada vez que se publica una startup (o es aprobada en revisión admin), se notifica de inmediato al canal calculando su posición exacta en el ranking global (#1, Top 3, Top 10 o puesto general) e incluyendo enlace directo a su perfil o al ranking con UTMs.
-2. **Resumen Diario de Métricas (Daily Digest)**: Al finalizar el día (18:00 Colombia / 23:00 UTC), se envía un resumen con startups agregadas, facturación global, visitas registradas hoy y enlace directo a la vista pública de estadísticas (`/stats`).
+2. **Notificación Reactiva de Hitos de Visitas con Insignia**: Al registrarse un hito de visitas (50, 100, 250, 500, 1K, etc.) en `checkAndNotifyAchievement`, se dispara reactivamente el anuncio al canal enviando la foto oficial de la insignia (`badge-${milestone}.png`) y texto formateado con enlace UTM.
+3. **Resumen Diario de Métricas (Daily Digest)**: Al finalizar el día (18:00 Colombia / 23:00 UTC), se envía un resumen con startups agregadas, facturación global, visitas registradas hoy y enlace directo a la vista pública de estadísticas (`/stats`).
 
 ### Contrato
 
@@ -747,14 +748,17 @@ NOTIFIER_MAX_DAILY_MILESTONES=8
 - **Cálculo de Ranking Preciso**: Se calcula la posición exacta del SaaS dentro del listado publicado ordenado por MRR desc y `published_at` asc.
 - **Idempotencia Estricta**: Cada evento tiene `dedupeKey: new_startup:<id>`. Si se edita o re-publica, no duplica el mensaje.
 - **Enlace a Estadísticas**: El Daily Digest incluye métricas clave del día y un CTA directo a `/stats` (`buildUtmUrl('/stats', 'daily_digest')`).
-- **Seguridad en Telegram**: Modo `parse_mode=HTML` con escape estricto de `&`, `<`, `>`. Límite de 4096 caracteres. Rate limit de ~1 msg/s. Manejo de 429 con `retry_after`.
+- **Hito de Visitas Reactivo con Insignia**: Al registrarse el logro en `checkAndNotifyAchievement`, se ejecuta `notifyVisitsMilestoneReactive({ startupId, milestone })`. Si existe la insignia (`badge-${milestone}.png`), se envía vía `sendPhoto` con el texto como caption (< 1024 caracteres). Si la subida de foto falla, tiene fallback transparente a `sendMessage`.
+- **Idempotencia de Hitos**: La clave `visits_milestone:<startupId>:<milestone>` garantiza que un hito nunca se publique más de una vez en Telegram.
+- **Seguridad en Telegram**: Modo `parse_mode=HTML` con escape estricto de `&`, `<`, `>`. Límite de 4096 caracteres (1024 para captions de fotos). Rate limit de ~1 msg/s. Manejo de 429 con `retry_after`.
 
 ### Validación
 
 - **Happy Path Reactivo**: Nueva startup agregada -> Notificada reactivamente al canal con posición de ranking.
+- **Happy Path Hito de Visitas**: Hito alcanzado (ej. 100 visitas) -> Genera evento `visits_milestone`, despacha foto de insignia oficial a Telegram con enlace UTM.
 - **Happy Path Resumen Diario**: Ejecución al cierre del día -> Genera resumen con startups nuevas, facturación global, visitas y enlace directo a `/stats`.
-- **Idempotencia**: Dos ejecuciones con el mismo startupId -> La segunda encuentra 0 eventos nuevos.
-- **Dry-Run**: `NOTIFIER_DRY_RUN=true` -> Simula todo el ciclo en consola sin realizar peticiones a Telegram.
+- **Idempotencia**: Dos ejecuciones con el mismo startupId o hito -> La segunda encuentra 0 eventos nuevos.
+- **Dry-Run**: `NOTIFIER_DRY_RUN=true` -> Simula todo el ciclo en consola sin realizar peticiones a Telegram.
 ---
 
 ## Integración PostHog

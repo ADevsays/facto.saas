@@ -1,4 +1,5 @@
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+import { useState } from '#app'
 import { getCategoryDisplayName } from '~/utils/categories'
 
 interface Category {
@@ -9,12 +10,11 @@ interface Category {
   icon?: string
 }
 
-const rawCategories = ref<Category[]>([])
-const loading = ref(true)
-const error = ref<string | null>(null)
-
 export function useCategories() {
   const { locale } = useI18n()
+  const rawCategories = useState<Category[]>('facto-categories', () => [])
+  const loading = useState<boolean>('facto-categories-loading', () => true)
+  const error = useState<string | null>('facto-categories-error', () => null)
 
   async function fetchCategories(force = false) {
     if (rawCategories.value.length > 0 && !force) {

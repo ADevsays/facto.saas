@@ -13,17 +13,17 @@ defineI18nRoute({
 })
 
 const route = useRoute()
-const slug = route.params.slug as string
+const slug = computed(() => route.params.slug as string)
 const { countries, fetchCountries } = useCountries()
 const { getCountryMeta } = useSaasViewMeta()
 
-await fetchCountries()
+fetchCountries()
 
-const country = computed(() => countries.value.find(c => c.slug === slug))
+const country = computed(() => countries.value.find(c => c.slug === slug.value))
 
 const { locale } = useI18n()
 
-const countryMeta = computed(() => getCountryMeta(slug, country.value?.name, locale.value))
+const countryMeta = computed(() => getCountryMeta(slug.value, country.value?.name, locale.value))
 
 useAppSeo({
   title: () => countryMeta.value.seoTitle,
