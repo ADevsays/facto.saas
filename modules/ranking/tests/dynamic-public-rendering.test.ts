@@ -17,12 +17,15 @@ test('public routes do not declare ISR or a revalidation bypass token', () => {
   assert.equal(existsSync(resolve(projectRoot, 'server/utils/isr-revalidation.ts')), false)
 })
 
-test('public list keeps history out of the primary projection and restores missing financials from cache', () => {
+test('public list uses persisted financial columns without downloading history cache', () => {
   const rankingService = readProjectFile('modules/ranking/server/services/ranking.ts')
+  const founderEndpoint = readProjectFile('server/api/founder/[slug].get.ts')
+  const statsEndpoint = readProjectFile('server/api/stats/index.get.ts')
   const publicLogo = readProjectFile('server/utils/public-logo.ts')
 
-  assert.match(rankingService, /fetchCachedFinancialSummaries/)
-  assert.match(rankingService, /rowsMissingFinancials/)
+  assert.doesNotMatch(rankingService, /fetchCachedFinancialSummaries|rowsMissingFinancials/)
+  assert.doesNotMatch(founderEndpoint, /fetchCachedFinancialSummaries|history_cache/)
+  assert.doesNotMatch(statsEndpoint, /fetchCachedFinancialSummaries|history_cache/)
   assert.match(rankingService, /\bmrr, revenue, currency\b/)
   assert.match(rankingService, /getPublicLogoUrl\(row\.logo_url\)/)
   assert.match(publicLogo, /32 \* 1024/)
@@ -124,6 +127,21 @@ test('invalid provider credentials fall back to cached history without discardin
   assert.doesNotMatch(historyEndpoint, /update\(\{ mrr: null, revenue: null \}\)/)
   assert.match(metricsSection, /!props\.saas\.hasCachedHistory\) return false/)
   assert.match(profileView, /historyRevenue\.value = data\.revenue/)
+})
+
+test('startups without a revenue value render the incognito marker', () => {
+  const metricsSection = readProjectFile('modules/visuals/sections/SaasMetricsSection.vue')
+
+  assert.match(metricsSection, /<IncognitoIcon v-else class="w-5 h-5 text-neutral-500"/)
+  assert.doesNotMatch(metricsSection, /<span v-else class="text-neutral-500">—<\/span>/)
+})
+
+test('only a connected provider can expose zero revenue on the public profile', () => {
+  const profileEndpoint = readProjectFile('server/api/saas/[slug].get.ts')
+
+  assert.match(profileEndpoint, /const hasConnectedProvider = Boolean\(providerSlug\)/)
+  assert.match(profileEndpoint, /persistedRevenue >= 0 && hasConnectedProvider/)
+  assert.match(profileEndpoint, /else allTimeRev = `\$\${Math\.round\(revenueValue\)}`/)
 })
 
 test('an expired key with prior data changes the verification legend and sends one deduplicated email', () => {

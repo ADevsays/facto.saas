@@ -1,7 +1,5 @@
 import { supabase } from '~/server/lib/supabase'
-import type { SaasListItem, ListQueryParams, SortOption } from '~/modules/ranking/types'
-import { fetchCachedFinancialSummaries } from '~/server/utils/saas-financials'
-import type { SaasHistorySummary } from '~/server/utils/saas-history'
+import type { CountryStartupItem, CountryStartupPage, SaasListItem, ListQueryParams, SortOption } from '~/modules/ranking/types'
 import { getPublicLogoUrl } from '~/server/utils/public-logo'
 
 const SORT_COLUMN: Record<SortOption, string> = {
@@ -22,6 +20,39 @@ export function formatPersistedRevenue(revenue: unknown, _mrr: number | null): s
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`.replace('.0', '')
   if (value >= 1_000) return `$${(value / 1_000).toFixed(1).replace('.0', '')}K`
   return `$${Math.round(value)}`
+}
+
+export async function fetchCountryStartups({ country, limit, offset }: {
+  country: string
+  limit: number
+  offset: number
+}): Promise<CountryStartupPage> {
+  const { data, error } = await supabase
+    .from('saas_entries')
+    .select('name, slug, logo_url, website_url, revenue, countries!saas_countries!inner (slug)')
+    .eq('status', 'published')
+    .not('is_incognito', 'is', true)
+    .eq('countries.slug', country)
+    .order('revenue', { ascending: false, nullsFirst: false })
+    .range(offset, offset + limit)
+
+  if (error) throw createError({ statusCode: 500, message: error.message })
+
+  const rows = data || []
+  const items: CountryStartupItem[] = rows.slice(0, limit).map(row => {
+    const revenue = row.revenue === null || row.revenue === undefined || row.revenue === ''
+      ? null
+      : Number(row.revenue)
+    return {
+      name: row.name || 'Startup',
+      slug: row.slug,
+      logoUrl: getPublicLogoUrl(row.logo_url),
+      websiteUrl: row.website_url || null,
+      revenue: revenue !== null && Number.isFinite(revenue) && revenue >= 0 ? revenue : null
+    }
+  })
+
+  return { items, hasMore: rows.length > limit }
 }
 
 function parseFormattedRevenue(revenue: string | undefined, _mrr: number | null): number {
@@ -137,33 +168,9 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
     rawData = rawData.filter(row => row.is_incognito !== true && row.is_incognito !== 'true')
   }
 
-  const rowsMissingFinancials = rawData.filter((row) => (
-    row.mrr === null || row.mrr === undefined || Number(row.mrr) <= 0
-    || row.revenue === null || row.revenue === undefined || Number(row.revenue) <= 0
-    || (Number(row.mrr) > 0 && Number(row.revenue) === Number(row.mrr) * 12)
-  ))
-  const cachedFinancialsBySaasId = new Map<string, SaasHistorySummary>()
-
-  if (rowsMissingFinancials.length > 0) {
-    const cachedFinancials = await fetchCachedFinancialSummaries(rowsMissingFinancials.map(row => row.id))
-    for (const [id, summary] of cachedFinancials) {
-      cachedFinancialsBySaasId.set(id, summary)
-    }
-  }
-
   const items = rawData.map((row) => {
     const item = mapRow(row as unknown as Record<string, unknown>, category)
-    const cachedFinancials = cachedFinancialsBySaasId.get(row.id)
-
-    if (cachedFinancials) {
-      if ((item.mrr === null || item.mrr <= 0) && cachedFinancials.mrr !== null && cachedFinancials.mrr > 0) {
-        item.mrr = cachedFinancials.mrr
-      }
-      if (cachedFinancials.revenue !== null && cachedFinancials.revenue > 0
-        && (row.revenue === null || row.revenue === undefined || Number(row.revenue) <= 0)) {
-        item.revenue = cachedFinancials.formattedRevenue
-      }
-    } else if (Number(row.mrr) > 0 && Number(row.revenue) === Number(row.mrr) * 12) {
+    if (Number(row.mrr) > 0 && Number(row.revenue) === Number(row.mrr) * 12) {
       // This exact value is the legacy MRR × 12 estimate, not verified charges.
       item.revenue = '—'
     }

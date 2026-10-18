@@ -16,18 +16,23 @@ interface ActiveCountry {
   isoCode?: string
   iso_code?: string
   flag: string
-  startupsCount?: number
 }
 
-const activeCountries = ref<ActiveCountry[]>([])
+const countries: ActiveCountry[] = [
+  { name: 'Argentina', slug: 'argentina', isoCode: 'ar', flag: '🇦🇷' },
+  { name: 'Chile', slug: 'chile', isoCode: 'cl', flag: '🇨🇱' },
+  { name: 'Colombia', slug: 'colombia', isoCode: 'co', flag: '🇨🇴' },
+  { name: 'España', slug: 'espana', isoCode: 'es', flag: '🇪🇸' },
+  { name: 'México', slug: 'mexico', isoCode: 'mx', flag: '🇲🇽' },
+  { name: 'Perú', slug: 'peru', isoCode: 'pe', flag: '🇵🇪' }
+]
+
 const visibleCountries = ref<ActiveCountry[]>([])
 const phase = ref<'idle' | 'out'>('idle')
 let shuffleInterval: any = null
 
 function getRandomPool() {
-  const pool = activeCountries.value.filter(c => c.slug !== 'global' && (c.startupsCount === undefined || c.startupsCount > 0))
-  if (pool.length === 0) return []
-  const cloned = [...pool]
+  const cloned = [...countries]
   for (let i = cloned.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [cloned[i], cloned[j]] = [cloned[j], cloned[i]]
@@ -36,7 +41,7 @@ function getRandomPool() {
 }
 
 function shuffleCountries() {
-  if (activeCountries.value.length <= COUNT) return
+  if (countries.length <= COUNT) return
   phase.value = 'out'
 
   setTimeout(() => {
@@ -45,21 +50,9 @@ function shuffleCountries() {
   }, 500)
 }
 
-async function loadCountries() {
-  try {
-    const data = await $fetch<any[]>('/api/countries/leaderboard')
-    if (Array.isArray(data)) {
-      activeCountries.value = data.filter(c => c.slug !== 'global' && c.startupsCount > 0)
-      visibleCountries.value = getRandomPool()
-    }
-  } catch (e) {
-    console.error('Failed to fetch country leaderboard for country cards', e)
-  }
-}
-
-onMounted(async () => {
-  await loadCountries()
-  if (activeCountries.value.length > COUNT && !shuffleInterval) {
+onMounted(() => {
+  visibleCountries.value = getRandomPool()
+  if (countries.length > COUNT && !shuffleInterval) {
     shuffleInterval = setInterval(shuffleCountries, 12000)
   }
 })

@@ -38,3 +38,25 @@ export interface ListQueryParams {
   offset?: number
   excludeIncognito?: boolean
 }
+
+export interface CountryLeaderboardItem {
+  name: string
+  slug: string
+  flag: string
+  isoCode: string
+  totalRevenue: number
+  startupsCount: number
+}
+
+export interface CountryStartupItem {
+  name: string
+  slug: string
+  logoUrl: string | null
+  websiteUrl: string | null
+  revenue: number | null
+}
+
+export interface CountryStartupPage {
+  items: CountryStartupItem[]
+  hasMore: boolean
+}

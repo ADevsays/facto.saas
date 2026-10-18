@@ -1,5 +1,10 @@
-import { fetchSaasList } from '~/modules/ranking/server/services/ranking'
+import { fetchCountryStartups, fetchSaasList } from '~/modules/ranking/server/services/ranking'
 import type { ListQueryParams, SortOption } from '~/modules/ranking/types'
+
+function toPageNumber(value: unknown, fallback: number) {
+  const number = Number(value)
+  return Number.isFinite(number) && number >= 0 ? Math.floor(number) : fallback
+}
 
 export default defineEventHandler(async (event) => {
   setResponseHeaders(event, {
@@ -9,6 +14,16 @@ export default defineEventHandler(async (event) => {
   })
 
   const query = getQuery(event)
+
+  if (query.scope === 'country') {
+    const country = typeof query.country === 'string' ? query.country : ''
+    if (!country) throw createError({ statusCode: 400, message: 'Country is required' })
+    return fetchCountryStartups({
+      country,
+      limit: Math.min(Math.max(toPageNumber(query.limit, 12), 1), 24),
+      offset: toPageNumber(query.offset, 0)
+    })
+  }
 
   if (query.scope === 'home') {
     const [ranking, recent] = await Promise.all([

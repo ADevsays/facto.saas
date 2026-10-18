@@ -1,5 +1,5 @@
 import { supabase } from '~/server/lib/supabase'
-import { fetchCachedFinancialSummaries } from '~/server/utils/saas-financials'
+import type { CountryLeaderboardItem } from '~/modules/ranking/types'
 
 const COUNTRY_ISO_MAP: Record<string, string> = {
   colombia: 'co',
@@ -31,13 +31,6 @@ const COUNTRY_ISO_MAP: Record<string, string> = {
   nicaragua: 'ni'
 }
 
-function formatRevenue(val: number | null): string {
-  if (val === null || val === undefined) return '—'
-  if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`.replace('.0', '')
-  if (val >= 1000) return `$${(val / 1000).toFixed(1).replace('.0', '')}K`
-  return `$${Math.round(val)}`
-}
-
 export default defineEventHandler(async (event) => {
   setResponseHeaders(event, {
     'Cache-Control': 'public, max-age=0, s-maxage=300, stale-while-revalidate=900',
@@ -45,159 +38,35 @@ export default defineEventHandler(async (event) => {
     'Vercel-CDN-Cache-Control': 's-maxage=300, stale-while-revalidate=900'
   })
 
-  const { data: saasRows, error: saasErr } = await supabase
+  const { data, error } = await supabase
     .from('saas_entries')
-    .select(
-      'id, name, slug, logo_url, website_url, startup_type, founder_name, mrr, revenue, currency, views, published_at, is_incognito,' +
-      'countries!saas_countries (id, name, slug, flag, iso_code ),' +
-      'categories!saas_categories (name, slug)'
-    )
+    .select('revenue, countries!saas_countries (name, slug, flag, iso_code)')
     .eq('status', 'published')
+    .not('is_incognito', 'is', true)
 
-  if (saasErr) {
-    throw createError({ statusCode: 500, message: saasErr.message })
-  }
+  if (error) throw createError({ statusCode: 500, message: error.message })
 
-  const { data: countriesRows, error: countriesErr } = await supabase
-    .from('countries')
-    .select('id, name, slug, flag, iso_code')
+  const countries = new Map<string, CountryLeaderboardItem>()
 
-  if (countriesErr) {
-    throw createError({ statusCode: 500, message: countriesErr.message })
-  }
-
-  const cachedFinancials = await fetchCachedFinancialSummaries(
-    ((saasRows as any[]) || [])
-      .filter(row => row.mrr === null || row.mrr === undefined || Number(row.mrr) <= 0
-        || row.revenue === null || row.revenue === undefined || Number(row.revenue) <= 0)
-      .map(row => row.id),
-  )
-
-  const countryMap = new Map<string, {
-    id: number
-    name: string
-    slug: string
-    flag: string
-    isoCode: string
-    flagUrl: string | null
-    totalRevenue: number
-    totalRevenueFormatted: string
-    totalMrr: number
-    startupsCount: number
-    startups: Array<{
-      id: string
-      name: string
-      slug: string
-      logoUrl: string | null
-      websiteUrl: string | null
-      mrr: number | null
-      revenue: string
-      numericRevenue: number | null
-      isIncognito: boolean
-      currency: string
-      founderName: string | null
-      category: string
-    }>
-  }>()
-
-  for (const c of (countriesRows || [])) {
-    if (c.slug === 'global') continue
-    const iso = (c.iso_code || COUNTRY_ISO_MAP[c.slug] || '').toLowerCase()
-    countryMap.set(c.slug, {
-      id: c.id,
-      name: c.name,
-      slug: c.slug,
-      flag: c.flag,
-      isoCode: iso,
-      flagUrl: iso ? `https://flagcdn.com/w160/${iso}.png` : null,
-      totalRevenue: 0,
-      totalRevenueFormatted: '—',
-      totalMrr: 0,
-      startupsCount: 0,
-      startups: []
-    })
-  }
-
-  for (const row of ((saasRows as any[]) || [])) {
-    if (row.is_incognito) continue
-    const countries = (row.saas_countries as any[]) || (row.countries as any[]) || []
-    const country = countries[0]
+  for (const row of data || []) {
+    const country = (row.countries || [])[0]
     if (!country || country.slug === 'global') continue
 
-    let entry = countryMap.get(country.slug)
-    if (!entry) {
-      const iso = (country.iso_code || COUNTRY_ISO_MAP[country.slug] || '').toLowerCase()
-      entry = {
-        id: country.id,
-        name: country.name,
-        slug: country.slug,
-        flag: country.flag,
-        isoCode: iso,
-        flagUrl: iso ? `https://flagcdn.com/w160/${iso}.png` : null,
-        totalRevenue: 0,
-        totalRevenueFormatted: '—',
-        totalMrr: 0,
-        startupsCount: 0,
-        startups: []
-      }
-      countryMap.set(country.slug, entry)
+    const current = countries.get(country.slug) || {
+      name: country.name,
+      slug: country.slug,
+      flag: country.flag,
+      isoCode: (country.iso_code || COUNTRY_ISO_MAP[country.slug] || '').toLowerCase(),
+      totalRevenue: 0,
+      startupsCount: 0
     }
-
-    const isIncognito = Boolean(row.is_incognito)
-    let mrrVal = row.mrr !== null && row.mrr !== undefined ? Number(row.mrr) : null
-    const cachedSummary = cachedFinancials.get(row.id)
-    if (cachedSummary && (mrrVal === null || mrrVal <= 0) && cachedSummary.mrr !== null && cachedSummary.mrr > 0) {
-      mrrVal = cachedSummary.mrr
-    }
-
-    let revenueVal: number | null = null
-    if (row.revenue !== null && row.revenue !== undefined && Number(row.revenue) > 0) {
-      revenueVal = Number(row.revenue)
-    } else if (cachedSummary?.revenue !== null && cachedSummary?.revenue !== undefined && cachedSummary.revenue > 0) {
-      revenueVal = cachedSummary.revenue
-    } else if (mrrVal === 0) {
-      revenueVal = 0
-    }
-
-    const startupRevenueStr = isIncognito ? '—' : formatRevenue(revenueVal)
-
-    if (revenueVal !== null && !isIncognito) {
-      entry.totalRevenue += revenueVal
-    }
-
-    const mrr = Number(row.mrr) || 0
-    if (!isIncognito) {
-      entry.totalMrr += mrr
-    }
-    entry.startupsCount += 1
-
-    entry.startups.push({
-      id: row.id,
-      name: row.name,
-      slug: row.slug,
-      logoUrl: row.logo_url,
-      websiteUrl: row.website_url,
-      mrr: isIncognito ? null : row.mrr,
-      revenue: startupRevenueStr,
-      numericRevenue: isIncognito ? null : revenueVal,
-      isIncognito,
-      currency: row.currency || 'USD',
-      founderName: row.founder_name,
-      category: (row.saas_categories as any[])?.[0]?.name || (row.categories as any[])?.[0]?.name || 'Software'
-    })
+    const revenue = Number(row.revenue)
+    if (Number.isFinite(revenue) && revenue >= 0) current.totalRevenue += revenue
+    current.startupsCount += 1
+    countries.set(current.slug, current)
   }
 
-  for (const entry of countryMap.values()) {
-    entry.totalRevenueFormatted = formatRevenue(entry.totalRevenue)
-    entry.startups.sort((a, b) => (Number(b.numericRevenue) || 0) - (Number(a.numericRevenue) || 0))
-  }
-
-  const leaderboard = Array.from(countryMap.values())
-    .filter(c => c.startupsCount > 0)
-    .sort((a, b) => {
-      if (b.totalRevenue !== a.totalRevenue) return b.totalRevenue - a.totalRevenue
-      return b.startupsCount - a.startupsCount
-    })
-
-  return leaderboard
+  return Array.from(countries.values()).sort((a, b) => (
+    b.totalRevenue - a.totalRevenue || b.startupsCount - a.startupsCount
+  ))
 })

@@ -25,6 +25,7 @@ interface FormatInput {
   id: string
   name: string | null
   logoUrl: string | null
+  websiteUrl: string | null
   slug: string | null
   description: string | null
   isIncognito: boolean
@@ -39,6 +40,7 @@ function formatItem(item: FormatInput) {
     id: item.id,
     name: isIncognito ? '— Anónimo —' : (item.name || 'SaaS'),
     logoUrl: isIncognito ? null : item.logoUrl,
+    websiteUrl: isIncognito ? null : item.websiteUrl,
     slug: isIncognito ? null : item.slug,
     description: item.description || (isIncognito ? 'SaaS Incógnito' : `Detalle de ${item.name || 'SaaS'}.`),
     isIncognito,
@@ -65,7 +67,7 @@ export default defineEventHandler(async (event) => {
     const { data, error } = await supabase
       .from('saas_entries')
       .select(`
-        id, name, slug, logo_url, startup_type, is_incognito, mrr, currency,
+        id, name, slug, logo_url, website_url, startup_type, is_incognito, mrr, currency,
         categories ( name, slug )
       `)
       .gte('mrr', mrrValue)
@@ -103,7 +105,7 @@ export default defineEventHandler(async (event) => {
     const { data, error } = await supabase
       .from('saas_entries')
       .select(`
-        id, name, slug, logo_url, startup_type, is_incognito, mrr, currency,
+        id, name, slug, logo_url, website_url, startup_type, is_incognito, mrr, currency,
         categories ( name, slug )
       `)
       .or(orConditions.join(','))
@@ -118,6 +120,7 @@ export default defineEventHandler(async (event) => {
     id: entry.id,
     name: entry.name,
     logoUrl: entry.logo_url,
+    websiteUrl: entry.website_url,
     slug: entry.slug,
     description: entry.startup_type,
     isIncognito: entry.is_incognito,

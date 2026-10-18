@@ -1,6 +1,5 @@
 import { supabase } from '~/server/lib/supabase'
 import { getDailyViewsMap } from '~/server/lib/dailyViews'
-import { fetchCachedFinancialSummaries } from '~/server/utils/saas-financials'
 import type {
   StatDayPoint,
   StatWeekPoint,
@@ -125,13 +124,6 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
     from += PAGE_SIZE
   }
 
-  const cachedFinancials = await fetchCachedFinancialSummaries(
-    rawRows
-      .filter(row => row.mrr === null || row.mrr === undefined || Number(row.mrr) <= 0
-        || row.revenue === null || row.revenue === undefined || Number(row.revenue) <= 0)
-      .map(row => row.id),
-  )
-
   const rows = (rawRows || []).map((row: any) => {
     const rawDate = row.published_at || new Date().toISOString()
     const validDate = new Date(rawDate).toISOString()
@@ -145,16 +137,9 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
       ? new Date(cache.created_at).toISOString()
       : (cache?.history_synced_at ? new Date(cache.history_synced_at).toISOString() : validDate)
 
-    const cachedSummary = cachedFinancials.get(row.id)
-    if (cachedSummary && (mrr === null || mrr <= 0) && cachedSummary.mrr !== null && cachedSummary.mrr > 0) {
-      mrr = cachedSummary.mrr
-    }
-
-    const revenue = row.revenue && Number(row.revenue) > 0
+    const revenue = row.revenue !== null && row.revenue !== undefined && Number.isFinite(Number(row.revenue))
       ? Math.round(Number(row.revenue))
-      : cachedSummary?.revenue !== null && cachedSummary?.revenue !== undefined && cachedSummary.revenue > 0
-        ? Math.round(cachedSummary.revenue)
-      : (mrr ?? 0)
+      : 0
 
     return {
       id: row.id,
