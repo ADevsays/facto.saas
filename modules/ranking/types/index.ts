@@ -11,13 +11,13 @@ export interface SaasListItem {
   description?: string | null
   isIncognito: boolean
   mrr: number | null
-  revenue?: string
+  revenue?: string | null
   currency: string
   category: string
   categorySlug: string
   categories: { name: string; slug: string }[]
   country?: { name: string; slug: string; flag: string; iso_code?: string } | null
-  provider: PaymentProvider
+  provider: PaymentProvider | null
   views: number
   publishedAt: string
 }
@@ -54,6 +54,7 @@ export interface CountryStartupItem {
   logoUrl: string | null
   websiteUrl: string | null
   revenue: number | null
+  hasProvider: boolean
 }
 
 export interface CountryStartupPage {

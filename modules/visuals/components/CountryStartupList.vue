@@ -3,6 +3,7 @@ import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { HelpCircle } from 'lucide-vue-next'
 import type { CountryStartupItem, CountryStartupPage } from '~/modules/ranking/types'
 import SaasLogo from '~/ui/components/SaasLogo.vue'
+import IncognitoIcon from '~/ui/components/IncognitoIcon.vue'
 
 const props = defineProps<{ country: string }>()
 const localePath = useLocalePath()
@@ -100,7 +101,10 @@ onUnmounted(() => {
 
         <div class="text-right min-w-[75px] shrink-0">
           <span class="font-mono text-xs md:text-sm font-medium text-white inline-flex items-center justify-end">
-            <template v-if="formatRevenue(startup.revenue)">{{ formatRevenue(startup.revenue) }}</template>
+            <template v-if="!startup.hasProvider">
+              <IncognitoIcon class="w-5 h-5 text-neutral-400" />
+            </template>
+            <template v-else-if="formatRevenue(startup.revenue)">{{ formatRevenue(startup.revenue) }}</template>
             <HelpCircle v-else class="w-5 h-5 text-neutral-400" title="Revenue no confirmado" aria-label="Revenue no confirmado" />
           </span>
           <span class="text-[10px] block text-neutral-500 font-sans tracking-wider uppercase mt-0.5">Revenue</span>

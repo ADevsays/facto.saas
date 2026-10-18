@@ -12,8 +12,8 @@ const props = defineProps<{
   slug?: string | null
   category: string
   categorySlug: string
-  mrr: string
-  revenue?: string
+  mrr: string | null
+  revenue?: string | null
   logoUrl?: string | null
   websiteUrl?: string | null
   isIncognito?: boolean
@@ -58,14 +58,14 @@ const cardStyle = computed(() => ({
         <div class="flex flex-col">
           <span class="text-[9px] font-sans font-extralight tracking-[0.1em] text-neutral-500 uppercase">{{ labelLeft || 'MRR' }}</span>
           <span class="text-xs font-mono text-white">
-            <template v-if="mrr !== '—'">{{ mrr }}</template>
+            <template v-if="mrr !== null">{{ mrr }}</template>
             <IncognitoIcon v-else class="w-4 h-4 text-neutral-600 inline" />
           </span>
         </div>
-        <div v-if="revenue" class="flex flex-col items-end">
+        <div v-if="revenue !== undefined" class="flex flex-col items-end">
           <span class="text-[9px] font-sans font-extralight tracking-[0.1em] text-neutral-500 uppercase">{{ labelRight || 'ARR' }}</span>
           <span class="text-xs font-mono text-neutral-200">
-            <template v-if="revenue !== '—'">{{ revenue }}</template>
+            <template v-if="revenue !== null">{{ revenue }}</template>
             <IncognitoIcon v-else class="w-4 h-4 text-[#00D4FF]/60 inline" />
           </span>
         </div>

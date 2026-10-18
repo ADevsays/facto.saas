@@ -30,7 +30,8 @@ export default defineEventHandler(async (event) => {
         categories!saas_categories ( name, slug ),
         countries!saas_countries ( name, slug, flag, iso_code ),
         payment_providers ( slug ),
-        founder:founders!saas_entries_founder_id_fkey ( avatar_url, bio, twitter_url, linkedin_url, instagram_url )
+        founder:founders!saas_entries_founder_id_fkey ( avatar_url, bio, twitter_url, linkedin_url, instagram_url ),
+        saas_achievements ( achievement_type, unlocked_at )
       `)
       .eq('slug', slug)
       .order('published_at', { ascending: false })
@@ -46,7 +47,8 @@ export default defineEventHandler(async (event) => {
           categories!saas_categories ( name, slug ),
           countries!saas_countries ( name, slug, flag, iso_code ),
           payment_providers ( slug ),
-          founder:founders!saas_entries_founder_id_fkey ( avatar_url, bio, twitter_url, linkedin_url, instagram_url )
+          founder:founders!saas_entries_founder_id_fkey ( avatar_url, bio, twitter_url, linkedin_url, instagram_url ),
+          saas_achievements ( achievement_type, unlocked_at )
         `)
         .eq('slug', slug)
         .order('published_at', { ascending: false })
@@ -93,6 +95,7 @@ export default defineEventHandler(async (event) => {
     }
  
     const providerSlug = (dbEntry.payment_providers as any)?.slug
+    const hasConnectedProvider = Boolean(providerSlug)
     let mrrVal = dbEntry.mrr !== null ? Number(dbEntry.mrr) : null
     let persistedRevenue = dbEntry.revenue !== null && dbEntry.revenue !== undefined
       ? Number(dbEntry.revenue)
@@ -121,10 +124,11 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    const revenueValue = persistedRevenue !== null && Number.isFinite(persistedRevenue) && persistedRevenue > 0
+    const revenueValue = persistedRevenue !== null && Number.isFinite(persistedRevenue)
+      && persistedRevenue >= 0 && hasConnectedProvider
       ? persistedRevenue
       : null
-    let allTimeRev = '—'
+    let allTimeRev: string | null = null
     if (revenueValue !== null) {
       if (revenueValue >= 1_000_000) allTimeRev = `$${(revenueValue / 1_000_000).toFixed(1)}M`.replace('.0', '')
       else if (revenueValue >= 1_000) allTimeRev = `$${(revenueValue / 1_000).toFixed(1).replace('.0', '')}K`
@@ -150,7 +154,7 @@ export default defineEventHandler(async (event) => {
       category: (dbEntry.categories as any[])?.[0]?.name ?? 'Software',
       categorySlug: (dbEntry.categories as any[])?.[0]?.slug ?? 'software',
       categories: dbEntry.categories || [],
-      provider: providerSlug ?? 'stripe',
+      provider: providerSlug ?? null,
       views: seoOnly ? Number(dbEntry.views) || 0 : nextViews,
       publishedAt: dbEntry.published_at,
       allTimeRevenue: allTimeRev,
@@ -168,8 +172,16 @@ export default defineEventHandler(async (event) => {
       acquisitionChannels: Array.isArray(dbEntry.acquisition_channels) ? dbEntry.acquisition_channels : [],
       factoMessage: dbEntry.facto_message || null,
       faq: Array.isArray(dbEntry.faq) ? dbEntry.faq : [],
-      githubRepo: dbEntry.github_repo || null
+      githubRepo: dbEntry.github_repo || null,
+      latestMilestone: null as number | null
     }
+
+    const achievements = Array.isArray(dbEntry.saas_achievements) ? dbEntry.saas_achievements : []
+    const achievement = achievements.reduce((latest: any, item: any) => (
+      !latest || item.unlocked_at > latest.unlocked_at ? item : latest
+    ), null)
+    const milestone = parseInt(achievement?.achievement_type, 10)
+    if (milestone > 0) result.latestMilestone = milestone
 
     const founderData = Array.isArray(dbEntry.founder) ? dbEntry.founder[0] : dbEntry.founder
     if (founderData) {

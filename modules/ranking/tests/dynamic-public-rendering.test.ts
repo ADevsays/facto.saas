@@ -226,12 +226,12 @@ test('history summary never annualizes MRR as all-time revenue', () => {
   assert.deepEqual(summarizeSaasHistory(null, 125, 100), {
     mrr: 125,
     revenue: null,
-    formattedRevenue: '—',
+    formattedRevenue: null,
   })
   assert.deepEqual(summarizeSaasHistory(null, null, 100), {
     mrr: null,
     revenue: null,
-    formattedRevenue: '—',
+    formattedRevenue: null,
   })
 })
 

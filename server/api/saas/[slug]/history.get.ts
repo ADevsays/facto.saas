@@ -114,7 +114,7 @@ export default defineEventHandler(async (event) => {
           ...(legacySnapshot && !cachedHistory ? {
             mrr: legacySnapshot.mrr,
             revenue: legacySnapshot.revenue,
-            formattedRevenue: legacySnapshot.revenue === null ? '—' : `$${(legacySnapshot.revenue / 1000).toFixed(1).replace('.0', '')}K`,
+            formattedRevenue: legacySnapshot.revenue === null ? null : `$${(legacySnapshot.revenue / 1000).toFixed(1).replace('.0', '')}K`,
           } : summarizeSaasHistory(cachedHistory, fallbackMrr)),
           keyStatus: status === 401 ? 'invalid' : 'permissions',
         }

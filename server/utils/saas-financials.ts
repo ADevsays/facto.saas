@@ -37,8 +37,8 @@ export async function fetchCachedFinancialSummaries(
   return summaries
 }
 
-function formatRevenue(value: number | null): string {
-  if (value === null) return '—'
+function formatRevenue(value: number | null): string | null {
+  if (value === null) return null
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`.replace('.0', '')
   if (value >= 1_000) return `$${(value / 1_000).toFixed(1).replace('.0', '')}K`
   return `$${Math.round(value)}`

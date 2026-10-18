@@ -57,7 +57,8 @@ export default defineEventHandler(async (event) => {
     .select(
       'id, name, slug, logo_url, website_url, startup_type, is_incognito, mrr, revenue, currency, views, published_at,' +
       'categories!saas_categories ( name, slug ),' +
-      'countries!saas_countries ( name, slug, flag, iso_code )'
+      'countries!saas_countries ( name, slug, flag, iso_code ),' +
+      'payment_providers ( slug )'
     )
     .eq('status', 'published')
 
@@ -79,8 +80,10 @@ export default defineEventHandler(async (event) => {
       ? Number(s.revenue)
       : null
 
-    let formattedRevenue = '—'
-    if (revenueVal !== null && !isIncognito) {
+    const providerRelation = s.payment_providers as { slug?: string } | { slug?: string }[] | null
+    const hasProvider = Boolean(Array.isArray(providerRelation) ? providerRelation[0]?.slug : providerRelation?.slug)
+    let formattedRevenue: string | null = null
+    if (revenueVal !== null && !isIncognito && hasProvider) {
       if (revenueVal >= 1000000) formattedRevenue = `$${(revenueVal / 1000000).toFixed(1)}M`.replace('.0', '')
       else if (revenueVal >= 1000) formattedRevenue = `$${(revenueVal / 1000).toFixed(1).replace('.0', '')}K`
       else formattedRevenue = `$${Math.round(revenueVal)}`
@@ -101,7 +104,7 @@ export default defineEventHandler(async (event) => {
       startupType: s.startup_type,
       isIncognito,
       mrr: isIncognito ? null : mrrVal,
-      revenue: isIncognito ? '—' : formattedRevenue,
+      revenue: isIncognito || !hasProvider ? null : formattedRevenue,
       numericRevenue: isIncognito ? null : revenueVal,
       currency: s.currency || 'USD',
       category: categories[0]?.name ?? 'Software',
@@ -110,7 +113,7 @@ export default defineEventHandler(async (event) => {
       country: s.saas_countries?.[0] ?? s.countries?.[0] ?? null,
       views: s.views || 0,
       publishedAt: s.published_at,
-      provider: 'stripe'
+      provider: (Array.isArray(providerRelation) ? providerRelation[0]?.slug : providerRelation?.slug) || null
     }
   })
 

@@ -14,8 +14,8 @@ const props = defineProps<{
 
 const rowColor = computed(() => getGemColor(props.item.categorySlug))
 
-function formatMrr(mrr: number | null, currency: string): string {
-  if (mrr === null) return '—'
+function formatMrr(mrr: number | null, currency: string): string | null {
+  if (mrr === null) return null
   return new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(mrr)
 }
 
@@ -70,9 +70,9 @@ const localePath = useLocalePath()
     <!-- REVENUE -->
     <div
       class="text-sm font-mono tabular-nums text-right flex items-center justify-end w-full"
-      :class="item.revenue && item.revenue !== '—' ? 'text-[#00D4FF]' : 'text-neutral-600'"
+      :class="item.revenue !== null && item.revenue !== undefined ? 'text-[#00D4FF]' : 'text-neutral-600'"
     >
-      <template v-if="item.revenue && item.revenue !== '—'">{{ item.revenue }}</template>
+      <template v-if="item.revenue !== null && item.revenue !== undefined">{{ item.revenue }}</template>
       <IncognitoIcon v-else class="w-4 h-4" />
     </div>
   </NuxtLink>

@@ -17,7 +17,7 @@ const props = defineProps<{
     currency: string
     founderName: string | null
     publishedAt: string
-    allTimeRevenue?: string
+    allTimeRevenue?: string | null
     hasCachedHistory?: boolean
     country?: string
     countrySlug?: string
@@ -32,7 +32,7 @@ const route = useRoute()
 import { getFounderSlug } from '~/utils/founder'
 
 function formatCurrency(val: number | null, curr: string) {
-  if (val === null) return '—'
+  if (val === null) return null
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: curr, maximumFractionDigits: 0 }).format(val)
 }
 
@@ -47,7 +47,7 @@ const hasAllTimeRevenue = computed(() => {
   const rev = props.saas.allTimeRevenue
   if (!rev) return false
   const str = String(rev).trim()
-  return !['', '—', '‐', '-', '–', 'null', 'undefined'].includes(str)
+  return !['', 'null', 'undefined'].includes(str)
 })
 
 const founderLink = computed(() => {
@@ -71,7 +71,6 @@ const founderLink = computed(() => {
       <div class="w-full flex justify-center">
         <span class="text-xl md:text-2xl font-serif text-white font-semibold">
           <template v-if="!saas.isIncognito && saas.mrr !== null">{{ formatCurrency(saas.mrr, saas.currency) }}</template>
-          <span v-else-if="!saas.isIncognito && mrrStatus && mrrStatus !== 'ok'" class="text-neutral-500">—</span>
           <IncognitoIcon v-else class="w-6 h-6 text-neutral-500" />
         </span>
       </div>

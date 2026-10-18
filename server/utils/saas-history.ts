@@ -14,7 +14,7 @@ export interface SaasHistoryData {
 export interface SaasHistorySummary {
   mrr: number | null
   revenue: number | null
-  formattedRevenue: string
+  formattedRevenue: string | null
 }
 
 export type SaasHistoryTimeframe = '7d' | '30d' | '60d' | 'all'
@@ -90,8 +90,8 @@ export function hasFinancialHistory(history: SaasHistoryData | null | undefined)
   )
 }
 
-export function formatRevenue(value: number | null): string {
-  if (value === null) return '—'
+export function formatRevenue(value: number | null): string | null {
+  if (value === null) return null
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`.replace('.0', '')
   if (value >= 1_000) return `$${(value / 1_000).toFixed(1).replace('.0', '')}K`
   return `$${Math.round(value)}`

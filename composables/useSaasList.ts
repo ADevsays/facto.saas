@@ -2,11 +2,17 @@ import { computed, watch } from 'vue'
 import type { SaasListItem, SaasListState } from '~/modules/ranking/types'
 import { getCategoryDisplayName } from '~/utils/categories'
 
-const parseRevenue = (value?: string, _fallbackMrr?: number | null) => {
-  if (!value || value === '—') return 0
+const parseRevenue = (value?: string | null, _fallbackMrr?: number | null) => {
+  if (!value) return 0
   const amount = Number.parseFloat(value.replace(/[^0-9.]/g, ''))
   const multiplier = value.includes('M') ? 1_000_000 : value.includes('K') ? 1_000 : 1
   return (amount * multiplier) || 0
+}
+
+const compareByRevenue = (a: SaasListItem, b: SaasListItem) => {
+  const revenueDiff = parseRevenue(b.revenue, b.mrr) - parseRevenue(a.revenue, a.mrr)
+  if (revenueDiff !== 0) return revenueDiff
+  return Number(Boolean(b.provider)) - Number(Boolean(a.provider))
 }
 
 type SaasListScope = 'home' | 'ranking' | 'catalog' | 'recommendations'
@@ -71,7 +77,7 @@ export function useSaasList(options: { server?: boolean; scope?: SaasListScope }
         if (a.mrr === null && b.mrr === null) return (b.views ?? 0) - (a.views ?? 0)
         if (a.mrr === null) return 1
         if (b.mrr === null) return -1
-        return parseRevenue(b.revenue, b.mrr) - parseRevenue(a.revenue, a.mrr)
+        return compareByRevenue(a, b)
       })
   )
 
@@ -85,7 +91,7 @@ export function useSaasList(options: { server?: boolean; scope?: SaasListScope }
     const withMrr = localizedItems.value.filter((i) => i.mrr !== null)
     if (withMrr.length >= 3) {
       return withMrr.sort((a, b) => {
-        return parseRevenue(b.revenue, b.mrr) - parseRevenue(a.revenue, a.mrr)
+        return compareByRevenue(a, b)
       }).slice(0, 6)
     }
     return [...localizedItems.value]

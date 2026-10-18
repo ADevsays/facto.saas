@@ -132,7 +132,7 @@ useAppSeo({
               {{ t.founder_profile.total_revenue }}
             </span>
             <span class="font-serif text-2xl md:text-3xl font-normal text-white tracking-tight block md:text-right">
-              <template v-if="hasPublicRevenue && totalRevenueFormatted && totalRevenueFormatted !== '—'">
+              <template v-if="hasPublicRevenue && totalRevenueFormatted">
                 {{ totalRevenueFormatted }}
               </template>
               <IncognitoIcon v-else class="w-6 h-6 text-neutral-500 inline-block md:ml-auto" />

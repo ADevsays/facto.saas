@@ -29,7 +29,7 @@ interface Props {
     hasFounderEmail?: boolean
     publishedAt: string
     views: number
-    allTimeRevenue?: string
+    allTimeRevenue?: string | null
     country?: string
     countrySlug?: string
     countryFlag?: string
@@ -68,7 +68,7 @@ const providerKeyStatus = ref<'ok' | 'invalid' | 'permissions' | 'missing'>('ok'
 const effectiveMrr = computed(() => historyResolved.value ? historyMrr.value : props.saas.mrr)
 const effectiveAllTimeRevenue = computed(() => {
   if (!historyResolved.value) return props.saas.allTimeRevenue
-  if (historyRevenue.value === null || historyRevenue.value <= 0) return props.saas.allTimeRevenue || '—'
+  if (historyRevenue.value === null || historyRevenue.value <= 0) return props.saas.allTimeRevenue || null
   if (historyRevenue.value >= 1_000_000) return `$${(historyRevenue.value / 1_000_000).toFixed(1)}M`.replace('.0', '')
   if (historyRevenue.value >= 1_000) return `$${(historyRevenue.value / 1_000).toFixed(1).replace('.0', '')}K`
   return `$${Math.round(historyRevenue.value)}`

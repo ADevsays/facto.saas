@@ -5,7 +5,7 @@ export interface SaasShareOptions {
   slug: string
   logoUrl?: string | null
   views?: number
-  allTimeRevenue?: string
+  allTimeRevenue?: string | null
   mrr?: number | null
   currency?: string
 }
@@ -16,7 +16,7 @@ export interface SaasShareData {
   slug: string
   logoUrl?: string | null
   views: number
-  allTimeRevenue?: string
+  allTimeRevenue?: string | null
   mrr?: number | null
   currency: string
   shareText: string
@@ -54,7 +54,7 @@ export function useShareModal() {
     const url = `${baseUrl}${pathPrefix}/${slug}?ref=facto&utm_source=share&utm_medium=social_proof`
     
     const formattedViews = views > 0 ? views.toLocaleString('en-US') : '0'
-    const hasRevenue = allTimeRevenue && allTimeRevenue !== '—' && allTimeRevenue !== '$0'
+  const hasRevenue = allTimeRevenue && allTimeRevenue !== '$0'
     const hasMrr = mrr !== null && mrr !== undefined && mrr > 0
 
     let revenueDisplay = '$0'

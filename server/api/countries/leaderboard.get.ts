@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
 
   const { data, error } = await supabase
     .from('saas_entries')
-    .select('revenue, countries!saas_countries (name, slug, flag, iso_code)')
+    .select('revenue, payment_providers ( slug ), countries!saas_countries (name, slug, flag, iso_code)')
     .eq('status', 'published')
     .not('is_incognito', 'is', true)
 
@@ -51,6 +51,8 @@ export default defineEventHandler(async (event) => {
   for (const row of data || []) {
     const country = (row.countries || [])[0]
     if (!country || country.slug === 'global') continue
+    const providerRelation = row.payment_providers as { slug?: string } | { slug?: string }[] | null
+    const providerSlug = Array.isArray(providerRelation) ? providerRelation[0]?.slug : providerRelation?.slug
 
     const current = countries.get(country.slug) || {
       name: country.name,
@@ -61,7 +63,7 @@ export default defineEventHandler(async (event) => {
       startupsCount: 0
     }
     const revenue = Number(row.revenue)
-    if (Number.isFinite(revenue) && revenue >= 0) current.totalRevenue += revenue
+    if (providerSlug && Number.isFinite(revenue) && revenue >= 0) current.totalRevenue += revenue
     current.startupsCount += 1
     countries.set(current.slug, current)
   }

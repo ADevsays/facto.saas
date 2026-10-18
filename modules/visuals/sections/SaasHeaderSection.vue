@@ -22,7 +22,7 @@ const props = defineProps<{
     description: string | null
     categories?: { name: string; slug: string }[]
     views?: number
-    allTimeRevenue?: string
+    allTimeRevenue?: string | null
     mrr?: number | null
     currency?: string
   }

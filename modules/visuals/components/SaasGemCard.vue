@@ -28,7 +28,7 @@ const cardStyle = computed(() => ({
 }))
 
 const formattedMrr = computed(() => {
-  if (props.saas.mrr === null) return '—'
+  if (props.saas.mrr === null || !props.saas.provider) return null
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: props.saas.currency || 'USD',
@@ -37,8 +37,7 @@ const formattedMrr = computed(() => {
 })
 
 const annualRevenue = computed(() => {
-  if (props.saas.isIncognito) return '—'
-  if (props.saas.mrr === null) return '—'
+  if (props.saas.isIncognito || !props.saas.provider || props.saas.mrr === null) return null
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: props.saas.currency || 'USD',
@@ -120,6 +119,7 @@ const countryFlagSrc = computed(() => {
         :src="countryFlagSrc" 
         :alt="saas.country?.name || 'Bandera'" 
         class="absolute top-0 left-0 w-full h-full object-cover"
+        loading="lazy"
       />
       <div v-else class="absolute top-0 left-0 w-full h-full text-neutral-400">
         <svg class="absolute -top-[10px] -left-[10px] w-[32px] h-[32px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
@@ -177,14 +177,14 @@ const countryFlagSrc = computed(() => {
         <div class="flex flex-col">
           <span class="text-[9px] font-sans font-extralight tracking-[0.08em] text-neutral-500 uppercase">{{ t.gem_card.mrr }}</span>
           <span class="text-sm font-mono text-white mt-1">
-            <template v-if="!saas.isIncognito && saas.mrr !== null">{{ formattedMrr }}</template>
+            <template v-if="formattedMrr !== null">{{ formattedMrr }}</template>
             <IncognitoIcon v-else class="w-4 h-4 text-neutral-600 inline" />
           </span>
         </div>
         <div class="flex flex-col items-end">
           <span class="text-[9px] font-sans font-extralight tracking-[0.08em] text-neutral-500 uppercase">{{ t.gem_card.arr_est }}</span>
           <span class="text-sm font-mono text-neutral-300 mt-1">
-            <template v-if="!saas.isIncognito && annualRevenue !== '—'">{{ annualRevenue }}</template>
+            <template v-if="annualRevenue !== null">{{ annualRevenue }}</template>
             <IncognitoIcon v-else class="w-4 h-4 text-[#00D4FF]/60 inline" />
           </span>
         </div>

@@ -35,8 +35,30 @@ test('country startup chunks reuse public logo fallbacks and preserve unknown re
   const countryList = readProjectFile('modules/visuals/components/CountryStartupList.vue')
   assert.match(ranking, /website_url/)
   assert.match(ranking, /row\.revenue === null \|\| row\.revenue === undefined/)
+  assert.match(ranking, /payment_providers \( slug \)/)
+  assert.match(ranking, /revenue: hasProvider && revenue !== null/)
+  assert.match(countryList, /<IncognitoIcon v-if="!startup\.hasProvider"|<template v-if="!startup\.hasProvider">[\s\S]*?<IncognitoIcon/)
   assert.match(countryList, /:website-url="startup\.websiteUrl"/)
   assert.match(countryList, /<HelpCircle v-else/)
+})
+
+test('connected zero revenue outranks startups without a payment provider', () => {
+  const ranking = readProjectFile('modules/ranking/server/services/ranking.ts')
+  const homeList = readProjectFile('composables/useSaasList.ts')
+  assert.match(ranking, /hasConnectedProvider && Number\.isFinite\(numericRevenue\) && numericRevenue >= 0/)
+  assert.match(ranking, /Number\(Boolean\(b\.provider\)\) - Number\(Boolean\(a\.provider\)\)/)
+  assert.match(homeList, /const compareByRevenue = \(a: SaasListItem, b: SaasListItem\)/)
+  assert.match(homeList, /Number\(Boolean\(b\.provider\)\) - Number\(Boolean\(a\.provider\)\)/)
+})
+
+test('recent cards use the incognito marker instead of an ARR dash without a provider', () => {
+  const formatter = readProjectFile('utils/format.ts')
+  const recentSection = readProjectFile('modules/visuals/sections/RecentlySection.vue')
+  const card = readProjectFile('modules/visuals/components/SaasCard.vue')
+  assert.match(formatter, /if \(mrr === null\) return null/)
+  assert.match(recentSection, /item\.provider \? formatRevenueValue\(item\.mrr\) : null/)
+  assert.doesNotMatch(card, /revenue !== '—'/)
+  assert.doesNotMatch(card, /mrr !== '—'/)
 })
 
 test('startup ranking excludes anonymous startups from rankingItems and ranking endpoint', () => {

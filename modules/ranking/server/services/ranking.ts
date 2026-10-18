@@ -8,15 +8,15 @@ const SORT_COLUMN: Record<SortOption, string> = {
   views: 'views',
 }
 
-export function formatPersistedRevenue(revenue: unknown, _mrr: number | null): string {
+export function formatPersistedRevenue(revenue: unknown, _mrr: number | null, hasConnectedProvider: boolean): string | null {
   const numericRevenue = typeof revenue === 'number'
     ? revenue
     : typeof revenue === 'string' && revenue.trim() !== ''
       ? Number(revenue)
       : Number.NaN
-  const value = Number.isFinite(numericRevenue) && numericRevenue > 0 ? numericRevenue : null
+  const value = hasConnectedProvider && Number.isFinite(numericRevenue) && numericRevenue >= 0 ? numericRevenue : null
 
-  if (value === null) return '—'
+  if (value === null) return null
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`.replace('.0', '')
   if (value >= 1_000) return `$${(value / 1_000).toFixed(1).replace('.0', '')}K`
   return `$${Math.round(value)}`
@@ -29,7 +29,7 @@ export async function fetchCountryStartups({ country, limit, offset }: {
 }): Promise<CountryStartupPage> {
   const { data, error } = await supabase
     .from('saas_entries')
-    .select('name, slug, logo_url, website_url, revenue, countries!saas_countries!inner (slug)')
+    .select('name, slug, logo_url, website_url, revenue, payment_providers ( slug ), countries!saas_countries!inner (slug)')
     .eq('status', 'published')
     .not('is_incognito', 'is', true)
     .eq('countries.slug', country)
@@ -40,6 +40,9 @@ export async function fetchCountryStartups({ country, limit, offset }: {
 
   const rows = data || []
   const items: CountryStartupItem[] = rows.slice(0, limit).map(row => {
+    const providerRelation = row.payment_providers as { slug?: string } | { slug?: string }[] | null
+    const providerSlug = Array.isArray(providerRelation) ? providerRelation[0]?.slug : providerRelation?.slug
+    const hasProvider = Boolean(providerSlug)
     const revenue = row.revenue === null || row.revenue === undefined || row.revenue === ''
       ? null
       : Number(row.revenue)
@@ -48,15 +51,16 @@ export async function fetchCountryStartups({ country, limit, offset }: {
       slug: row.slug,
       logoUrl: getPublicLogoUrl(row.logo_url),
       websiteUrl: row.website_url || null,
-      revenue: revenue !== null && Number.isFinite(revenue) && revenue >= 0 ? revenue : null
+      revenue: hasProvider && revenue !== null && Number.isFinite(revenue) && revenue >= 0 ? revenue : null,
+      hasProvider
     }
   })
 
   return { items, hasMore: rows.length > limit }
 }
 
-function parseFormattedRevenue(revenue: string | undefined, _mrr: number | null): number {
-  if (!revenue || revenue === '—') return 0
+function parseFormattedRevenue(revenue: string | null | undefined, _mrr: number | null): number {
+  if (!revenue) return 0
   const amount = Number.parseFloat(revenue.replace(/[^0-9.]/g, ''))
   const multiplier = revenue.includes('M') ? 1_000_000 : revenue.includes('K') ? 1_000 : 1
   return (amount * multiplier) || 0
@@ -72,6 +76,8 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
 
   const countries = (row.countries as { name: string; slug: string; flag: string; iso_code?: string }[]) || []
   let selectedCountry = countries[0] || null
+  const providerRelation = row.payment_providers as { slug?: string } | { slug?: string }[] | null
+  const providerSlug = Array.isArray(providerRelation) ? providerRelation[0]?.slug : providerRelation?.slug
 
   return {
     id: row.id as string,
@@ -82,13 +88,13 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
     founderName: row.founder_name as string | null,
     isIncognito: row.is_incognito === true || row.is_incognito === 'true',
     mrr: row.mrr === null ? null : Number(row.mrr),
-    revenue: formatPersistedRevenue(row.revenue, row.mrr === null ? null : Number(row.mrr)),
+    revenue: formatPersistedRevenue(row.revenue, row.mrr === null ? null : Number(row.mrr), Boolean(providerSlug)),
     currency: row.currency as string,
     category: selectedCat?.name ?? '',
     categorySlug: selectedCat?.slug ?? '',
     categories: cats,
     country: selectedCountry,
-    provider: (row.payment_providers as Record<string, string>)?.slug as SaasListItem['provider'],
+    provider: (providerSlug as SaasListItem['provider']) || null,
     views: row.views as number,
     publishedAt: row.published_at as string,
     description: (row.startup_type as string) || null,
@@ -172,7 +178,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
     const item = mapRow(row as unknown as Record<string, unknown>, category)
     if (Number(row.mrr) > 0 && Number(row.revenue) === Number(row.mrr) * 12) {
       // This exact value is the legacy MRR × 12 estimate, not verified charges.
-      item.revenue = '—'
+      item.revenue = null
     }
 
     return item
@@ -180,7 +186,9 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
 
   if (sort === 'mrr') {
     items.sort((a, b) => {
-      return parseFormattedRevenue(b.revenue, b.mrr) - parseFormattedRevenue(a.revenue, a.mrr)
+      const revenueDiff = parseFormattedRevenue(b.revenue, b.mrr) - parseFormattedRevenue(a.revenue, a.mrr)
+      if (revenueDiff !== 0) return revenueDiff
+      return Number(Boolean(b.provider)) - Number(Boolean(a.provider))
     })
   }
 

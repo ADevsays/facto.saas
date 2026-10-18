@@ -12,7 +12,7 @@ const props = defineProps<{
 }>()
 
 const formattedRevenue = computed(() => {
-  if (props.revenue && props.revenue !== '—') return props.revenue
+  if (props.revenue) return props.revenue
   if (props.mrr !== null && props.mrr !== undefined && !isNaN(Number(props.mrr))) {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Number(props.mrr))
   }
