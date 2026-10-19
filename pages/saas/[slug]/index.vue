@@ -96,10 +96,22 @@ useHead(() => {
 
 const localePath = useLocalePath()
 
-function resolveOgLogoUrl(logoUrl?: string | null): string {
+function resolveOgLogoUrl(logoUrl?: string | null, websiteUrl?: string | null): string {
   const raw = String(logoUrl || '').trim()
   const clean = raw.toLowerCase().split('?')[0]
-  if (!raw || clean.endsWith('.ico') || raw.includes('google.com/s2/favicons') || raw.includes('googleusercontent.com/s2/favicons') || raw.includes('icons.duckduckgo.com/ip3/') || raw.includes('icon.horse/icon/')) return ''
+  const isGeneratedFallback = clean.endsWith('.ico') || raw.includes('google.com/s2/favicons') || raw.includes('googleusercontent.com/s2/favicons') || raw.includes('icons.duckduckgo.com/ip3/') || raw.includes('icon.horse/icon/')
+
+  if (!isGeneratedFallback && raw) return raw
+
+  if (websiteUrl) {
+    try {
+      const hostname = new URL(websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`).hostname
+      return `https://t0.gstatic.com/faviconV2?client=SOCIAL&drop_404_icon=true&type=FAVICON&size=128&fallback_opts=TYPE,SIZE&url=https://${hostname}`
+    } catch {
+      // Keep the OG safe when a legacy website URL is malformed.
+    }
+  }
+
   return raw
 }
 
@@ -110,7 +122,7 @@ if (import.meta.server && profileSaas.value) {
   if (isMilestoneView) {
     defineOgImageComponent('VisitsMilestone', {
       name: String(serverSaas.name || 'SaaS'),
-      logoUrl: resolveOgLogoUrl(serverSaas.logoUrl),
+      logoUrl: resolveOgLogoUrl(serverSaas.logoUrl, serverSaas.websiteUrl),
       milestone: serverSaas.latestMilestone,
       revenue: String(revenueDisplay.value),
       views: String(viewsDisplay.value),
@@ -120,7 +132,7 @@ if (import.meta.server && profileSaas.value) {
   } else {
     defineOgImageComponent('SaasProfile', {
       name: String(serverSaas.name || 'SaaS'),
-      logoUrl: resolveOgLogoUrl(serverSaas.logoUrl),
+      logoUrl: resolveOgLogoUrl(serverSaas.logoUrl, serverSaas.websiteUrl),
       revenue: String(revenueDisplay.value),
       views: String(viewsDisplay.value),
       category: String(serverSaas.categories?.[0]?.name || 'Software'),

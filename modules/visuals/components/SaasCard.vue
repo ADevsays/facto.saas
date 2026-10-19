@@ -42,7 +42,7 @@ const cardStyle = computed(() => ({
         :src="!isIncognito ? logoUrl : null"
         :alt="name"
         :initial="isIncognito ? '?' : name[0].toUpperCase()"
-        size="md"
+        size="home"
         :gem-color="gemColor"
         :websiteUrl="websiteUrl"
       />
@@ -57,14 +57,14 @@ const cardStyle = computed(() => ({
       <div class="flex items-center justify-between gap-2">
         <div class="flex flex-col">
           <span class="text-[9px] font-sans font-extralight tracking-[0.1em] text-neutral-500 uppercase">{{ labelLeft || 'MRR' }}</span>
-          <span class="text-xs font-mono text-white">
+          <span class="text-sm font-mono text-white">
             <template v-if="mrr !== null">{{ mrr }}</template>
             <IncognitoIcon v-else class="w-4 h-4 text-neutral-600 inline" />
           </span>
         </div>
         <div v-if="revenue !== undefined" class="flex flex-col items-end">
           <span class="text-[9px] font-sans font-extralight tracking-[0.1em] text-neutral-500 uppercase">{{ labelRight || 'ARR' }}</span>
-          <span class="text-xs font-mono text-neutral-200">
+          <span class="text-sm font-mono text-neutral-200">
             <template v-if="revenue !== null">{{ revenue }}</template>
             <IncognitoIcon v-else class="w-4 h-4 text-[#00D4FF]/60 inline" />
           </span>

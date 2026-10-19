@@ -80,6 +80,17 @@ test('profile OG image uses only serializable Island props', () => {
   assert.doesNotMatch(profilePage, /mrr:\s*null/)
 })
 
+test('visits milestone OG mirrors the normal startup OG logo handling', () => {
+  const milestoneOg = readProjectFile('components/OgImage/VisitsMilestone.vue')
+  const profileOg = readProjectFile('components/OgImage/SaasProfile.vue')
+  const profilePage = readProjectFile('pages/saas/[slug]/index.vue')
+
+  assert.match(milestoneOg, /<img :src="logoUrl"/)
+  assert.match(milestoneOg, /return !clean\.endsWith\('\.webp'\) && !clean\.endsWith\('\.ico'\)/)
+  assert.match(profileOg, /return !clean\.endsWith\('\.webp'\) && !clean\.endsWith\('\.ico'\)/)
+  assert.match(profilePage, /resolveOgLogoUrl\(serverSaas\.logoUrl, serverSaas\.websiteUrl\)/)
+})
+
 test('og-island-compat plugin reconciles legacy nuxt-og-image hash in event.$fetch with Nuxt island hash algorithm', async () => {
   const plugin = (await import('../../../server/plugins/og-island-compat')).default
   const { hash } = await import('ohash')

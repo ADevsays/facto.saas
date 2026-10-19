@@ -8,7 +8,7 @@ const props = withDefaults(defineProps<{
   src: string | null | undefined
   alt: string
   initial: string
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'custom'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'home' | 'custom'
   gemColor?: string
   rounded?: 'lg' | 'xl'
   websiteUrl?: string | null
@@ -168,6 +168,7 @@ const sizeMap = {
   md: 'w-8 h-8',
   lg: 'w-12 h-12',
   xl: 'w-10 h-10 md:w-14 md:h-14',
+  home: 'w-8 h-8',
   custom: '',
 }
 </script>

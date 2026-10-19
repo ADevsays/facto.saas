@@ -95,6 +95,7 @@ const filteredItems = computed(() => {
         :key="item.id"
         :position="index + 1"
         :item="item"
+        :logo-size="scope === 'home' ? 'home' : 'sm'"
       />
     </div>
   </section>

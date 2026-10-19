@@ -10,6 +10,7 @@ import { getGemColor } from '~/ui/const/gems'
 const props = defineProps<{
   position: number
   item: SaasListItem
+  logoSize?: 'sm' | 'home'
 }>()
 
 const rowColor = computed(() => getGemColor(props.item.categorySlug))
@@ -39,7 +40,7 @@ const localePath = useLocalePath()
         :src="item.logoUrl"
         :alt="item.name ?? ''"
         :initial="item.name?.[0] ?? '?'"
-        size="sm"
+        :size="logoSize || 'sm'"
         :gem-color="rowColor"
         :websiteUrl="item.websiteUrl"
       />
@@ -82,5 +83,9 @@ const localePath = useLocalePath()
 .ranking-row:hover {
   background-color: rgba(255, 255, 255, 0.06);
   box-shadow: inset 0 0 60px color-mix(in srgb, var(--glow) 20%, transparent);
+}
+
+.ranking-row {
+  background-color: color-mix(in srgb, var(--glow) 4%, transparent);
 }
 </style>
