@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [Hitos de Visitas en Telegram y OG Image Dinámica] - 2026-10-19
+
+- **Notificación Reactiva de Hitos de Visitas a Telegram**:
+  - Al superar un umbral de visitas (50, 100, 250, 500, 1K, etc.) en `checkAndNotifyAchievement` (`modules/achievements/server/services/achievements.ts`), se dispara reactivamente `notifyVisitsMilestoneReactive({ startupId, milestone })`.
+  - Envía mensaje al canal de Telegram con la insignia oficial (`badge-${milestone}.png`) y texto formateado con enlaces UTM que dirigen al perfil con parámetro de hito (`?h=mile`).
+  - Idempotencia estricta en base de datos mediante clave única `visits_milestone:<startupId>:<milestone>`.
+  - Soporte completo para startups anónimas / en modo incógnito (oculta el nombre real y enlaza a `/ranking` en lugar del perfil).
+- **OG Image Dinámica para Hitos**:
+  - Nuevo componente `components/OgImage/VisitsMilestone.vue` que renderiza la tarjeta Open Graph con la insignia y número de visitas cuando se comparte un enlace con `?h=mile`.
+  - Soporte de middleware `server/middleware/ogQuery.ts` para reconciliación de props.
+- **Correo de Notificación de Hito**:
+  - Se añadió bloque para impulsar visitas contratando un espacio en la marquesina superior en `achievementEmail.ts`.
+- **Pruebas Automatizadas**:
+  - Pruebas pasando en `modules/notifier/tests/html-formatter-and-chunking.test.ts` y `modules/notifier/tests/outbox-and-idempotency.test.ts`.
+
 ## [Optimización de transferencia y payloads públicos] - 2026-10-16
 
 Commit publicado en `main`: `bdcce66`.

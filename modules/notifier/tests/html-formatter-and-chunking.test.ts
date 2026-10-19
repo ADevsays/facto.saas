@@ -153,4 +153,57 @@ describe('HTML Formatter & Text Utilities', () => {
     assert.ok(quietDigest.valid)
     assert.ok(quietDigest.text.includes('/stats?utm_source=telegram&utm_medium=channel&utm_campaign=daily_digest'))
   })
+
+  it('should render visits milestone message with badge link and details', async () => {
+    const { renderVisitsMilestoneMessage } = await import('../server/services/formatters/message.templates')
+
+    const milestone = renderVisitsMilestoneMessage({
+      startupId: 'saas-123',
+      name: 'AquaTrack',
+      slug: 'aquatrack',
+      category: 'Fintech',
+      country: 'España',
+      countryFlag: '🇪🇸',
+      mrr: 1200,
+      currency: 'USD',
+      isIncognito: false,
+      milestone: 100,
+      formattedMilestone: '100',
+      imageUrl: 'https://qsjnouwunclflruotduc.supabase.co/storage/v1/object/public/achievements/v2/badge-100.png'
+    })
+
+    assert.ok(milestone.valid)
+    assert.ok(milestone.text.includes('¡Nuevo hito de visitas en Facto!'))
+    assert.ok(milestone.text.includes('<b>AquaTrack</b>'))
+    assert.ok(milestone.text.includes('100 visitas'))
+    assert.ok(milestone.text.includes('🇪🇸 España'))
+    assert.ok(milestone.text.includes('Fintech'))
+    assert.ok(milestone.text.includes('MRR verificado: <b>$1.2K / mes</b>'))
+    assert.ok(milestone.text.includes('/saas/aquatrack?h=mile&utm_source=telegram&utm_medium=channel&utm_campaign=visits_milestone'))
+    assert.ok(milestone.text.length <= 1024)
+  })
+
+  it('should render incognito visits milestone message preserving privacy', async () => {
+    const { renderVisitsMilestoneMessage } = await import('../server/services/formatters/message.templates')
+
+    const milestone = renderVisitsMilestoneMessage({
+      startupId: 'saas-incognito',
+      name: 'Secret App',
+      slug: 'secret-app',
+      category: 'DevTools',
+      isIncognito: true,
+      mrr: 5000,
+      currency: 'USD',
+      milestone: 500,
+      formattedMilestone: '500'
+    })
+
+    assert.ok(milestone.valid)
+    assert.ok(milestone.text.includes('Un proyecto en modo privado'))
+    assert.ok(!milestone.text.includes('Secret App'))
+    assert.ok(milestone.text.includes('MRR en modo privado'))
+    assert.ok(milestone.text.includes('/ranking?utm_source=telegram&utm_medium=channel&utm_campaign=visits_milestone'))
+    assert.ok(!milestone.text.includes('/saas/secret-app'))
+    assert.ok(milestone.text.length <= 1024)
+  })
 })

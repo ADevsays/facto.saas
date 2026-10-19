@@ -14,6 +14,7 @@ import type {
   CountryRecordPayload,
   RankingMovePayload,
   VisitsRecordPayload,
+  VisitsMilestonePayload,
   DailyDigestPayload,
   OpportunityPayload,
   OpportunityScoreDetail
@@ -320,6 +321,45 @@ export function renderDailyDigestMessage(payload: DailyDigestPayload): RenderRes
   const statsUrl = buildUtmUrl('/stats', 'daily_digest')
   const cta = `<a href="${statsUrl}">Ver todas las estadísticas y métricas del ecosistema →</a>`
   const text = `${header}\n\n${sections.join('\n')}${oppsBlock}\n\n👉 ${cta}`
+
+  return { text, valid: true }
+}
+
+/**
+ * Template for Visits Milestone event.
+ */
+export function renderVisitsMilestoneMessage(payload: VisitsMilestonePayload): RenderResult {
+  if (!payload?.name || !payload.milestone) {
+    return { text: '', valid: false, skipReason: 'Visits milestone missing name or milestone' }
+  }
+
+  const name = escapeHtml(payload.name)
+  const formattedMilestone = payload.formattedMilestone || String(payload.milestone)
+  const category = escapeHtml(payload.category || 'Software')
+  const country = payload.country ? `${payload.countryFlag ? `${payload.countryFlag} ` : ''}${escapeHtml(payload.country)}` : null
+
+  const metaParts = [country, `Categoría: ${category}`].filter(Boolean).join(' • ')
+  const metaLine = metaParts ? `\n\n📍 ${metaParts}` : ''
+
+  let mrrLine = ''
+  if (payload.isIncognito) {
+    mrrLine = '\n🔒 MRR en modo privado'
+  } else if (payload.mrr !== null && payload.mrr !== undefined && !Number.isNaN(payload.mrr)) {
+    mrrLine = `\n💵 MRR verificado: <b>${formatCurrency(payload.mrr)} / mes</b>`
+  }
+
+  const saasUrl = payload.isIncognito
+    ? buildUtmUrl('/ranking', 'visits_milestone')
+    : buildUtmUrl(`/saas/${payload.slug}?h=mile`, 'visits_milestone')
+  const ctaLink = payload.isIncognito
+    ? `<a href="${saasUrl}">Explora el ranking en vivo →</a>`
+    : `<a href="${saasUrl}">Conoce su perfil y evolución aquí →</a>`
+
+  const title = payload.isIncognito
+    ? `🎯 <b>¡Nuevo hito de visitas en Facto!</b>\n\nUn proyecto en modo privado acaba de alcanzar las <b>${formattedMilestone} visitas</b> en la plataforma 🚀`
+    : `🎯 <b>¡Nuevo hito de visitas en Facto!</b>\n\n<b>${name}</b> acaba de alcanzar las <b>${formattedMilestone} visitas</b> en la plataforma 🚀`
+
+  const text = `${title}${metaLine}${mrrLine}\n\n👉 ${ctaLink}`
 
   return { text, valid: true }
 }

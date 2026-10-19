@@ -31,7 +31,7 @@ watch(() => route.fullPath, () => {
   }
 })
 
-const { openForSetup } = useAddAdModal()
+const { openForSetup, openAuctionList } = useAddAdModal()
 const { detectLanguage } = useLanguage()
 const { showAds, checkPreferences } = useAdPreferences()
 const { open: openLoginModal } = useLoginModal()
@@ -57,6 +57,18 @@ onMounted(async () => {
   }
 
   checkLoginQuery()
+
+  if (route.query.action === 'buy_ad' || route.query.buy_ad === 'true') {
+    openAuctionList()
+    if (typeof window !== 'undefined') {
+      const nextQuery = { ...route.query }
+      delete nextQuery.action
+      delete nextQuery.buy_ad
+      const search = new URLSearchParams(nextQuery as any).toString()
+      const newUrl = window.location.pathname + (search ? `?${search}` : '')
+      window.history.replaceState({}, document.title, newUrl)
+    }
+  }
 
   if (route.query.ad_setup === 'true') {
     const slot = route.query.slot ? Number(route.query.slot) : undefined

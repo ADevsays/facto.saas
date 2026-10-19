@@ -89,4 +89,42 @@ describe('Outbox Queue & Idempotency', () => {
     assert.strictEqual(resAfterRelease.processed, 1)
     assert.strictEqual(resAfterRelease.sent, 1)
   })
+
+  it('should process visits_milestone event in outbox', async () => {
+    const storage = new MemoryStorageProvider()
+    const client = new TelegramClient({ dryRun: true })
+    const outbox = new OutboxService(storage, client, new AntiSpamService({ ignoreSilenceHours: true }))
+
+    await storage.enqueueEvent({
+      eventType: 'visits_milestone',
+      dedupeKey: 'visits_milestone:test-123:100',
+      payload: {
+        startupId: 'test-123',
+        name: 'AquaTrack',
+        slug: 'aquatrack',
+        category: 'Fintech',
+        country: 'España',
+        countryFlag: '🇪🇸',
+        mrr: 1200,
+        currency: 'USD',
+        isIncognito: false,
+        milestone: 100,
+        formattedMilestone: '100',
+        imageUrl: 'https://example.com/badge-100.png'
+      },
+      priority: 'high',
+      status: 'pending',
+      maxAttempts: 3,
+      scheduledFor: new Date().toISOString()
+    })
+
+    const res = await outbox.processOutbox()
+    assert.strictEqual(res.processed, 1)
+    assert.strictEqual(res.sent, 1)
+    assert.strictEqual(res.failed, 0)
+    assert.strictEqual(res.skipped, 0)
+
+    const pending = await storage.getPendingEvents()
+    assert.strictEqual(pending.length, 0)
+  })
 })

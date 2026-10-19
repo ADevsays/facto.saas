@@ -7,6 +7,7 @@ import {
   renderCountryRecordMessage,
   renderRankingMoveMessage,
   renderVisitsRecordMessage,
+  renderVisitsMilestoneMessage,
   renderOpportunityMessage,
   renderDailyDigestMessage,
   type RenderResult
@@ -42,6 +43,8 @@ export class OutboxService {
         return renderRankingMoveMessage(event.payload as any)
       case 'visits_record':
         return renderVisitsRecordMessage(event.payload as any)
+      case 'visits_milestone':
+        return renderVisitsMilestoneMessage(event.payload as any)
       case 'opportunity':
         return renderOpportunityMessage(event.payload as any)
       case 'digest':

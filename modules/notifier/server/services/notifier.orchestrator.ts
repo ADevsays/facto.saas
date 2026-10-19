@@ -13,9 +13,10 @@ import { evaluateOpportunities } from './detectors/opportunities.detector'
 import { generateDailyDigest } from './detectors/digest.detector'
 import { supabase } from '~/server/lib/supabase'
 import { NOTIFIER_CONFIG } from '../../const/config'
-import { renderNewStartupMessage } from './formatters/message.templates'
+import { renderNewStartupMessage, renderVisitsMilestoneMessage } from './formatters/message.templates'
 import { splitMessageIntoChunks } from './formatters/html.formatter'
-import type { SystemSnapshotState, NewStartupPayload } from '../../types'
+import { formatMilestone } from '~/modules/achievements/server/const/thresholds'
+import type { SystemSnapshotState, NewStartupPayload, VisitsMilestonePayload } from '../../types'
 
 export interface OrchestratorOptions {
   storage?: StorageProvider
@@ -220,6 +221,64 @@ export class NotifierOrchestrator {
   }
 
   /**
+   * Fetches published startup details required for reactive notifications.
+   */
+  private async fetchStartupForNotification(startupId: string): Promise<{
+    startup?: {
+      id: string
+      name: string
+      slug: string
+      category: string
+      country?: string
+      countryFlag?: string
+      mrr: number | null
+      currency: string
+      isIncognito: boolean
+      description?: string | null
+    }
+    error?: string
+  }> {
+    const { data: startup, error: startupError } = await supabase
+      .from('saas_entries')
+      .select(`
+        id, name, slug, status, mrr, currency, is_incognito, startup_type, published_at,
+        categories!saas_categories ( name, slug ),
+        countries!saas_countries ( name, slug, flag )
+      `)
+      .eq('id', startupId)
+      .single()
+
+    if (startupError || !startup) {
+      return { error: `Startup not found: ${startupError?.message || startupId}` }
+    }
+
+    if (startup.status !== 'published') {
+      return { error: `Startup is in '${startup.status}' status, not published` }
+    }
+
+    const categories = (startup.categories as any[]) || []
+    const category = categories[0]?.name || 'Software'
+    const countries = (startup.countries as any[]) || []
+    const country = countries[0]?.name
+    const countryFlag = countries[0]?.flag
+
+    return {
+      startup: {
+        id: startup.id,
+        name: startup.name || 'Startup',
+        slug: startup.slug || startup.id,
+        category,
+        country,
+        countryFlag,
+        mrr: startup.mrr !== null ? Number(startup.mrr) : null,
+        currency: startup.currency || 'USD',
+        isIncognito: Boolean(startup.is_incognito),
+        description: startup.startup_type || null
+      }
+    }
+  }
+
+  /**
    * Reactively notifies Telegram channel when a new startup is published,
    * calculating its exact ranking position.
    */
@@ -231,26 +290,13 @@ export class NotifierOrchestrator {
     rank?: number
   }> {
     try {
-      // 1. Fetch startup details
-      const { data: startup, error: startupError } = await supabase
-        .from('saas_entries')
-        .select(`
-          id, name, slug, status, mrr, currency, is_incognito, startup_type, published_at,
-          categories!saas_categories ( name, slug ),
-          countries!saas_countries ( name, slug, flag )
-        `)
-        .eq('id', startupId)
-        .single()
-
-      if (startupError || !startup) {
-        return { success: false, skipReason: `Startup not found: ${startupError?.message || startupId}` }
+      const fetched = await this.fetchStartupForNotification(startupId)
+      if (!fetched.startup) {
+        return { success: false, skipReason: fetched.error }
       }
+      const s = fetched.startup
 
-      if (startup.status !== 'published') {
-        return { success: false, skipReason: `Startup is in '${startup.status}' status, not published` }
-      }
-
-      // 2. Calculate exact ranking position among all published startups
+      // Calculate exact ranking position among all published startups
       const { data: allRanked } = await supabase
         .from('saas_entries')
         .select('id, mrr, published_at')
@@ -258,36 +304,19 @@ export class NotifierOrchestrator {
         .order('mrr', { ascending: false, nullsFirst: false })
         .order('published_at', { ascending: true })
 
-      const rankIndex = (allRanked || []).findIndex(s => s.id === startupId)
+      const rankIndex = (allRanked || []).findIndex(item => item.id === startupId)
       const rank = rankIndex >= 0 ? rankIndex + 1 : undefined
       const totalRanked = allRanked?.length || 0
 
-      // 3. Prepare payload
-      const categories = (startup.categories as any[]) || []
-      const category = categories[0]?.name || 'Software'
-      const countries = (startup.countries as any[]) || []
-      const country = countries[0]?.name
-      const countryFlag = countries[0]?.flag
-
       const payload: NewStartupPayload = {
         startups: [{
-          id: startup.id,
-          name: startup.name || 'Startup',
-          slug: startup.slug || startup.id,
-          category,
-          country,
-          countryFlag,
-          mrr: startup.mrr !== null ? Number(startup.mrr) : null,
-          currency: startup.currency || 'USD',
-          isIncognito: Boolean(startup.is_incognito),
-          description: startup.startup_type || null,
+          ...s,
           rank,
           totalRanked
         }]
       }
 
-      // 4. Enqueue event (idempotent deduplication)
-      const dedupeKey = `new_startup:${startup.id}`
+      const dedupeKey = `new_startup:${s.id}`
       const savedEvent = await this.storage.enqueueEvent({
         eventType: 'new_startup',
         dedupeKey,
@@ -302,7 +331,6 @@ export class NotifierOrchestrator {
         return { success: true, skipReason: 'Already notified (idempotent)', rank }
       }
 
-      // 5. Render message
       const rendered = renderNewStartupMessage(payload)
       if (!rendered.valid || !rendered.text.trim()) {
         await this.storage.updateEventStatus(savedEvent.id, {
@@ -312,7 +340,6 @@ export class NotifierOrchestrator {
         return { success: false, eventId: savedEvent.id, skipReason: rendered.skipReason, rank }
       }
 
-      // 6. Send to Telegram
       const chunks = splitMessageIntoChunks(rendered.text, NOTIFIER_CONFIG.maxMessageLength)
       let lastMessageId: number | null = null
 
@@ -320,12 +347,12 @@ export class NotifierOrchestrator {
         const res = await this.telegramClient.sendMessage({
           chatId: this.telegramClient.getDefaultChannelId(),
           text: chunk,
-          parseMode: 'HTML'
+          parseMode: 'HTML',
+          preferLargeMedia: true
         })
         lastMessageId = res.message_id
       }
 
-      // 7. Update status to sent
       await this.storage.updateEventStatus(savedEvent.id, {
         status: 'sent',
         telegramMessageId: lastMessageId || undefined,
@@ -340,6 +367,94 @@ export class NotifierOrchestrator {
       }
     } catch (err: any) {
       console.error('[Notifier] Error in notifyNewStartupReactive:', err)
+      return { success: false, skipReason: err.message }
+    }
+  }
+
+  /**
+   * Reactively notifies Telegram channel when a startup achieves a visits milestone.
+   */
+  async notifyVisitsMilestoneReactive(options: {
+    startupId: string
+    milestone: number
+  }): Promise<{
+    success: boolean
+    eventId?: string
+    messageId?: number
+    skipReason?: string
+  }> {
+    try {
+      const { startupId, milestone } = options
+      const fetched = await this.fetchStartupForNotification(startupId)
+      if (!fetched.startup) {
+        return { success: false, skipReason: fetched.error }
+      }
+      const s = fetched.startup
+
+      const payload: VisitsMilestonePayload = {
+        startupId: s.id,
+        name: s.name,
+        slug: s.slug,
+        category: s.category,
+        country: s.country,
+        countryFlag: s.countryFlag,
+        mrr: s.mrr,
+        currency: s.currency,
+        isIncognito: s.isIncognito,
+        milestone,
+        formattedMilestone: formatMilestone(milestone)
+      }
+
+      const dedupeKey = `visits_milestone:${s.id}:${milestone}`
+      const savedEvent = await this.storage.enqueueEvent({
+        eventType: 'visits_milestone',
+        dedupeKey,
+        payload,
+        priority: 'high',
+        status: 'pending',
+        maxAttempts: NOTIFIER_CONFIG.maxRetryAttempts,
+        scheduledFor: new Date().toISOString()
+      })
+
+      if (!savedEvent) {
+        return { success: true, skipReason: 'Already notified (idempotent)' }
+      }
+
+      const rendered = renderVisitsMilestoneMessage(payload)
+      if (!rendered.valid || !rendered.text.trim()) {
+        await this.storage.updateEventStatus(savedEvent.id, {
+          status: 'skipped',
+          skipReason: rendered.skipReason || 'Invalid template rendering'
+        })
+        return { success: false, eventId: savedEvent.id, skipReason: rendered.skipReason }
+      }
+
+      const chunks = splitMessageIntoChunks(rendered.text, NOTIFIER_CONFIG.maxMessageLength)
+      let lastMessageId: number | null = null
+
+      for (const chunk of chunks) {
+        const res = await this.telegramClient.sendMessage({
+          chatId: this.telegramClient.getDefaultChannelId(),
+          text: chunk,
+          parseMode: 'HTML',
+          preferLargeMedia: true
+        })
+        lastMessageId = res.message_id
+      }
+
+      await this.storage.updateEventStatus(savedEvent.id, {
+        status: 'sent',
+        telegramMessageId: lastMessageId || undefined,
+        processedAt: new Date().toISOString()
+      })
+
+      return {
+        success: true,
+        eventId: savedEvent.id,
+        messageId: lastMessageId || undefined
+      }
+    } catch (err: any) {
+      console.error('[Notifier] Error in notifyVisitsMilestoneReactive:', err)
       return { success: false, skipReason: err.message }
     }
   }

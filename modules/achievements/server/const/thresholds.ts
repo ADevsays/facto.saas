@@ -11,3 +11,8 @@ export function formatMilestone(value: number): string {
   if (value >= 1_000) return `${value / 1_000}K`
   return String(value)
 }
+
+export function getMilestoneBadgeUrl(value: number | string): string {
+  const supabaseUrl = process.env.SUPABASE_URL || 'https://qsjnouwunclflruotduc.supabase.co'
+  return `${supabaseUrl}/storage/v1/object/public/achievements/v2/badge-${value}.png`
+}

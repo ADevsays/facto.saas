@@ -5,6 +5,7 @@ export type EventType =
   | 'country_record'
   | 'ranking_move'
   | 'visits_record'
+  | 'visits_milestone'
   | 'opportunity'
   | 'digest'
 
@@ -75,6 +76,21 @@ export interface VisitsRecordPayload {
   totalVisits: number
   previousRecord: number
   growthPercentage: number
+}
+
+export interface VisitsMilestonePayload {
+  startupId: string
+  name: string
+  slug: string
+  category?: string
+  country?: string
+  countryFlag?: string
+  mrr: number | null
+  currency: string
+  isIncognito: boolean
+  milestone: number
+  formattedMilestone: string
+  imageUrl?: string | null
 }
 
 export interface OpportunityScoreDetail {

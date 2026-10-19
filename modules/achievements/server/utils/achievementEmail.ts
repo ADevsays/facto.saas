@@ -1,4 +1,4 @@
-import { formatMilestone } from '../const/thresholds'
+import { formatMilestone, getMilestoneBadgeUrl } from '../const/thresholds'
 
 export function buildAchievementEmailHtml(
   saasName: string,
@@ -26,6 +26,22 @@ export function buildAchievementEmailHtml(
     : `¡Enhorabuena! <strong style="color: #E5E7EB;">${saasName}</strong> ha superado las <strong style="color: #00D4FF;">${formattedMilestone}</strong> visitas en Facto.`
   const dateFormatted = new Date().toLocaleDateString(isEn ? 'en-US' : 'es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
   const badgeAlt = isEn ? `Milestone of ${formattedMilestone} visits` : `Logro de ${formattedMilestone} visitas`
+
+  const boostBadge = isEn ? '⚡ MULTIPLY YOUR TRACTION' : '⚡ IMPULSA TU TRACCIÓN'
+  const boostTitle = isEn
+    ? 'Want to reach your next milestone faster?'
+    : '¿Quieres alcanzar tu próximo hito más rápido?'
+  const boostText = isEn
+    ? `Your startup is turning heads on Facto. Don't let the momentum slow down: secure a prime spot on the top marquee and put <strong style="color: #FFFFFF;">${saasName}</strong> in front of thousands of active founders, creators, and investors browsing every single day.`
+    : `Tu startup está llamando la atención en Facto. Aprovecha este impulso: asegura un puesto en la marquesina superior y sitúa a <strong style="color: #FFFFFF;">${saasName}</strong> frente a miles de fundadores, creadores e inversores que exploran la plataforma a diario.`
+  const boostPerk = isEn
+    ? '20 exclusive spots · Continuous 24/7 visibility on header'
+    : '20 puestos exclusivos · Visibilidad continua 24/7 en la cabecera'
+  const boostBtn = isEn ? 'BOOST VISITS WITH AN AD' : 'IMPULSAR VISITAS CON UN ANUNCIO'
+  const boostUrl = isEn
+    ? 'https://factosaas.com/en?action=buy_ad&utm_source=milestone_email&utm_medium=email&utm_campaign=boost_visits'
+    : 'https://factosaas.com?action=buy_ad&utm_source=milestone_email&utm_medium=email&utm_campaign=boost_visits'
+
   const ctaHeading = isEn ? 'Share this milestone with your community' : 'Comparte este logro con tu comunidad'
   const ctaBtn = isEn ? 'SHARE THIS MILESTONE' : 'COMPARTE ESTE LOGRO'
   const copyrightText = isEn ? '© 2026 Facto. All rights reserved.' : '© 2026 Facto. Todos los derechos reservados.'
@@ -77,7 +93,7 @@ export function buildAchievementEmailHtml(
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                   <td align="center" style="padding: 0 0 24px 0;">
-                    <img src="${process.env.SUPABASE_URL}/storage/v1/object/public/achievements/v2/badge-${milestone}.png" alt="${badgeAlt}" width="220" height="203" style="width: 220px; height: 203px; display: block; border: 0; object-fit: contain; pointer-events: none; user-select: none; -webkit-user-drag: none;" />
+                    <img src="${getMilestoneBadgeUrl(milestone)}" alt="${badgeAlt}" width="220" height="203" style="width: 220px; height: 203px; display: block; border: 0; object-fit: contain; pointer-events: none; user-select: none; -webkit-user-drag: none;" />
                   </td>
                 </tr>
               </table>
@@ -98,14 +114,56 @@ export function buildAchievementEmailHtml(
                 </tr>
               </table>
 
-              <!-- CTA -->
+              <!-- Boost Marquee Notification Card -->
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 32px 0;">
+                <tr>
+                  <td style="background: linear-gradient(180deg, #161626 0%, #0D0D14 100%); border: 1px solid rgba(0, 212, 255, 0.25); border-radius: 12px; padding: 26px 24px; text-align: center;">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style="margin: 0 auto 12px auto;">
+                      <tr>
+                        <td style="background-color: rgba(0, 212, 255, 0.12); border: 1px solid rgba(0, 212, 255, 0.35); border-radius: 20px; padding: 4px 12px;">
+                          <span style="font-size: 11px; font-weight: 600; color: #00D4FF; letter-spacing: 0.08em; text-transform: uppercase;">
+                            ${boostBadge}
+                          </span>
+                        </td>
+                      </tr>
+                    </table>
+                    <h3 style="margin: 0 0 10px 0; font-family: 'Playfair Display', Georgia, serif; font-size: 19px; font-weight: 600; color: #FFFFFF; line-height: 1.35;">
+                      ${boostTitle}
+                    </h3>
+                    <p style="margin: 0 0 14px 0; font-size: 14px; line-height: 1.6; color: #9CA3AF; font-weight: 300;">
+                      ${boostText}
+                    </p>
+                    <p style="margin: 0 0 20px 0; font-size: 12px; color: #6B7280; font-weight: 400; letter-spacing: 0.02em;">
+                      ${boostPerk}
+                    </p>
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style="margin: 0 auto;">
+                      <tr>
+                        <td align="center">
+                          <a href="${boostUrl}" target="_blank" style="display: inline-block; padding: 13px 26px; background-color: #00D4FF; border: 1px solid #00D4FF; color: #030305; text-decoration: none; font-size: 12px; font-weight: 700; font-family: 'Inter', sans-serif; letter-spacing: 0.06em; border-radius: 8px; text-transform: uppercase; box-shadow: 0 4px 14px rgba(0, 212, 255, 0.25);">
+                            ${boostBtn} &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Divider -->
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 28px 0;">
+                <tr>
+                  <td style="border-top: 1px solid rgba(255, 255, 255, 0.06); font-size: 1px; line-height: 1px;">&nbsp;</td>
+                </tr>
+              </table>
+
+              <!-- Share Milestone CTA -->
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
-                  <td align="center" style="padding-top: 24px;">
-                    <p style="margin: 0 0 16px 0; font-size: 14px; color: #9CA3AF;">
+                  <td align="center">
+                    <p style="margin: 0 0 14px 0; font-size: 13px; color: #9CA3AF;">
                       ${ctaHeading}
                     </p>
-                    <a href="${saasUrl}" style="display: inline-block; padding: 14px 28px; background-color: #061020; border: 1px solid #00D4FF; color: #00D4FF; text-decoration: none; font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; letter-spacing: 0.05em; border-radius: 8px; text-transform: uppercase;">
+                    <a href="${saasUrl}" style="display: inline-block; padding: 12px 24px; background-color: #061020; border: 1px solid rgba(0, 212, 255, 0.4); color: #00D4FF; text-decoration: none; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; letter-spacing: 0.05em; border-radius: 8px; text-transform: uppercase;">
                       ${ctaBtn}
                     </a>
                   </td>
