@@ -35,6 +35,7 @@ const {
 
 const { countries } = useCountries()
 const { isOnContinentRoute, continentSlug, continent } = useCountryFilter()
+const { showAds } = useAdPreferences()
 
 const displayedCountries = computed(() => {
   let list = countries.value
@@ -120,8 +121,11 @@ onUnmounted(() => {
 
 <template>
   <div 
-    class="sticky top-0 z-30 -mx-6 px-6 pt-3 pb-5 bg-[#030305]/90 backdrop-blur-md border-b transition-colors duration-200"
-    :class="isScrolled ? 'border-white/10 shadow-lg shadow-black/40' : 'border-transparent'"
+    class="sticky z-30 -mx-6 px-6 pt-3 pb-4 bg-[#030305]/90 backdrop-blur-md border-b transition-colors duration-200 [overflow-anchor:none]"
+    :class="[
+      showAds ? 'top-[92px] md:top-[106px]' : 'top-0',
+      isScrolled ? 'border-white/10 shadow-lg shadow-black/40' : 'border-transparent'
+    ]"
   >
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-40">
       <!-- Title -->
@@ -130,7 +134,7 @@ onUnmounted(() => {
       </h1>
 
       <!-- Filters and Sorting Dropdowns -->
-      <div id="saas-filters-container" class="flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0 relative z-40 mt-3">
+      <div id="saas-filters-container" class="flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0 relative z-40 mt-3 lg:mt-0">
         <SaasCategoryDropdown 
           :is-open="isCategoryOpen"
           :current-label="currentCategoryLabel"
@@ -161,16 +165,16 @@ onUnmounted(() => {
         />
       </div>
     </div>
+  </div>
 
-    <!-- Description (Collapses smoothly with hysteresis) -->
-    <div 
-      class="relative z-10 transition-all duration-300 ease-out origin-top overflow-hidden" 
-      :class="isScrolled ? 'max-h-0 opacity-0 mt-0 pointer-events-none' : 'max-h-24 opacity-100 mt-3'"
-    >
-      <p class="font-sans font-extralight text-sm text-neutral-400 max-w-lg leading-relaxed">
-        {{ activeMeta.description }}
-      </p>
-    </div>
+  <!-- Description (fades out on scroll without collapsing layout height) -->
+  <div 
+    class="relative z-10 -mt-7 transition-opacity duration-200 [overflow-anchor:none]" 
+    :class="isScrolled ? 'opacity-0 pointer-events-none' : 'opacity-100'"
+  >
+    <p class="font-sans font-extralight text-sm text-neutral-400 max-w-lg leading-relaxed">
+      {{ activeMeta.description }}
+    </p>
   </div>
 </template>
 

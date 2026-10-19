@@ -42,7 +42,7 @@ test('home uses a bounded union while ranking and recommendations request only w
   const recommendations = readProjectFile('modules/visuals/sections/MoreStartupsSection.vue')
 
   assert.match(endpoint, /query\.scope === 'home'/)
-  assert.match(endpoint, /sort: 'mrr', limit: 30/)
+  assert.match(endpoint, /sort: 'mrr', limit: rankingLimit/)
   assert.match(endpoint, /sort: 'latest', limit: 6/)
   assert.match(home, /useSaasList\(\{ scope: 'home' \}\)/)
   assert.doesNotMatch(home, /await useFetch/)
@@ -55,6 +55,19 @@ test('home uses a bounded union while ranking and recommendations request only w
   assert.match(best, /scope: 'home'/)
   assert.match(homeView, /scope="home"/)
   assert.match(recommendations, /server: false, scope: 'recommendations'/)
+})
+
+test('home and ranking request ten-row chunks and load later chunks on demand', () => {
+  const list = readProjectFile('composables/useSaasList.ts')
+  const endpoint = readProjectFile('modules/ranking/server/api/ranking/list.get.ts')
+  const section = readProjectFile('modules/ranking/sections/RankingSection.vue')
+
+  assert.match(list, /rankingLimit=10&rankingOffset=0/)
+  assert.match(list, /scope=ranking&limit=10&offset=0/)
+  assert.match(list, /rankingOnly=true/)
+  assert.match(list, /rankingOffset=\$\{offset\}/)
+  assert.match(endpoint, /query\.rankingOnly === 'true'/)
+  assert.match(section, /rootMargin: '650px 0px'/)
 })
 
 test('initial profile stays light and history has a dedicated endpoint', () => {

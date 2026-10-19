@@ -124,6 +124,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
       .select(selectQuery)
       .eq('status', 'published')
       .order(column, { ascending: false, nullsFirst })
+      .order('id', { ascending: true })
       .range(offset, offset + limit - 1)
 
     if (category) query = query.eq('categories.slug', category)
@@ -149,6 +150,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
         .select(selectQuery)
         .eq('status', 'published')
         .order(column, { ascending: false, nullsFirst })
+        .order('id', { ascending: true })
         .range(currentFrom, currentFrom + CHUNK_SIZE - 1)
 
       if (category) query = query.eq('categories.slug', category)

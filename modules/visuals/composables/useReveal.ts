@@ -11,6 +11,7 @@ export function useReveal(dependencies: WatchSource<any>[]) {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           entry.target.classList.add('is-visible')
+          entry.target.setAttribute('data-revealed', 'true')
           observer?.unobserve(entry.target)
         }
       })
@@ -22,8 +23,9 @@ export function useReveal(dependencies: WatchSource<any>[]) {
     nextTick(() => {
       const cards = containerRef.value?.querySelectorAll('.reveal-card')
       cards?.forEach((card, index) => {
-        if (index < 3 || card.classList.contains('is-visible')) {
+        if (index < 3 || card.classList.contains('is-visible') || card.getAttribute('data-revealed') === 'true') {
           card.classList.add('is-visible')
+          card.setAttribute('data-revealed', 'true')
         } else {
           observer?.observe(card)
         }

@@ -105,7 +105,7 @@ const countryFlagSrc = computed(() => {
 <template>
   <NuxtLink 
     :to="saas.isIncognito ? undefined : localePath(`/saas/${saas.slug || slugify(saas.name || '')}`)"
-    class="gem-card group block relative overflow-hidden rounded-2xl border bg-white/[0.05] backdrop-blur-md p-6 transition-all duration-500"
+    class="gem-card group block relative overflow-hidden rounded-2xl border bg-white/[0.05] backdrop-blur-md p-6 h-[210px] transition-all duration-500"
     :class="[gemClass, saas.isIncognito ? 'pointer-events-none' : 'cursor-pointer', { 'has-glow': hasGlow }]"
     :style="cardStyle"
   >
@@ -126,7 +126,7 @@ const countryFlagSrc = computed(() => {
       </div>
     </div>
 
-    <div class="relative z-10 flex flex-col justify-between h-full gap-4">
+    <div class="relative z-10 flex flex-col justify-between h-full">
       <div>
         <div class="flex items-center justify-between gap-4">
           <div class="flex items-center gap-3 min-w-0">
@@ -167,13 +167,13 @@ const countryFlagSrc = computed(() => {
 
         <p 
           v-if="descriptionText" 
-          class="font-sans font-extralight text-[13px] text-neutral-400 leading-relaxed mt-3 line-clamp-2"
+          class="font-sans font-extralight text-[13px] text-neutral-400 leading-snug mt-2.5 line-clamp-2"
         >
           {{ descriptionText }}
         </p>
       </div>
 
-      <div class="mt-4 pt-4 border-t border-white/10 flex justify-between items-center gap-2">
+      <div class="mt-auto pt-4 border-t border-white/10 flex justify-between items-center gap-2">
         <div class="flex flex-col">
           <span class="text-[9px] font-sans font-extralight tracking-[0.08em] text-neutral-500 uppercase">{{ t.gem_card.mrr }}</span>
           <span class="text-sm font-mono text-white mt-1">

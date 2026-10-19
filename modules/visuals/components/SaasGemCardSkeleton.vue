@@ -1,5 +1,5 @@
 <template>
-  <div class="gem-card-skeleton relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md p-6 flex flex-col justify-between h-[210px]">
+  <div class="gem-card-skeleton relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md p-6 flex flex-col justify-between h-[210px] [overflow-anchor:none]">
     <!-- Top Row: Logo, Name, Category and Views -->
     <div class="flex items-center justify-between gap-4">
       <div class="flex items-center gap-3 min-w-0 flex-1">

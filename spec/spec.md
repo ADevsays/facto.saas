@@ -68,8 +68,10 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - ✅ SSR público no declara `isr`, `swr` ni `x-prerender-revalidate` y responde con política `no-store`.
 - ✅ Publicar, editar o aprobar un SaaS y modificar anuncios no dispara solicitudes internas a páginas públicas.
 - Home, ranking y listados hidratan `useSaasList` (o el payload de página de `/saas`) desde el payload SSR y no ejecutan un fetch duplicado ni destruyen la hidratación al entrar directamente o recargar `/saas`.
-- Home transporta un máximo de 36 startups únicas; ranking transporta 100, el catálogo `/saas` pagina incrementalmente de 12 en 12 (`PAGE_SIZE = 12`) con prefetch anticipado (`rootMargin: '650px 0px'`), skeletons de continuación (`loadingMore`) y animación de entrada progresiva (`.reveal-card`), y las recomendaciones del perfil transportan 24.
-- Navegar Home → `/saas` → Home o entrar directamente a `/saas` conserva consultas independientes, hidrata desde `data` sin desajustes SSR/cliente y muestra el skeleton de destino sin bloquear la transición.
+- Home y ranking comparten `RankingSection` y cargan inicialmente 10 filas; el home admite hasta 30 y `/ranking` hasta 100 mediante chunks de 10 disparados cerca del final visible (`rootMargin: '650px 0px'`). Las tarjetas recientes y mejores se derivan del payload inicial sin cargar el resto del ranking.
+- ✅ El catálogo `/saas` carga inicialmente un máximo estricto de 12 startups (`PAGE_SIZE = 12`) sin hacer scroll, prerenderiza los skeletons de continuación (`hasMore || loadingMore`) de altura idéntica a la card (`h-[210px]`, `[overflow-anchor:none]`) para indicar que hay más contenido debajo, y solicita las páginas siguientes a medida que el usuario hace scroll (`rootMargin: '650px 0px'`) preservando exactamente la posición de scroll y la animación de entrada progresiva (`.reveal-card`).
+- ✅ El header del catálogo (`SaasListHeader.vue`) en `/saas` y sus subrutas permanece fijo (`sticky`) inmediatamente debajo de la banda de anuncios (`top-[92px] md:top-[106px]` cuando `showAds` está activo, `top-0` si está oculto) sin contenedores padre con `overflow` que bloqueen `sticky` ni colapsos de altura en flujo que desplacen las tarjetas al hacer scroll.
+- ✅ Navegar Home → `/saas` → Home o entrar directamente a `/saas` conserva consultas independientes, hidrata desde `data` sin desajustes SSR/cliente y muestra el skeleton de destino sin bloquear la transición.
 - ✅ La consulta del listado no selecciona `saas_metrics_cache.history_cache` y conserva orden, búsqueda y filtros.
 - ✅ El perfil inicial no serializa historial; el gráfico carga el historial de una sola startup desde el endpoint dedicado.
 - El historial público contiene cuatro series de diez puntos y no expone los arrays originales del proveedor.
@@ -447,12 +449,13 @@ interface ListQueryParams {
 - `bestItems` â€” top 6 por MRR desc (sin nulls) â†’ `BestSection`
 
 ### Dominio
-- "El composable `useSaasList` hace un único fetch al montar la app. Las tres secciones son vistas derivadas del mismo array en memoria."
+- "El composable `useSaasList` mantiene una fuente compartida por scope; el ranking del home y `/ranking` carga inicialmente 10 filas y solicita chunks sucesivos de 10 solo cuando el usuario se acerca al final visible. Las tres secciones del home siguen siendo vistas derivadas del mismo array en memoria."
 - "Las startups en modo incógnito (is_incognito: true / anónimas) están completamente excluidas del ranking global de startups (rankingItems y endpoints de ranking)."
 - "Si `mrr` es `null`, se muestra '—' en lugar de una cifra. El SaaS aparece al fondo del ranking."
 - "El filtro por `q` se aplica server-side con `ilike` sobre `name` y `founder_name`. El filtro en memoria de `useStartupSearch` es una capa adicional sin fetch."
 - "Las categorías disponibles en el buscador se derivan dinámicamente de los items ya cargados en `useSaasList`, no de un fetch separado."
-- "La sección `RecentlySection` y `BestSection` no tienen paginación; muestran máximo 6 items."
+- "La sección `RecentlySection` y `BestSection` no tienen paginación; muestran máximo 6 items y no fuerzan la carga completa del ranking."
+- "El `TelegramPopup` del home y ranking se activa cuando el usuario entra al inicio visible de `RankingSection`, no al final de la página; mantiene un pop-out amplio con borde animado y CTA visible."
 - "Backlink/UTM: Al renderizar el link hacia el sitio de la startup, se debe agregar dinamicamente el parametro ?ref=facto, utm_source=factosaas.com y utm_medium=ranking para que el founder pueda identificar el trafico entrante en sus analiticas."
 - "Compartir SaaS: Se debe mostrar un boton 'Compartir' que abre un modal con opciones para compartir el perfil de la startup en X, LinkedIn, Facebook, y copiar enlace (para Instagram). El texto predefinido es 'Ahora [nombre] esta en Facto' junto con la URL de la pagina en Facto."
 - "Los metadatos Open Graph del perfil deben resolverse con datos del SaaS durante SSR para que Telegram y otros crawlers rendericen su vista previa, sin bloquear la navegación cliente ni el skeleton."
@@ -461,6 +464,7 @@ interface ListQueryParams {
 
 ### Validación
 - ✅ **Happy Path**: SaaS publicados → Ranking muestra ordenados por MRR, Recently los 6 más nuevos, Best los 6 con mayor MRR.
+- ✅ **Carga incremental del ranking**: Home y `/ranking` solicitan 10 filas iniciales y solo cargan los siguientes chunks de 10 al acercarse el usuario al final de la sección; no se solicita el ranking completo durante el primer render.
 - ✅ **SaaS Incógnito Excluido del Ranking**: `is_incognito: true` → No aparece en el ranking ni en los resultados de rankingItems/endpoint.
 - **Open Graph en Telegram**: Un perfil sin MRR genera una `og:image` descargable (`200 image/png`), sin afectar el enlace con UTM que usa el modal Compartir.
 - **Compatibilidad Island Hash**: El plugin Nitro reconcilia el hash heredado de `nuxt-og-image` con el hash calculado por el handler de islas de Nuxt.

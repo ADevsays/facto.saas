@@ -102,7 +102,10 @@ const localizedItems = computed(() => items.value.map(item => ({
   ...item,
   category: getCategoryDisplayName(item.categorySlug, item.category, locale.value)
 })))
-const filteredAndSortedItems = computed(() => sortItems(filterByCountry(filterByCategory(localizedItems.value))))
+const filteredAndSortedItems = computed(() => {
+  const filtered = filterByCountry(filterByCategory(localizedItems.value))
+  return appendedItems.value.length > 0 ? filtered : sortItems(filtered)
+})
 
 const { containerRef, initObserver } = useReveal([category, country, sort, items])
 
@@ -111,6 +114,7 @@ watch(catalogFetchKey, (newKey) => {
   appendedItems.value = []
   hasMoreOverride.value = null
   loadingMore.value = false
+  hasUserScrolled.value = typeof window !== 'undefined' && window.scrollY > 0
 })
 
 watch([data, pending], () => {
@@ -123,6 +127,8 @@ watch([data, pending], () => {
 })
 
 const loadMoreRef = ref<HTMLElement | null>(null)
+const hasUserScrolled = ref(false)
+const isLoadMoreIntersecting = ref(false)
 let observer: IntersectionObserver | null = null
 
 function observeMore() {
@@ -132,15 +138,34 @@ function observeMore() {
   }
 }
 
+function handleFirstScroll() {
+  if (window.scrollY <= 0) return
+  if (!hasUserScrolled.value) {
+    hasUserScrolled.value = true
+    if (isLoadMoreIntersecting.value) {
+      fetchNext()
+    }
+  }
+}
+
 async function fetchNext() {
-  if (loadingMore.value || pending.value || !hasMore.value) return
+  if (loadingMore.value || pending.value || !hasMore.value || !hasUserScrolled.value) return
   const requestKey = catalogFetchKey.value
+  const scrollYOnStart = typeof window !== 'undefined' ? window.scrollY : null
   loadingMore.value = true
+  if (scrollYOnStart !== null) {
+    await nextTick()
+    if (typeof window !== 'undefined' && Math.abs(window.scrollY - scrollYOnStart) > 1) {
+      window.scrollTo({ top: scrollYOnStart, behavior: 'instant' as ScrollBehavior })
+    }
+  }
+  let scrollYBefore: number | null = null
   try {
     const page = await $fetch<SaasListItem[]>('/api/ranking/list', {
       query: { ...catalogQuery.value, offset: items.value.length }
     })
     if (requestKey !== catalogFetchKey.value) return
+    scrollYBefore = typeof window !== 'undefined' ? window.scrollY : null
     appendedKey.value = requestKey
     appendedItems.value = [...appendedItems.value, ...page]
     hasMoreOverride.value = page.length === PAGE_SIZE
@@ -150,8 +175,14 @@ async function fetchNext() {
     }
   } finally {
     if (requestKey === catalogFetchKey.value) {
+      if (scrollYBefore === null && typeof window !== 'undefined') {
+        scrollYBefore = window.scrollY
+      }
       loadingMore.value = false
       nextTick(() => {
+        if (scrollYBefore !== null && typeof window !== 'undefined' && Math.abs(window.scrollY - scrollYBefore) > 1) {
+          window.scrollTo({ top: scrollYBefore, behavior: 'instant' as ScrollBehavior })
+        }
         initObserver()
         observeMore()
       })
@@ -160,8 +191,12 @@ async function fetchNext() {
 }
 
 onMounted(async () => {
+  hasUserScrolled.value = window.scrollY > 0
+  window.addEventListener('scroll', handleFirstScroll, { passive: true })
+
   observer = new IntersectionObserver(([entry]) => {
-    if (!entry.isIntersecting) return
+    isLoadMoreIntersecting.value = entry.isIntersecting
+    if (!entry.isIntersecting || !hasUserScrolled.value) return
     fetchNext()
   }, { rootMargin: '650px 0px' })
 
@@ -174,13 +209,16 @@ onMounted(async () => {
   ])
 })
 
-onUnmounted(() => observer?.disconnect())
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleFirstScroll)
+  observer?.disconnect()
+})
 </script>
 
 <template>
-  <main ref="containerRef" class="min-h-screen bg-[#030305] text-white overflow-x-clip relative isolate flex flex-col items-center pt-14 pb-20 px-6">
+  <main ref="containerRef" class="min-h-screen bg-[#030305] text-white relative flex flex-col items-center pt-14 pb-20 px-6 [overflow-anchor:none]">
     <!-- Background glow -->
-    <div class="absolute inset-0 z-[-1] pointer-events-none flex items-center justify-center">
+    <div class="absolute inset-0 z-[-1] pointer-events-none flex items-center justify-center overflow-hidden">
       <div class="w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-[#00D4FF]/5 rounded-full blur-[120px] opacity-40"></div>
     </div>
 
@@ -214,23 +252,29 @@ onUnmounted(() => observer?.disconnect())
       </div>
 
       <!-- Grid of Cards -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10">
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10 [overflow-anchor:none]">
         <SaasGemCard 
           v-for="(saas, index) in filteredAndSortedItems"
           :key="saas.id" 
           :saas="saas"
           :index="index"
           class="reveal-card"
-          :class="{ 'is-visible': index < 3 }"
+          :class="{ 'is-visible': index < 3 || index >= PAGE_SIZE }"
         />
-        <template v-if="loadingMore">
-          <SaasGemCardSkeleton v-for="n in PAGE_SIZE" :key="'gem-more-sk-' + n" class="animate-fade-in" />
+        <template v-if="hasMore || loadingMore">
+          <div
+            v-for="n in PAGE_SIZE"
+            :key="'gem-more-sk-' + n"
+            :ref="n === 1 ? (el) => { loadMoreRef = el as HTMLElement | null } : undefined"
+            class="[overflow-anchor:none]"
+          >
+            <SaasGemCardSkeleton />
+          </div>
         </template>
-        <div v-if="hasMore" ref="loadMoreRef" class="col-span-full h-px" />
       </div>
 
       <!-- Add MRR Component -->
-      <div class="mt-8 relative z-10 w-full">
+      <div class="mt-8 relative z-10 w-full [overflow-anchor:none]">
         <InputMrrView />
       </div>
     </div>
@@ -244,7 +288,8 @@ onUnmounted(() => observer?.disconnect())
   transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
 }
-.reveal-card.is-visible {
+.reveal-card.is-visible,
+.reveal-card[data-revealed="true"] {
   opacity: 1;
   transform: translateY(0);
 }
