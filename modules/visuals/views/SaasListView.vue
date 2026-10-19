@@ -231,46 +231,48 @@ onUnmounted(() => {
     </div>
 
     <div class="w-full max-w-5xl flex flex-col gap-10">
-      <!-- Header & Filtering/Sorting Area (Sticky) -->
-      <SaasListHeader />
+      <div class="flex flex-col gap-10">
+        <!-- Header & Filtering/Sorting Area (Sticky within startups section) -->
+        <SaasListHeader />
 
-      <!-- Loading State: Startup Cards Skeleton Grid -->
-      <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10 animate-fade-in">
-        <SaasGemCardSkeleton v-for="n in PAGE_SIZE" :key="'gem-sk-' + n" />
-      </div>
+        <!-- Loading State: Startup Cards Skeleton Grid -->
+        <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10 animate-fade-in">
+          <SaasGemCardSkeleton v-for="n in PAGE_SIZE" :key="'gem-sk-' + n" />
+        </div>
 
-      <!-- Error State -->
-      <div v-else-if="errorMessage" class="text-center py-16">
-        <p class="text-red-400 font-sans text-sm font-light bg-red-400/10 border border-red-500/20 rounded-xl p-4 inline-block">
-          {{ errorMessage }}
-        </p>
-      </div>
+        <!-- Error State -->
+        <div v-else-if="errorMessage" class="text-center py-16">
+          <p class="text-red-400 font-sans text-sm font-light bg-red-400/10 border border-red-500/20 rounded-xl p-4 inline-block">
+            {{ errorMessage }}
+          </p>
+        </div>
 
-      <!-- List Empty State -->
-      <div v-else-if="filteredAndSortedItems.length === 0" class="text-center py-20 border border-dashed border-white/5 rounded-2xl animate-fade-in">
-        <p class="text-neutral-500 font-sans text-sm font-light uppercase tracking-widest">{{ t.list_view.empty }}</p>
-      </div>
+        <!-- List Empty State -->
+        <div v-else-if="filteredAndSortedItems.length === 0" class="text-center py-20 border border-dashed border-white/5 rounded-2xl animate-fade-in">
+          <p class="text-neutral-500 font-sans text-sm font-light uppercase tracking-widest">{{ t.list_view.empty }}</p>
+        </div>
 
-      <!-- Grid of Cards -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10 [overflow-anchor:none]">
-        <SaasGemCard 
-          v-for="(saas, index) in filteredAndSortedItems"
-          :key="saas.id" 
-          :saas="saas"
-          :index="index"
-          class="reveal-card"
-          :class="{ 'is-visible': index < 3 || index >= PAGE_SIZE }"
-        />
-        <template v-if="hasMore || loadingMore">
-          <div
-            v-for="n in PAGE_SIZE"
-            :key="'gem-more-sk-' + n"
-            :ref="n === 1 ? (el) => { loadMoreRef = el as HTMLElement | null } : undefined"
-            class="[overflow-anchor:none]"
-          >
-            <SaasGemCardSkeleton />
-          </div>
-        </template>
+        <!-- Grid of Cards -->
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10 [overflow-anchor:none]">
+          <SaasGemCard 
+            v-for="(saas, index) in filteredAndSortedItems"
+            :key="saas.id" 
+            :saas="saas"
+            :index="index"
+            class="reveal-card"
+            :class="{ 'is-visible': index < 3 || index >= PAGE_SIZE }"
+          />
+          <template v-if="hasMore || loadingMore">
+            <div
+              v-for="n in PAGE_SIZE"
+              :key="'gem-more-sk-' + n"
+              :ref="n === 1 ? (el) => { loadMoreRef = el as HTMLElement | null } : undefined"
+              class="[overflow-anchor:none]"
+            >
+              <SaasGemCardSkeleton />
+            </div>
+          </template>
+        </div>
       </div>
 
       <!-- Add MRR Component -->

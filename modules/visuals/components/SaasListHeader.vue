@@ -121,7 +121,7 @@ onUnmounted(() => {
 
 <template>
   <div 
-    class="sticky z-30 -mx-6 px-6 pt-3 pb-4 bg-[#030305]/90 backdrop-blur-md border-b transition-colors duration-200 [overflow-anchor:none]"
+    class="sticky z-[15] -mx-6 px-6 pt-3 pb-4 bg-[#030305]/90 backdrop-blur-md border-b transition-colors duration-200 [overflow-anchor:none]"
     :class="[
       showAds ? 'top-[92px] md:top-[106px]' : 'top-0',
       isScrolled ? 'border-white/10 shadow-lg shadow-black/40' : 'border-transparent'
