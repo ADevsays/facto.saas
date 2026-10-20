@@ -6,5 +6,5 @@ export default defineEventHandler((event) => {
     'CDN-Cache-Control': 'max-age=60, stale-while-revalidate=300',
     'Vercel-CDN-Cache-Control': 's-maxage=60, stale-while-revalidate=300'
   })
-  return fetchSaasList({ sort: 'mrr', excludeIncognito: true })
+  return fetchSaasList({ sort: 'mrr', limit: 100, excludeIncognito: true })
 })

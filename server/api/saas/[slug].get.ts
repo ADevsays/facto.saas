@@ -1,6 +1,6 @@
 import { supabase } from '~/server/lib/supabase'
 import { checkAndNotifyAchievement } from '~/modules/achievements/server/services/achievements'
-import { recordDailyView } from '~/server/lib/dailyViews'
+import { isViewTrackingEnabled, recordDailyView } from '~/server/lib/dailyViews'
 import { fetchCachedFinancialSummaries } from '~/server/utils/saas-financials'
 import { getPublicLogoUrl } from '~/server/utils/public-logo'
  
@@ -13,7 +13,6 @@ export default defineEventHandler(async (event) => {
 
   const slug = getRouterParam(event, 'slug')
   const seoOnly = getQuery(event).seo === '1'
-  
   if (!slug) {
     throw createError({ statusCode: 400, message: 'Slug is required' })
   }
@@ -25,7 +24,7 @@ export default defineEventHandler(async (event) => {
     const fullRes = await supabase
       .from('saas_entries')
       .select(`
-        id, name, slug, logo_url, website_url, founder_name, founder_id, founder_email, startup_type, is_incognito, mrr, revenue, currency, views, published_at, updated_at,
+        id, name, slug, logo_url, website_url, founder_name, founder_id, founder_email, startup_type, is_incognito, mrr, revenue, currency, views, published_at,
         value_proposition, problem_solved, tech_stack, acquisition_channels, facto_message, faq, github_repo,
         categories!saas_categories ( name, slug ),
         countries!saas_countries ( name, slug, flag, iso_code ),
@@ -39,8 +38,7 @@ export default defineEventHandler(async (event) => {
       .maybeSingle()
 
     if (fullRes.error && fullRes.error.code === '42703') {
-      // `updated_at` is optional on older deployments. Do not discard the
-      // showcase fields merely because that timestamp has not been migrated.
+      // Deployments without Showcase fields use the compatible projection.
       const showcaseFallbackRes = await supabase
         .from('saas_entries')
         .select(`
@@ -92,9 +90,7 @@ export default defineEventHandler(async (event) => {
  
   if (dbEntry) {
     const nextViews = (Number(dbEntry.views) || 0) + 1
-    // The server-side SEO lookup is separate from the visible profile request;
-    // never count it as an additional product visit.
-    if (!seoOnly) {
+    if (isViewTrackingEnabled() && !seoOnly) {
       supabase
         .from('saas_entries')
         .update({ views: nextViews })
@@ -179,9 +175,9 @@ export default defineEventHandler(async (event) => {
       categorySlug: (dbEntry.categories as any[])?.[0]?.slug ?? 'software',
       categories: dbEntry.categories || [],
       provider: providerSlug ?? null,
-      views: seoOnly ? Number(dbEntry.views) || 0 : nextViews,
+      views: isViewTrackingEnabled() && !seoOnly ? nextViews : Number(dbEntry.views) || 0,
       publishedAt: dbEntry.published_at,
-      updatedAt: dbEntry.updated_at || dbEntry.published_at,
+      updatedAt: dbEntry.published_at,
       allTimeRevenue: allTimeRev,
       country: isGlobal ? 'Global' : (countryData?.name || 'Global'),
       countrySlug: isGlobal ? 'global' : (countryData?.slug || 'global'),

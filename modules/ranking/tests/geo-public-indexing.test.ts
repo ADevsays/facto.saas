@@ -28,7 +28,7 @@ test('sitemap uses existing directory routes and published profile records only'
   assert.doesNotMatch(sitemap, /'\/categorias'/)
   assert.doesNotMatch(sitemap, /'\/paises'/)
   assert.match(sitemap, /reservedSlugs/)
-  assert.match(sitemap, /entry\.updated_at \?\? entry\.published_at/)
+  assert.match(sitemap, /lastmod: entry\.published_at/)
 })
 
 test('profile schema uses evidence without a fabricated free offer', () => {

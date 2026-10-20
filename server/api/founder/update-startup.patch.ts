@@ -1,5 +1,6 @@
 import { supabase } from '~/server/lib/supabase'
 import { processProviderInfo } from '~/modules/add-saas/server/services/saas.service'
+import { uploadOptimizedLogo } from '~/server/utils/logo-storage'
 
 export default defineEventHandler(async (event) => {
   const token = getCookie(event, 'facto_founder_token') || getHeader(event, 'x-founder-token')
@@ -67,9 +68,24 @@ export default defineEventHandler(async (event) => {
   const updatePayload: any = {}
   if (body.name !== undefined) updatePayload.name = body.name.trim()
   if (body.logoFileBase64) {
-    updatePayload.logo_url = body.logoFileBase64
+    try {
+      updatePayload.logo_url = await uploadOptimizedLogo(body.logoFileBase64)
+    } catch (error) {
+      console.error('[update-startup] Error optimizing/uploading logo:', error)
+      throw createError({ statusCode: 400, message: 'No fue posible optimizar y guardar el logo.' })
+    }
   } else if (body.logoUrl !== undefined) {
-    updatePayload.logo_url = body.logoUrl.trim() || null
+    const submittedLogoUrl = body.logoUrl.trim()
+    if (submittedLogoUrl.startsWith('data:')) {
+      try {
+        updatePayload.logo_url = await uploadOptimizedLogo(submittedLogoUrl)
+      } catch (error) {
+        console.error('[update-startup] Error optimizing existing data logo:', error)
+        throw createError({ statusCode: 400, message: 'No fue posible optimizar y guardar el logo.' })
+      }
+    } else {
+      updatePayload.logo_url = submittedLogoUrl || null
+    }
   }
   if (body.websiteUrl !== undefined) updatePayload.website_url = body.websiteUrl.trim() || null
   if (body.startupType !== undefined) updatePayload.startup_type = body.startupType.trim() || null

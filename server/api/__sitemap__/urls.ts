@@ -3,25 +3,12 @@ import { supabase } from '~/server/lib/supabase'
 export default defineEventHandler(async () => {
   const reservedSlugs = new Set(['categoria', 'pais', 'continente', 'category', 'country', 'continent'])
 
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from('saas_entries')
-    .select('slug, published_at, updated_at')
+    .select('slug, published_at')
     .eq('status', 'published')
     .not('published_at', 'is', null)
     .order('published_at', { ascending: false })
-
-  // Older local schemas can predate updated_at. A missing modification date
-  // must not make the entire public sitemap disappear.
-  if (error?.code === '42703') {
-    const fallback = await supabase
-      .from('saas_entries')
-      .select('slug, published_at')
-      .eq('status', 'published')
-      .not('published_at', 'is', null)
-      .order('published_at', { ascending: false })
-    data = fallback.data?.map(entry => ({ ...entry, updated_at: null })) ?? null
-    error = fallback.error
-  }
 
   if (error) throw createError({ statusCode: 500, message: error.message })
 
@@ -63,12 +50,12 @@ export default defineEventHandler(async () => {
 
       urls.push({
         loc: esLoc,
-        lastmod: entry.updated_at ?? entry.published_at ?? undefined,
+        lastmod: entry.published_at ?? undefined,
         alternatives
       })
       urls.push({
         loc: enLoc,
-        lastmod: entry.updated_at ?? entry.published_at ?? undefined,
+        lastmod: entry.published_at ?? undefined,
         alternatives
       })
     }

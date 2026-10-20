@@ -2,6 +2,15 @@ import { supabase } from '~/server/lib/supabase'
 import type { Ad, AdSlot } from '../../types'
 import { sendOutbidNotification } from './adEmail'
 
+let lastActiveAdsWarningAt = 0
+
+function warnActiveAdsUnavailable(reason: string) {
+  const now = Date.now()
+  if (now - lastActiveAdsWarningAt < 60_000) return
+  lastActiveAdsWarningAt = now
+  console.warn('[AdsService] Active ads unavailable:', reason)
+}
+
 function parseAdRecord(raw: any): Ad {
   const ad: Ad = {
     id: raw.id,
@@ -43,23 +52,30 @@ function parseAdRecord(raw: any): Ad {
 
 export const adsService = {
   async getActiveAds(): Promise<Ad[]> {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 1200)
+
     try {
       const { data, error } = await supabase
         .from('ads')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: true })
+        .abortSignal(controller.signal)
 
       if (error) {
-        console.error('[AdsService] Error fetching active ads:', error.message)
+        warnActiveAdsUnavailable(error.code || 'request_failed')
         return []
       }
 
       const list = (data || []).map(parseAdRecord)
       return list.sort((a, b) => (a.position || 99) - (b.position || 99))
     } catch (err) {
-      console.error('[AdsService] Exception in getActiveAds:', err)
+      const reason = err instanceof Error && err.name === 'AbortError' ? 'timeout' : 'request_failed'
+      warnActiveAdsUnavailable(reason)
       return []
+    } finally {
+      clearTimeout(timeout)
     }
   },
 

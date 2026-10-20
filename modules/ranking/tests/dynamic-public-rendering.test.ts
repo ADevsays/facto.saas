@@ -118,8 +118,8 @@ test('SaaS SEO uses one brand suffix, the agreed templates and a modification da
   assert.match(profile, /country && country !== 'Global'/)
   assert.match(meta, /Mejores herramientas de \$\{displayName\} \[\$\{year\}\] \| Facto/)
   assert.match(meta, /Mejores Software y SaaS en \$\{countryName\} \[\$\{year\}\] \| Facto/)
-  assert.match(profileEndpoint, /published_at, updated_at/)
-  assert.match(profileEndpoint, /updatedAt: dbEntry\.updated_at \|\| dbEntry\.published_at/)
+  assert.match(profileEndpoint, /published_at,/)
+  assert.match(profileEndpoint, /updatedAt: dbEntry\.published_at/)
   assert.match(schema, /dateModified: saas\.updatedAt \|\| saas\.publishedAt/)
 })
 
@@ -225,15 +225,15 @@ test('only a connected provider can expose zero revenue on the public profile', 
   assert.match(profileView, /historyRevenue\.value === 0\) return props\.saas\.provider \? '\$0'/)
 })
 
-test('home ranking randomizes zero-revenue startups per session seed while keeping chunk order stable', () => {
+test('home ranking keeps deterministic ordering across SSR and pagination chunks', () => {
   const rankingService = readProjectFile('modules/ranking/server/services/ranking.ts')
   const listEndpoint = readProjectFile('modules/ranking/server/api/ranking/list.get.ts')
   const saasList = readProjectFile('composables/useSaasList.ts')
 
-  assert.match(rankingService, /seededOrderValue\(a\.id, seed!\)/)
-  assert.match(listEndpoint, /query\.seed !== undefined/)
-  assert.match(saasList, /seed: options\.scope === 'home'/)
-  assert.match(saasList, /seededOrderValue\(a\.id, seed\)/)
+  assert.doesNotMatch(rankingService, /seededOrderValue|\bseed\b/)
+  assert.doesNotMatch(listEndpoint, /query\.seed|\bseed\b/)
+  assert.doesNotMatch(saasList, /seededOrderValue|Math\.random|[?&]seed=/)
+  assert.match(rankingService, /\(b\.views \?\? 0\) - \(a\.views \?\? 0\) \|\| a\.id\.localeCompare\(b\.id\)/)
 })
 
 test('an expired key with prior data changes the verification legend and sends one deduplicated email', () => {

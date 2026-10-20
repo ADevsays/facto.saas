@@ -8,6 +8,19 @@ const SORT_COLUMN: Record<SortOption, string> = {
   views: 'views',
 }
 
+const DEFAULT_PAGE_SIZE = 100
+const MAX_PAGE_SIZE = 200
+
+function normalizePageSize(limit: number | undefined): number {
+  if (!Number.isFinite(limit)) return DEFAULT_PAGE_SIZE
+  return Math.min(Math.max(Math.floor(limit as number), 1), MAX_PAGE_SIZE)
+}
+
+function normalizeOffset(offset: number | undefined): number {
+  if (!Number.isFinite(offset)) return 0
+  return Math.max(Math.floor(offset as number), 0)
+}
+
 export function formatPersistedRevenue(revenue: unknown, _mrr: number | null, hasConnectedProvider: boolean): string | null {
   const numericRevenue = typeof revenue === 'number'
     ? revenue
@@ -66,14 +79,6 @@ function parseFormattedRevenue(revenue: string | null | undefined, _mrr: number 
   return (amount * multiplier) || 0
 }
 
-function seededOrderValue(id: string, seed: number): number {
-  let hash = seed | 0
-  for (let i = 0; i < id.length; i++) {
-    hash = Math.imul(hash ^ id.charCodeAt(i), 16777619)
-  }
-  return hash >>> 0
-}
-
 function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasListItem {
   const cats = (row.categories as { name: string; slug: string }[]) || []
   let selectedCat = cats[0]
@@ -110,9 +115,11 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
 }
 
 export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasListItem[]> {
-  const { sort = 'mrr', category, country, countries, q, limit, offset = 0, excludeIncognito = false, seed } = params
+  const { sort = 'mrr', category, country, countries, q, limit, offset = 0, excludeIncognito = false } = params
   const column = SORT_COLUMN[sort]
   const nullsFirst = sort === 'mrr' ? false : false
+  const pageSize = normalizePageSize(limit)
+  const pageOffset = normalizeOffset(offset)
 
   const selectQuery = `
     id, name, slug, logo_url, website_url, founder_name, startup_type,
@@ -122,63 +129,26 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
     payment_providers ( name, slug )
   `
 
-  const isExplicitLimited = typeof limit === 'number' && limit < 1000 && sort !== 'mrr'
+  let query = supabase
+    .from('saas_entries')
+    .select(selectQuery)
+    .eq('status', 'published')
+    .order(column, { ascending: false, nullsFirst })
+    .order('id', { ascending: true })
+    .range(pageOffset, pageOffset + pageSize - 1)
 
-  let rawData: any[] = []
-
-  if (isExplicitLimited) {
-    let query = supabase
-      .from('saas_entries')
-      .select(selectQuery)
-      .eq('status', 'published')
-      .order(column, { ascending: false, nullsFirst })
-      .order('id', { ascending: true })
-      .range(offset, offset + limit - 1)
-
-    if (category) query = query.eq('categories.slug', category)
-    if (country) query = query.eq('countries.slug', country)
-    if (countries?.length) query = query.in('countries.slug', countries)
-    if (excludeIncognito) query = query.not('is_incognito', 'is', true)
-    if (q?.trim()) {
-      const term = `%${q.trim()}%`
-      query = query.or(`name.ilike.${term},founder_name.ilike.${term}`)
-    }
-
-    const { data, error } = await query
-    if (error) throw createError({ statusCode: 500, message: error.message })
-    rawData = data ?? []
-  } else {
-    // Auto-paginate in 1000-row chunks to ensure no ceiling when catalog grows past 1,000
-    const CHUNK_SIZE = 1000
-    let currentFrom = sort === 'mrr' && typeof limit === 'number' && limit < 1000 ? 0 : offset
-
-    while (true) {
-      let query = supabase
-        .from('saas_entries')
-        .select(selectQuery)
-        .eq('status', 'published')
-        .order(column, { ascending: false, nullsFirst })
-        .order('id', { ascending: true })
-        .range(currentFrom, currentFrom + CHUNK_SIZE - 1)
-
-      if (category) query = query.eq('categories.slug', category)
-      if (country) query = query.eq('countries.slug', country)
-      if (countries?.length) query = query.in('countries.slug', countries)
-      if (excludeIncognito) query = query.not('is_incognito', 'is', true)
-      if (q?.trim()) {
-        const term = `%${q.trim()}%`
-        query = query.or(`name.ilike.${term},founder_name.ilike.${term}`)
-      }
-
-      const { data, error } = await query
-      if (error) throw createError({ statusCode: 500, message: error.message })
-
-      if (!data || data.length === 0) break
-      rawData.push(...data)
-      if (data.length < CHUNK_SIZE) break
-      currentFrom += CHUNK_SIZE
-    }
+  if (category) query = query.eq('categories.slug', category)
+  if (country) query = query.eq('countries.slug', country)
+  if (countries?.length) query = query.in('countries.slug', countries)
+  if (excludeIncognito) query = query.not('is_incognito', 'is', true)
+  if (q?.trim()) {
+    const term = `%${q.trim()}%`
+    query = query.or(`name.ilike.${term},founder_name.ilike.${term}`)
   }
+
+  const { data, error } = await query
+  if (error) throw createError({ statusCode: 500, message: error.message })
+  let rawData = data ?? []
 
   if (excludeIncognito) {
     rawData = rawData.filter(row => row.is_incognito !== true && row.is_incognito !== 'true')
@@ -195,29 +165,17 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
   })
 
   if (sort === 'mrr') {
-    const isSeeded = typeof seed === 'number' && Number.isFinite(seed)
     items.sort((a, b) => {
-      if (a.mrr === null && b.mrr === null) {
-        if (isSeeded) {
-          return seededOrderValue(a.id, seed!) - seededOrderValue(b.id, seed!) || a.id.localeCompare(b.id)
-        }
-        return (b.views ?? 0) - (a.views ?? 0) || a.id.localeCompare(b.id)
-      }
+      if (a.mrr === null && b.mrr === null) return (b.views ?? 0) - (a.views ?? 0) || a.id.localeCompare(b.id)
       if (a.mrr === null) return 1
       if (b.mrr === null) return -1
       const revenueDiff = parseFormattedRevenue(b.revenue, b.mrr) - parseFormattedRevenue(a.revenue, a.mrr)
       if (revenueDiff !== 0) return revenueDiff
       const providerDiff = Number(Boolean(b.provider)) - Number(Boolean(a.provider))
       if (providerDiff !== 0) return providerDiff
-      if (isSeeded && parseFormattedRevenue(a.revenue, a.mrr) === 0) {
-        return seededOrderValue(a.id, seed!) - seededOrderValue(b.id, seed!) || a.id.localeCompare(b.id)
-      }
       return (b.views ?? 0) - (a.views ?? 0) || a.id.localeCompare(b.id)
     })
 
-    if (typeof limit === 'number' && limit < 1000) {
-      return items.slice(offset, offset + limit)
-    }
   }
 
   return items

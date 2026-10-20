@@ -13,10 +13,15 @@ export function getTodayDateString(timeZone = 'America/Bogota'): string {
   }
 }
 
+export function isViewTrackingEnabled(): boolean {
+  return process.env.VIEW_TRACKING_ENABLED === 'true'
+}
+
 export async function recordDailyView(dateStr?: string, increment = 1): Promise<void> {
+  if (!isViewTrackingEnabled()) return
+
   const targetDate = dateStr || getTodayDateString()
 
-  // 1. Try to record in daily_views table if available
   try {
     const { data: existing, error: selectErr } = await supabase
       .from('daily_views')
@@ -49,7 +54,6 @@ export async function recordDailyView(dateStr?: string, increment = 1): Promise<
     // Table not created yet, proceed to snapshot fallback
   }
 
-  // 2. Fallback to notification_snapshots (snapshot_type: 'daily_views')
   try {
     const { data: snapList } = await supabase
       .from('notification_snapshots')

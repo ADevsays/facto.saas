@@ -11,9 +11,10 @@ Cada feature sigue la estructura: **Contrato â†’ Dominio â†’ Validaci�
 ### Contrato
 
 - Las fichas `/saas/[slug]`, categorías `/saas/categoria/[slug]` y países `/saas/pais/[slug]` publican títulos y descripciones únicos con la marca `| Facto` una sola vez.
-- El JSON-LD `SoftwareApplication` de una ficha incluye `dateModified` con la última actualización de `saas_entries`, o su fecha de publicación si no existe otra fecha.
+- El JSON-LD `SoftwareApplication` de una ficha incluye `dateModified` usando `published_at`, la fecha disponible en el esquema de producción.
 - `public/llms.txt` sigue el formato llmstxt.org y enlaza únicamente recursos de `https://www.factosaas.com`.
-- La ausencia de `updated_at` en una migración antigua no elimina los campos de Showcase (propuesta de valor, problema, stack, canales, mensaje, GitHub y FAQ) del perfil público.
+- Los campos de Showcase (propuesta de valor, problema, stack, canales, mensaje, GitHub y FAQ) del perfil público no dependen de una columna `updated_at`.
+- `VIEW_TRACKING_ENABLED=true` habilita los contadores global y por ficha; cualquier otro valor los congela y no dispara hitos/notificaciones de visitas.
 
 ### Dominio
 
@@ -27,7 +28,8 @@ Cada feature sigue la estructura: **Contrato â†’ Dominio â†’ Validaci�
 
 - ✅ Las fórmulas SEO contienen un único separador de marca, la categoría, el año vigente y el país únicamente cuando pertenece realmente a la ficha.
 - ✅ El perfil entrega `updatedAt` al schema y declara `dateModified`.
-- ✅ Un fallback por `updated_at` conserva los campos de Showcase; solo un esquema que tampoco los tenga usa el payload legado.
+- ✅ El perfil y el sitemap no consultan `saas_entries.updated_at`; usan `published_at` como fecha disponible.
+- ✅ Con `VIEW_TRACKING_ENABLED=false`, las rutas públicas no escriben contadores; con `true`, las visitas no SEO actualizan ambos contadores.
 - ✅ `/llms.txt` contiene el título, resumen, secciones de enlaces y de 10 a 20 fichas SaaS.
 
 ---
@@ -37,7 +39,7 @@ Cada feature sigue la estructura: **Contrato â†’ Dominio â†’ Validaci�
 ### Contrato
 
 - Una URL pública inexistente de SaaS o founder responde HTTP 404 en SSR; no responde una pantalla de error con HTTP 200.
-- El sitemap incluye solo perfiles con `status = published`, rutas públicas existentes y fechas `updated_at` cuando estén disponibles.
+- El sitemap incluye solo perfiles con `status = published`, rutas públicas existentes y `published_at` como fecha `lastmod`.
 - Rutas privadas (`/dashboard/**`, `/admin/**` y edición de perfiles) no entran al sitemap y devuelven `X-Robots-Tag: noindex, nofollow, noarchive`.
 - Cada ficha pública muestra métricas, fuente disponible y fecha de actualización, enlazadas a una metodología pública.
 - El JSON-LD de ficha no inventa una oferta gratuita para un SaaS; publica `SoftwareApplication`, `Dataset` y migas de pan coherentes con contenido visible.
@@ -91,10 +93,13 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - Los listados públicos consultan únicamente proyecciones ligeras persistidas; nunca incluyen `history_cache` ni historiales de proveedores.
 - Los logos `data:` mayores de 32 KiB no se serializan en respuestas públicas.
 - Home recibe como máximo la unión única del top 30 y las 6 startups más recientes.
+- Una solicitud paginada de ranking consulta únicamente su página solicitada en Supabase; pedir 10 filas nunca lee todo el catálogo para ordenarlas en Node.
 - El historial financiero se obtiene mediante un endpoint separado desde el cliente del perfil, después del render inicial, y solo para la startup visitada.
 - El endpoint de historial entrega series agregadas para la gráfica y nunca serializa cargos o suscripciones sin procesar.
 - La gráfica conserva su altura y dibuja una línea de carga de izquierda a derecha hasta resolver el historial financiero.
 - La banda de anuncios conserva `facto_ads_slots_data` como estado canónico SSR y `BroadcastChannel` para sincronizar una pestaña abierta después de una mutación.
+- La consulta SSR de anuncios tiene un timeout corto y caché efímera en memoria; si Supabase no responde, la página renderiza los slots vacíos sin bloquear el SSR.
+- El contador global y los contadores por ficha se habilitan únicamente con `VIEW_TRACKING_ENABLED=true`; durante un incidente se congelan con `false` sin impedir el renderizado público.
 
 #### Dominio
 
@@ -120,7 +125,7 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - ✅ SSR público no declara `isr`, `swr` ni `x-prerender-revalidate` y responde con política `no-store`.
 - ✅ Publicar, editar o aprobar un SaaS y modificar anuncios no dispara solicitudes internas a páginas públicas.
 - Home, ranking y listados hidratan `useSaasList` (o el payload de página de `/saas`) desde el payload SSR y no ejecutan un fetch duplicado ni destruyen la hidratación al entrar directamente o recargar `/saas`.
-- Home y ranking comparten `RankingSection` y cargan inicialmente 10 filas; el home admite hasta 30 y `/ranking` hasta 100 mediante chunks de 10 disparados cerca del final visible (`rootMargin: '650px 0px'`), prerenderizando filas skeleton de continuación de altura idéntica (`72px`) con `[overflow-anchor:none]` y garantizando un orden determinístico idéntico entre servidor y cliente para evitar saltos de scroll o reordenamiento de filas ya renderizadas. En Home (`scope === 'home'`), las startups sin revenue positivo (primero las que tienen pasarela conectada con `$0` y después las no verificadas con `mrr: null`) se ordenan de forma aleatoria en cada carga usando un `seed` de sesión compartido entre SSR y los chunks de paginación. Las tarjetas recientes y mejores se derivan del payload inicial sin cargar el resto del ranking.
+- Home y ranking comparten `RankingSection` y cargan inicialmente 10 filas; el home admite hasta 30 y `/ranking` hasta 100 mediante chunks de 10 disparados cerca del final visible (`rootMargin: '650px 0px'`), prerenderizando filas skeleton de continuación de altura idéntica (`72px`) con `[overflow-anchor:none]` y garantizando un orden determinístico idéntico entre servidor, cliente y chunks de paginación para evitar saltos o reordenamientos. No se usan semillas ni aleatoriedad en la URL o en el orden del ranking. Las tarjetas recientes y mejores se derivan del payload inicial sin cargar el resto del ranking.
 - ✅ El catálogo `/saas` carga inicialmente un máximo estricto de 12 startups (`PAGE_SIZE = 12`) sin hacer scroll, prerenderiza los skeletons de continuación (`hasMore || loadingMore`) de altura idéntica a la card (`h-[210px]`, `[overflow-anchor:none]`) para indicar que hay más contenido debajo, y solicita las páginas siguientes a medida que el usuario hace scroll (`rootMargin: '650px 0px'`) preservando exactamente la posición de scroll y la animación de entrada progresiva (`.reveal-card`).
 - ✅ El header del catálogo (`SaasListHeader.vue`) en `/saas` y sus subrutas permanece fijo (`sticky z-[15]`) con fondo opaco (`bg-[#030305]`) inmediatamente debajo de la banda de anuncios (`top-[91px] md:top-[105px]` cuando `showAds` está activo, `top-0` si está oculto) únicamente dentro del contenedor del listado de startups, dejando de ser sticky al terminar las startups y pasando por debajo de la banda de anuncios (`z-20`) al llegar al final de la sección o al footer.
 - ✅ Navegar Home → `/saas` → Home o entrar directamente a `/saas` conserva consultas independientes, hidrata desde `data` sin desajustes SSR/cliente y muestra el skeleton de destino sin bloquear la transición.
@@ -691,7 +696,7 @@ Permite a cualquier fundador o patrocinador autenticarse en su cuenta desde el p
   - `modules/achievements/server/utils/achievementEmail.ts` (`buildAchievementEmailHtml`) y `modules/achievements/server/services/achievements.ts`.
 - **Invocación**:
   - Bienvenida: Automática en `modules/add-saas/server/api/publish.post.ts` cuando se crea una nueva startup con `founderEmail`.
-  - Hitos de visitas: Automática en `checkAndNotifyAchievement` al alcanzar un umbral de `ACHIEVEMENT_THRESHOLDS`.
+  - Hitos de visitas: Automática en `checkAndNotifyAchievement` al alcanzar un umbral de `ACHIEVEMENT_THRESHOLDS`, únicamente con `VIEW_TRACKING_ENABLED=true`.
 
 ### Dominio
 - "Todos los correos transaccionales dirigidos a founders siguen la doctrina B2B text-first (`email-marketing` y `facto-email-design`): diseño minimalista sin tarjetas pesadas, sin gradientes decorativos y sin emojis en el asunto ni en el cuerpo."
@@ -789,7 +794,7 @@ interface FeedbackSubmission {
 
 Sistema automatizado desacoplado para el canal de Telegram (@factosaas) enfocado en tres funcionalidades principales:
 1. **Notificación Reactiva de Nuevas Startups con Posición en Ranking**: Cada vez que se publica una startup (o es aprobada en revisión admin), se notifica de inmediato al canal calculando su posición exacta en el ranking global (#1, Top 3, Top 10 o puesto general) e incluyendo enlace directo a su perfil o al ranking con UTMs.
-2. **Notificación Reactiva de Hitos de Visitas con Insignia**: Al registrarse un hito de visitas (50, 100, 250, 500, 1K, etc.) en `checkAndNotifyAchievement`, se dispara reactivamente el anuncio al canal enviando la foto oficial de la insignia (`badge-${milestone}.png`) y texto formateado con enlace UTM.
+2. **Notificación Reactiva de Hitos de Visitas con Insignia**: Con `VIEW_TRACKING_ENABLED=true`, al registrarse un hito de visitas (50, 100, 250, 500, 1K, etc.) en `checkAndNotifyAchievement`, se dispara reactivamente el anuncio al canal enviando la foto oficial de la insignia (`badge-${milestone}.png`) y texto formateado con enlace UTM.
 3. **Resumen Diario de Métricas (Daily Digest)**: Al finalizar el día (18:00 Colombia / 23:00 UTC), se envía un resumen con startups agregadas, facturación global, visitas registradas hoy y enlace directo a la vista pública de estadísticas (`/stats`).
 
 ### Contrato
@@ -831,7 +836,7 @@ NOTIFIER_MAX_DAILY_MILESTONES=8
 - **Cálculo de Ranking Preciso**: Se calcula la posición exacta del SaaS dentro del listado publicado ordenado por MRR desc y `published_at` asc.
 - **Idempotencia Estricta**: Cada evento tiene `dedupeKey: new_startup:<id>`. Si se edita o re-publica, no duplica el mensaje.
 - **Enlace a Estadísticas**: El Daily Digest incluye métricas clave del día y un CTA directo a `/stats` (`buildUtmUrl('/stats', 'daily_digest')`).
-- **Hito de Visitas Reactivo con Insignia**: Al registrarse el logro en `checkAndNotifyAchievement`, se ejecuta `notifyVisitsMilestoneReactive({ startupId, milestone })`. Si existe la insignia (`badge-${milestone}.png`), se envía vía `sendPhoto` con el texto como caption (< 1024 caracteres). Si la subida de foto falla, tiene fallback transparente a `sendMessage`.
+- **Hito de Visitas Reactivo con Insignia**: Con `VIEW_TRACKING_ENABLED=true`, al registrarse el logro en `checkAndNotifyAchievement`, se ejecuta `notifyVisitsMilestoneReactive({ startupId, milestone })`. Si existe la insignia (`badge-${milestone}.png`), se envía vía `sendPhoto` con el texto como caption (< 1024 caracteres). Si la subida de foto falla, tiene fallback transparente a `sendMessage`.
 - **Idempotencia de Hitos**: La clave `visits_milestone:<startupId>:<milestone>` garantiza que un hito nunca se publique más de una vez en Telegram.
 - **Seguridad en Telegram**: Modo `parse_mode=HTML` con escape estricto de `&`, `<`, `>`. Límite de 4096 caracteres (1024 para captions de fotos). Rate limit de ~1 msg/s. Manejo de 429 con `retry_after`.
 

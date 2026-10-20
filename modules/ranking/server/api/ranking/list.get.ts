@@ -28,14 +28,13 @@ export default defineEventHandler(async (event) => {
   if (query.scope === 'home') {
     const rankingLimit = Math.min(Math.max(toPageNumber(query.rankingLimit, 10), 1), 30)
     const rankingOffset = toPageNumber(query.rankingOffset, 0)
-    const seed = query.seed !== undefined ? toPageNumber(query.seed, 0) : undefined
 
     if (query.rankingOnly === 'true') {
-      return fetchSaasList({ sort: 'mrr', limit: rankingLimit, offset: rankingOffset, excludeIncognito: true, seed })
+      return fetchSaasList({ sort: 'mrr', limit: rankingLimit, offset: rankingOffset, excludeIncognito: true })
     }
 
     const [ranking, recent] = await Promise.all([
-      fetchSaasList({ sort: 'mrr', limit: rankingLimit, offset: rankingOffset, excludeIncognito: true, seed }),
+      fetchSaasList({ sort: 'mrr', limit: rankingLimit, offset: rankingOffset, excludeIncognito: true }),
       fetchSaasList({ sort: 'latest', limit: 6 }),
     ])
     return [...new Map([...ranking, ...recent].map(item => [item.id, item])).values()]
@@ -47,8 +46,8 @@ export default defineEventHandler(async (event) => {
     country: query.country as string | undefined,
     countries: typeof query.countries === 'string' ? query.countries.split(',').filter(Boolean) : undefined,
     q: query.q as string | undefined,
-    limit: query.limit ? Number(query.limit) : 1000,
-    offset: query.offset ? Number(query.offset) : 0,
+    limit: toPageNumber(query.limit, 100),
+    offset: toPageNumber(query.offset, 0),
     excludeIncognito: query.excludeIncognito === 'true' || query.scope === 'ranking',
   }
 
