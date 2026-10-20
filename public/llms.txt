@@ -1,0 +1,44 @@
+# Facto
+
+> Facto is a verified directory and ranking of SaaS startups, with public MRR and revenue information, country and category discovery, and comparison pages for founders, buyers and investors.
+
+Use individual SaaS profiles to review each product and find related alternatives. Revenue and MRR are only shown when a founder has connected a supported payment provider.
+
+## Main pages
+
+- [Facto home](https://www.factosaas.com/): Entry point to the verified SaaS ranking and startup directory.
+- [SaaS directory](https://www.factosaas.com/saas): Browse SaaS startups by revenue, category and recency.
+- [SaaS by category](https://www.factosaas.com/saas/categoria): Explore software categories and their listed alternatives.
+- [SaaS by country](https://www.factosaas.com/saas/pais): Explore the SaaS ecosystem and rankings by country.
+
+## Categories
+
+- [AI tools](https://www.factosaas.com/saas/categoria/ai): AI software, automation and model-powered SaaS alternatives.
+- [CRM tools](https://www.factosaas.com/saas/categoria/crm): Customer relationship management software and alternatives.
+- [Marketing tools](https://www.factosaas.com/saas/categoria/marketing): Marketing, acquisition and growth software alternatives.
+- [Management tools](https://www.factosaas.com/saas/categoria/gestion): Business management and operations software alternatives.
+- [Sales tools](https://www.factosaas.com/saas/categoria/ventas): Sales software, ordering and commercial workflow alternatives.
+- [Restaurant tools](https://www.factosaas.com/saas/categoria/restaurantes): Restaurant operations and digital menu software alternatives.
+
+## Countries
+
+- [SaaS in Colombia](https://www.factosaas.com/saas/pais/colombia): Software and SaaS startups based in Colombia.
+- [SaaS in México](https://www.factosaas.com/saas/pais/mexico): Software and SaaS startups based in México.
+- [SaaS in Perú](https://www.factosaas.com/saas/pais/peru): Software and SaaS startups based in Perú.
+- [SaaS in Chile](https://www.factosaas.com/saas/pais/chile): Software and SaaS startups based in Chile.
+- [SaaS in Argentina](https://www.factosaas.com/saas/pais/argentina): Software and SaaS startups based in Argentina.
+
+## Featured SaaS and alternatives
+
+- [Yolani](https://www.factosaas.com/saas/yolani): AI SaaS profile with comparable AI tool alternatives.
+- [Instant replay](https://www.factosaas.com/saas/instant-replay): SaaS profile with related software alternatives.
+- [Codecollab 1.0](https://www.factosaas.com/saas/codecollab-1-0): Marketing SaaS profile and alternatives.
+- [Recaudo](https://www.factosaas.com/saas/recaudo): Payments and CRM SaaS profile with alternatives.
+- [Hellio](https://www.factosaas.com/saas/hellio): Sales SaaS profile with alternatives.
+- [Clubhaus](https://www.factosaas.com/saas/clubhaus): Management SaaS profile with alternatives.
+- [Menuby](https://www.factosaas.com/saas/menuby): Restaurant software profile with alternatives.
+- [Flash Menu](https://www.factosaas.com/saas/flash-menu): Restaurant SaaS profile with alternatives.
+- [FlowTrack](https://www.factosaas.com/saas/flowtrack): Workflow management SaaS profile with alternatives.
+- [PizzaaS](https://www.factosaas.com/saas/pizzaas): Restaurant management SaaS profile with alternatives.
+- [TRUJO TECHNOLOGIES](https://www.factosaas.com/saas/trujo-technologies): Marketing and messaging SaaS profile with alternatives.
+- [SIAOS](https://www.factosaas.com/saas/siaos): Productivity SaaS profile with alternatives.

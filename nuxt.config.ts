@@ -92,14 +92,31 @@ export default defineNuxtConfig({
     '/stats': { headers: dynamicPageHeaders },
     '/saas': { headers: dynamicPageHeaders },
     '/saas/**': { headers: dynamicPageHeaders },
-    '/saas/**/edit': { ssr: false },
+    '/saas/**/edit': {
+      ssr: false,
+      sitemap: false,
+      headers: { ...dynamicPageHeaders, 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    },
     '/ranking': { headers: dynamicPageHeaders },
     '/en': { headers: dynamicPageHeaders },
     '/en/stats': { headers: dynamicPageHeaders },
     '/en/saas': { headers: dynamicPageHeaders },
     '/en/saas/**': { headers: dynamicPageHeaders },
-    '/en/saas/**/edit': { ssr: false },
-    '/en/ranking': { headers: dynamicPageHeaders }
+    '/en/saas/**/edit': {
+      ssr: false,
+      sitemap: false,
+      headers: { ...dynamicPageHeaders, 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    },
+    '/en/ranking': { headers: dynamicPageHeaders },
+    '/dashboard/**': {
+      ssr: false,
+      sitemap: false,
+      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    },
+    '/admin/**': {
+      sitemap: false,
+      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    }
   },
   runtimeConfig: {
     encryptionKey: process.env.NUXT_ENCRYPTION_KEY,

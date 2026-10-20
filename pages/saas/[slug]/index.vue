@@ -17,9 +17,21 @@ definePageMeta({ pageTransition: false })
 const asyncData = await useLazyFetch<any>(() => `/api/saas/${slug.value}`, {
   key: () => `saas-profile-${slug.value}`,
   server: true,
-  getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
+  getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key],
+  onResponseError: ({ response }) => {
+    if (import.meta.server) setResponseStatus(useRequestEvent()!, response.status)
+  }
 })
 const { data: saas, error } = asyncData
+
+// `useLazyFetch` may populate its error after setup has returned. Track it
+// reactively during SSR so the friendly error screen also has an honest HTTP
+// status, without turning navigation into a blocking fetch.
+watchEffect(() => {
+  if (!import.meta.server || !error.value) return
+  const status = Number((error.value as any).statusCode || (error.value as any).status || 404)
+  setResponseStatus(useRequestEvent()!, status >= 400 ? status : 404)
+})
 
 // useLazyFetch can retain the previous result while its reactive key changes.
 // Never render that old profile under the new route: it hides the skeleton and
@@ -39,43 +51,40 @@ watchEffect(() => {
   }
 })
 
-function buildDescription(s: any): string {
-  if (!s) return t('seo.saas_slug_desc_default')
-  const isEn = locale.value === 'en'
-  const name = s.name || (isEn ? 'this SaaS' : 'este SaaS')
-  const rev = s.allTimeRevenue
-    ? s.allTimeRevenue
-    : (s.mrr ? (isEn ? `$${Number(s.mrr).toLocaleString()}/mo` : `$${Number(s.mrr).toLocaleString()}/mes`) : '$0')
-  const visits = Number(s.views || 0).toLocaleString()
-  if (isEn) {
-    return `${name} on Facto: ${rev} billed and ${visits} real visits. Metrics and leaderboard publicly verified.`
-  }
-  return `${name} en Facto: ${rev} facturado y ${visits} visitas reales. Métricas y ranking verificados públicamente.`
-}
-
 const revenueDisplay = computed(() => {
-  if (saasForSeo.value?.allTimeRevenue) {
-    return String(saasForSeo.value.allTimeRevenue)
-  }
-  if (saasForSeo.value?.mrr) {
-    return `$${Number(saasForSeo.value.mrr).toLocaleString()}`
-  }
+  if (saasForSeo.value?.allTimeRevenue) return String(saasForSeo.value.allTimeRevenue)
+  if (saasForSeo.value?.mrr) return `$${Number(saasForSeo.value.mrr).toLocaleString()}`
   return '$0'
 })
 
-const viewsDisplay = computed(() => {
-  return Number(saasForSeo.value?.views || 0).toLocaleString()
+const viewsDisplay = computed(() => Number(saasForSeo.value?.views || 0).toLocaleString())
+
+const categoryForSeo = computed(() => saasForSeo.value?.category || (locale.value === 'en' ? 'SaaS' : 'SaaS'))
+const countryForSeo = computed(() => {
+  const country = saasForSeo.value?.country
+  return country && country !== 'Global' ? country : null
 })
+const currentYear = new Date().getFullYear()
 
 useAppSeo({
   title: () => {
     if (!saasForSeo.value?.name) return 'Facto'
+    const name = saasForSeo.value.name
     if (locale.value === 'en') {
-      return `${saasForSeo.value.name} — ${revenueDisplay.value} Billed & ${viewsDisplay.value} Visits | Facto`
+      return countryForSeo.value
+        ? `${name} — ${categoryForSeo.value} Software for ${countryForSeo.value} ${currentYear} | Facto`
+        : `${name} — ${categoryForSeo.value} Software ${currentYear} | Facto`
     }
-    return `${saasForSeo.value.name} — ${revenueDisplay.value} Facturado y ${viewsDisplay.value} Visitas | Facto`
+    return countryForSeo.value
+      ? `${name} — Software de ${categoryForSeo.value} para ${countryForSeo.value} ${currentYear} | Facto`
+      : `${name} — Software de ${categoryForSeo.value} ${currentYear} | Facto`
   },
-  description: () => buildDescription(saasForSeo.value),
+  description: () => {
+    const name = saasForSeo.value?.name || (locale.value === 'en' ? 'this SaaS' : 'este SaaS')
+    return locale.value === 'en'
+      ? `Learn what ${name} does, a ${categoryForSeo.value} SaaS. Explore its profile, founder, country and public metrics.`
+      : `Descubre qué hace ${name}, un SaaS de ${categoryForSeo.value}. Conoce su perfil, fundador, país y métricas públicas.`
+  },
   customOgImage: true,
 })
 

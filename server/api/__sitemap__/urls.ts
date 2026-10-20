@@ -1,19 +1,37 @@
 import { supabase } from '~/server/lib/supabase'
 
 export default defineEventHandler(async () => {
-  const { data } = await supabase
+  const reservedSlugs = new Set(['categoria', 'pais', 'continente', 'category', 'country', 'continent'])
+
+  let { data, error } = await supabase
     .from('saas_entries')
-    .select('slug, published_at')
+    .select('slug, published_at, updated_at')
+    .eq('status', 'published')
     .not('published_at', 'is', null)
     .order('published_at', { ascending: false })
+
+  // Older local schemas can predate updated_at. A missing modification date
+  // must not make the entire public sitemap disappear.
+  if (error?.code === '42703') {
+    const fallback = await supabase
+      .from('saas_entries')
+      .select('slug, published_at')
+      .eq('status', 'published')
+      .not('published_at', 'is', null)
+      .order('published_at', { ascending: false })
+    data = fallback.data?.map(entry => ({ ...entry, updated_at: null })) ?? null
+    error = fallback.error
+  }
+
+  if (error) throw createError({ statusCode: 500, message: error.message })
 
   let urls: any[] = []
 
   // Static bilingual routes
   const staticRoutes = [
     { es: '/herramientas', en: '/en/tools' },
-    { es: '/categorias', en: '/en/categories' },
-    { es: '/paises', en: '/en/countries' },
+    { es: '/saas/categoria', en: '/en/saas/category' },
+    { es: '/saas/pais', en: '/en/saas/country' },
     { es: '/herramientas/cuanto-vale-tu-saas', en: '/en/tools/how-much-is-your-saas-worth' },
     { es: '/herramientas/generador-de-facturas', en: '/en/tools/invoice-generator' },
     { es: '/herramientas/descargar-miniaturas-youtube', en: '/en/tools/youtube-thumbnail-downloader' },
@@ -34,6 +52,7 @@ export default defineEventHandler(async () => {
 
   if (data) {
     for (const entry of data) {
+      if (!entry.slug || reservedSlugs.has(entry.slug)) continue
       const esLoc = `/saas/${entry.slug}`
       const enLoc = `/en/saas/${entry.slug}`
       const alternatives = [
@@ -44,12 +63,12 @@ export default defineEventHandler(async () => {
 
       urls.push({
         loc: esLoc,
-        lastmod: entry.published_at ?? undefined,
+        lastmod: entry.updated_at ?? entry.published_at ?? undefined,
         alternatives
       })
       urls.push({
         loc: enLoc,
-        lastmod: entry.published_at ?? undefined,
+        lastmod: entry.updated_at ?? entry.published_at ?? undefined,
         alternatives
       })
     }

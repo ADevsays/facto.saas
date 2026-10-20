@@ -16,6 +16,10 @@ const { data, error, pending } = asyncData
 
 if (import.meta.server) {
   await asyncData
+  if (error.value) {
+    const status = Number((error.value as any).statusCode || (error.value as any).status || 404)
+    setResponseStatus(useRequestEvent()!, status >= 400 ? status : 404)
+  }
 }
 
 useAppSeo({

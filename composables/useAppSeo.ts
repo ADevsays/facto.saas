@@ -9,10 +9,14 @@ interface SeoConfig {
 export function useAppSeo(config: SeoConfig) {
   const url = useRequestURL();
   const i18nHead = useLocaleHead({ lang: true, dir: true, seo: true });
-  const siteUrl = 'https://factosaas.com';
+  const siteUrl = 'https://www.factosaas.com';
   const canonicalHref = () => `${siteUrl}${url.pathname}`;
 
   useHead({
+    // Titles passed to this composable already include the Facto suffix.  The
+    // site module also defines a title separator, so letting its default
+    // template run would append the brand a second time.
+    titleTemplate: title => title || 'Facto',
     htmlAttrs: {
       lang: () => i18nHead.value.htmlAttrs?.lang ?? 'es',
       dir: () => (i18nHead.value.htmlAttrs?.dir as 'ltr' | 'rtl' | 'auto') ?? 'ltr',

@@ -54,6 +54,7 @@ onMounted(() => {
             <NuxtLink :to="localePath('/info')" class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light">{{ t('footer.about') }}</NuxtLink>
             <NuxtLink :to="localePath('/ranking')" class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light">Ranking</NuxtLink>
             <NuxtLink :to="localePath('/stats')" class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light">Estadísticas</NuxtLink>
+            <NuxtLink :to="localePath('/metodologia')" class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light">Metodología</NuxtLink>
             <NuxtLink :to="localePath(ROUTES.COUNTRY)" class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light">{{ t('footer.world') }}</NuxtLink>
             <a :href="localePath('/info') + '#faq'" class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light">{{ t('footer.faq') }}</a>
             <a href="https://t.me/factosaas" target="_blank" rel="noopener noreferrer" class="text-neutral-400 hover:text-[#00D4FF] transition-colors text-[13px] font-light flex items-center gap-1.5 group">
