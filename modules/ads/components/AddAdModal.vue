@@ -181,12 +181,12 @@ watch(minPrice, (newMin) => {
   <Transition name="fade">
     <div v-if="isOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 pointer-events-none" @click.self="close">
       <div
-        class="relative w-full max-w-[900px] lg:min-h-[800px] bg-[#0c0c10] border border-white/10 rounded-3xl overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.85)] flex flex-col max-h-[96vh] pointer-events-auto"
+        class="ad-modal-shell relative w-full max-w-[900px] min-h-0 bg-[#0c0c10] border border-white/10 rounded-3xl overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.85)] flex flex-col max-h-[calc(100dvh-2rem)] sm:max-h-[96vh] pointer-events-auto"
       >
         <!-- Header -->
         <div class="px-6 pt-6 pb-2 sm:px-8 md:px-9 sm:pt-7 flex items-start justify-between">
           <div class="flex flex-col gap-1 pr-3 min-w-0">
-            <h2 class="font-serif text-[30px] sm:text-[36px] md:text-[40px] text-white tracking-tight leading-[1.05] whitespace-nowrap truncate">
+            <h2 class="font-serif text-[28px] sm:text-[36px] md:text-[40px] text-white tracking-tight leading-[1.05] whitespace-normal break-words">
               {{ mode === 'setup' ? t.modal.setup.title : t.modal.sale.title }}
             </h2>
             <p class="text-[11px] sm:text-xs font-mono font-normal text-[#00D4FF] tracking-[0.04em]">
@@ -203,7 +203,7 @@ watch(minPrice, (newMin) => {
         </div>
 
         <!-- Body -->
-        <div class="flex-1 overflow-y-auto px-6 pb-6 sm:px-8 md:px-9 sm:pb-8 pt-3 flex flex-col gap-5 custom-scrollbar">
+        <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6 sm:px-8 md:px-9 sm:pb-8 pt-3 flex flex-col gap-5 custom-scrollbar">
 
           <!-- SALE MODE -->
           <template v-if="mode === 'sale'">
@@ -333,6 +333,17 @@ watch(minPrice, (newMin) => {
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.3); }
+
+.custom-scrollbar {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+}
+
+@media (min-width: 1024px) {
+  .ad-modal-shell {
+    min-height: min(800px, calc(100dvh - 2rem));
+  }
+}
 
 .slot-selection-pulse {
   animation: slot-selection-pulse 360ms ease-out;
