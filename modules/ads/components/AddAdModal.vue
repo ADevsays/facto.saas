@@ -248,10 +248,10 @@ watch(minPrice, (newMin) => {
                   type="button"
                   @click="startCheckout"
                   :disabled="isCreatingCheckout"
-                  class="w-full group inline-flex items-center justify-center gap-2.5 bg-white text-black font-bold uppercase tracking-[0.12em] text-xs sm:text-sm py-4 rounded-xl transition-all duration-300 hover:bg-neutral-100 hover:scale-[1.01] active:scale-[0.99] shadow-xl hover:shadow-[#00D4FF]/20 disabled:opacity-50 cursor-pointer"
+                  class="w-full group inline-flex items-center justify-center gap-2.5 bg-white text-black font-bold uppercase tracking-[0.08em] sm:tracking-[0.12em] text-[10px] sm:text-sm leading-none px-2 py-4 rounded-xl transition-all duration-300 hover:bg-neutral-100 hover:scale-[1.01] active:scale-[0.99] shadow-xl hover:shadow-[#00D4FF]/20 disabled:opacity-50 cursor-pointer"
                 >
                   <Loader2 v-if="isCreatingCheckout" class="w-4 h-4 animate-spin" />
-                  <span>
+                  <span class="whitespace-nowrap">
                     {{ isCreatingCheckout ? t.modal.sale.generating_checkout : (isSlotAvailable ? t.modal.sale.occupy_cta : t.modal.sale.outbid_cta).replace('{price}', String(customBid)).replace('{slot}', String(selectedSlot)) }}
                   </span>
                 </button>
