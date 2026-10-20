@@ -4,6 +4,7 @@ import AdCard from '../components/AdCard.vue'
 import AdEmptyCard from '../components/AdEmptyCard.vue'
 import AdCtaCard from '../components/AdCtaCard.vue'
 import { useAdsSlots } from '../composables/useAdsSlots'
+import { useAdsDirection } from '../composables/useAdsDirection'
 import { useAddAdModal } from '~/composables/useAddAdModal'
 import type { AdSlot } from '../types'
 
@@ -11,6 +12,7 @@ const route = useRoute()
 const isDashboard = computed(() => route.path.includes('/dashboard'))
 const { openBuy, openAuctionList } = useAddAdModal()
 const { safeSlots, topSlots, freeSlotsCount } = useAdsSlots()
+const { getDirection } = useAdsDirection()
 
 // Desktop track: full 20 slots tripled
 const trackDesktop = computed<AdSlot[]>(() => [
@@ -35,6 +37,7 @@ let rafId: number
 let desktopPos = 0
 let mobilePos = 0
 let lastTime = 0
+let autoDirection = 1
 
 let userScrollTimeout: ReturnType<typeof setTimeout>
 let isUserScrolling = false
@@ -58,14 +61,14 @@ function tick(timestamp: number) {
     if (trackDesktopRef.value) {
       const limit = trackDesktopRef.value.scrollWidth / 3
       if (limit > 0) {
-        desktopPos = wrap(desktopPos + SPEED * dt, limit)
+        desktopPos = wrap(desktopPos + autoDirection * SPEED * dt, limit)
         trackDesktopRef.value.style.transform = `translateX(${-desktopPos}px)`
       }
     }
     if (trackMobileRef.value) {
       const limitMobile = trackMobileRef.value.scrollWidth / 3
       if (limitMobile > 0) {
-        mobilePos = wrap(mobilePos + SPEED * 0.9 * dt, limitMobile)
+        mobilePos = wrap(mobilePos + autoDirection * SPEED * 0.9 * dt, limitMobile)
         trackMobileRef.value.style.transform = `translateX(${-mobilePos}px)`
       }
     }
@@ -146,6 +149,7 @@ function onEmptySlotClick(pos: number) {
 let delayTimeout: ReturnType<typeof setTimeout>
 
 onMounted(() => {
+  autoDirection = getDirection()
   const el = sectionRef.value
   if (el) {
     el.addEventListener('wheel', onWheel, { passive: false })

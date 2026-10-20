@@ -4,11 +4,13 @@ import AdCard from '../components/AdCard.vue'
 import AdEmptyCard from '../components/AdEmptyCard.vue'
 import AdCtaCard from '../components/AdCtaCard.vue'
 import { useAdsSlots } from '../composables/useAdsSlots'
+import { useAdsDirection } from '../composables/useAdsDirection'
 import { useAddAdModal } from '~/composables/useAddAdModal'
 import type { AdSlot } from '../types'
 
 const { openBuy, openAuctionList } = useAddAdModal()
 const { bottomSlots, freeSlotsCount, safeSlots } = useAdsSlots()
+const { getDirection } = useAdsDirection()
 
 const track = computed<AdSlot[]>(() => [
   ...bottomSlots.value,
@@ -23,6 +25,7 @@ const isHovered = ref(false)
 let rafId: number
 let position = 0
 let lastTime = 0
+let autoDirection = 1
 let userScrollTimeout: ReturnType<typeof setTimeout>
 let isUserScrolling = false
 let autoScrollReady = false
@@ -44,7 +47,7 @@ function tick(timestamp: number) {
   if (autoScrollReady && !isHovered.value && !isUserScrolling && trackRef.value) {
     const limit = trackRef.value.scrollWidth / 3
     if (limit > 0) {
-      position = wrap(position + SPEED * dt, limit)
+      position = wrap(position + autoDirection * SPEED * dt, limit)
       trackRef.value.style.transform = `translateX(${-position}px)`
     }
   }
@@ -115,6 +118,7 @@ function onEmptySlotClick(pos: number) {
 let delayTimeout: ReturnType<typeof setTimeout>
 
 onMounted(() => {
+  autoDirection = getDirection()
   const el = sectionRef.value
   if (el) {
     el.addEventListener('wheel', onWheel, { passive: false })
