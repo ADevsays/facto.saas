@@ -24,7 +24,7 @@ test('catalog requests cards incrementally with reveal animation, skeletons, and
   assert.match(skeletonSource, /\bh-\[210px\]/)
   assert.match(skeletonSource, /\[overflow-anchor:none\]/)
   assert.match(source, /scrollYOnStart/)
-  assert.match(headerSource, /top-\[92px\] md:top-\[106px\]/)
+  assert.match(headerSource, /top-\[91px\] md:top-\[105px\]/)
   assert.match(headerSource, /z-\[15\]/)
   assert.match(headerSource, /useAdPreferences/)
 })
