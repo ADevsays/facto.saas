@@ -179,7 +179,7 @@ onUnmounted(() => {
   <section
     ref="sectionRef"
     :class="[
-      'w-full overflow-hidden py-3 md:py-4 border-y border-white/5 bg-[#030305]/90 backdrop-blur-md',
+      'w-full overflow-hidden py-4 md:py-5 border-y border-white/5 bg-[#030305]/90 backdrop-blur-md',
       isDashboard ? 'relative' : 'sticky top-0 z-20'
     ]"
     @mouseenter="isHovered = true"

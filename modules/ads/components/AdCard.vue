@@ -65,7 +65,7 @@ const cardColor = computed(() => {
     rel="noopener noreferrer"
     @click="playNextKeySound"
     :class="[
-      'ad-card group shrink-0 flex items-center gap-3 md:gap-3.5 rounded-xl px-4 py-2 md:px-5 md:py-2.5 cursor-pointer transition-all duration-500 select-none border w-[290px] sm:w-[320px] md:w-[340px] max-w-[340px] h-[66px] md:h-[72px] relative overflow-hidden',
+      'ad-card group shrink-0 flex items-center gap-3.5 md:gap-4 rounded-2xl px-4 py-3 md:px-5 md:py-3.5 cursor-pointer transition-all duration-500 select-none border w-[320px] sm:w-[350px] md:w-[380px] max-w-[380px] h-[78px] md:h-[86px] relative overflow-hidden',
       isPositionOne
         ? 'gold-glow-border bg-[#FFD700]/[0.05] hover:bg-[#FFD700]/[0.1] hover:scale-[1.01]'
         : ''
@@ -89,12 +89,12 @@ const cardColor = computed(() => {
       :src="image_url"
       :alt="name"
       @error="imageError = true"
-      class="w-9 h-9 md:w-10 md:h-10 object-contain rounded-xl shrink-0 p-1 bg-black/40 border"
+      class="w-11 h-11 md:w-12 md:h-12 object-contain rounded-2xl shrink-0 p-1 bg-black/40 border"
       :style="{ borderColor: isPositionOne ? 'rgba(255,215,0,0.4)' : `${cardColor}40` }"
     />
     <div
       v-else
-      class="w-9 h-9 md:w-10 md:h-10 rounded-xl shrink-0 flex items-center justify-center font-serif font-bold text-base md:text-lg border select-none"
+      class="w-11 h-11 md:w-12 md:h-12 rounded-2xl shrink-0 flex items-center justify-center text-base md:text-xl font-serif font-bold tracking-tight leading-none transition-all duration-300 shrink-0 select-none"
       :style="isPositionOne ? {
         backgroundColor: 'rgba(255,215,0,0.15)',
         borderColor: 'rgba(255,215,0,0.5)',

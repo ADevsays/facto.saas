@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
       .update({
         provider_id: pData.providerId,
         provider_key_encrypted: pData.providerKeyEncrypted,
-        ...(pData.mrr !== null && { mrr: pData.mrr }),
+        ...(pData.mrr !== null && { mrr: pData.mrr, revenue: 0 }),
         ...(pData.currency && { currency: pData.currency }),
         status: 'published'
       })
@@ -112,9 +112,17 @@ export default defineEventHandler(async (event) => {
             await storage.setItem(cacheKey, { history, timestamp: Date.now() })
             await storage.setItem(`metrics:${body.saasId}`, { mrr: mrrVal, revenue: allTimeRev })
 
-            if (mrrVal !== pData.mrr) {
-              await supabase.from('saas_entries').update({ mrr: mrrVal }).eq('id', body.saasId)
-            }
+            await Promise.all([
+              supabase.from('saas_metrics_cache').upsert({
+                saas_id: body.saasId,
+                history_cache: history,
+                history_synced_at: new Date().toISOString()
+              }),
+              supabase.from('saas_entries').update({
+                mrr: mrrVal,
+                revenue: Math.round(realAllTimeRevenue)
+              }).eq('id', body.saasId)
+            ])
           }
         }
       } catch (e) {

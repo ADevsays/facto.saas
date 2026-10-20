@@ -66,6 +66,14 @@ function parseFormattedRevenue(revenue: string | null | undefined, _mrr: number 
   return (amount * multiplier) || 0
 }
 
+function seededOrderValue(id: string, seed: number): number {
+  let hash = seed | 0
+  for (let i = 0; i < id.length; i++) {
+    hash = Math.imul(hash ^ id.charCodeAt(i), 16777619)
+  }
+  return hash >>> 0
+}
+
 function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasListItem {
   const cats = (row.categories as { name: string; slug: string }[]) || []
   let selectedCat = cats[0]
@@ -102,7 +110,7 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
 }
 
 export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasListItem[]> {
-  const { sort = 'mrr', category, country, countries, q, limit, offset = 0, excludeIncognito = false } = params
+  const { sort = 'mrr', category, country, countries, q, limit, offset = 0, excludeIncognito = false, seed } = params
   const column = SORT_COLUMN[sort]
   const nullsFirst = sort === 'mrr' ? false : false
 
@@ -187,14 +195,23 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
   })
 
   if (sort === 'mrr') {
+    const isSeeded = typeof seed === 'number' && Number.isFinite(seed)
     items.sort((a, b) => {
-      if (a.mrr === null && b.mrr === null) return (b.views ?? 0) - (a.views ?? 0) || a.id.localeCompare(b.id)
+      if (a.mrr === null && b.mrr === null) {
+        if (isSeeded) {
+          return seededOrderValue(a.id, seed!) - seededOrderValue(b.id, seed!) || a.id.localeCompare(b.id)
+        }
+        return (b.views ?? 0) - (a.views ?? 0) || a.id.localeCompare(b.id)
+      }
       if (a.mrr === null) return 1
       if (b.mrr === null) return -1
       const revenueDiff = parseFormattedRevenue(b.revenue, b.mrr) - parseFormattedRevenue(a.revenue, a.mrr)
       if (revenueDiff !== 0) return revenueDiff
       const providerDiff = Number(Boolean(b.provider)) - Number(Boolean(a.provider))
       if (providerDiff !== 0) return providerDiff
+      if (isSeeded && parseFormattedRevenue(a.revenue, a.mrr) === 0) {
+        return seededOrderValue(a.id, seed!) - seededOrderValue(b.id, seed!) || a.id.localeCompare(b.id)
+      }
       return (b.views ?? 0) - (a.views ?? 0) || a.id.localeCompare(b.id)
     })
 

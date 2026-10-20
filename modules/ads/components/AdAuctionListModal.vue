@@ -183,7 +183,7 @@ function onReclaimSlot(slot: AdSlot) {
                 type="button"
                 @click="onReclaimSlot(s)"
                 :class="[
-                  'w-full sm:w-auto group flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-[10px] px-4 py-2.5 rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]',
+                  'w-full sm:w-[175px] group flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-[10px] px-4 py-2.5 rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]',
                   s.position === 1
                     ? 'bg-[#FFD700]/15 hover:bg-[#FFD700] text-[#FFD700] hover:text-black border border-[#FFD700]/40 shadow-[0_0_15px_rgba(255,215,0,0.2)]'
                     : 'bg-[#00D4FF]/10 hover:bg-[#00D4FF] text-[#00D4FF] hover:text-black border border-[#00D4FF]/30'
@@ -198,7 +198,7 @@ function onReclaimSlot(slot: AdSlot) {
                 type="button"
                 @click="onReclaimSlot(s)"
                 :class="[
-                  'w-full sm:w-auto flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-[10px] px-5 py-2.5 rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]',
+                  'w-full sm:w-[175px] flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-[10px] px-4 py-2.5 rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]',
                   s.position === 1
                     ? 'bg-[#FFD700] text-black hover:bg-[#FFE033] shadow-[0_0_15px_rgba(255,215,0,0.3)]'
                     : 'bg-white text-black hover:bg-neutral-200'

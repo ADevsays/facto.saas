@@ -100,6 +100,41 @@ test('initial profile stays light and history has a dedicated endpoint', () => {
   assert.match(profileEndpoint, /founder:founders!saas_entries_founder_id_fkey/)
   assert.match(profileEndpoint, /saas_achievements \( achievement_type, unlocked_at \)/)
   assert.doesNotMatch(profileEndpoint, /\.from\('founders'\)/)
+  assert.match(profileEndpoint, /const showcaseFallbackRes/)
+  assert.match(profileEndpoint, /value_proposition, problem_solved, tech_stack, acquisition_channels, facto_message, faq, github_repo/)
+  assert.match(profileEndpoint, /showcaseFallbackRes\.error\?\.code === '42703'/)
+})
+
+test('SaaS SEO uses one brand suffix, the agreed templates and a modification date', () => {
+  const seo = readProjectFile('composables/useAppSeo.ts')
+  const profile = readProjectFile('pages/saas/[slug]/index.vue')
+  const meta = readProjectFile('composables/useSaasViewMeta.ts')
+  const profileEndpoint = readProjectFile('server/api/saas/[slug].get.ts')
+  const schema = readProjectFile('composables/useAppSchema.ts')
+
+  assert.match(seo, /titleTemplate: title => title \|\| 'Facto'/)
+  assert.match(profile, /\$\{name\} — Software de \$\{categoryForSeo\.value\} para \$\{countryForSeo\.value\} \$\{currentYear\} \| Facto/)
+  assert.match(profile, /\$\{name\} — Software de \$\{categoryForSeo\.value\} \$\{currentYear\} \| Facto/)
+  assert.match(profile, /country && country !== 'Global'/)
+  assert.match(meta, /Mejores herramientas de \$\{displayName\} \[\$\{year\}\] \| Facto/)
+  assert.match(meta, /Mejores Software y SaaS en \$\{countryName\} \[\$\{year\}\] \| Facto/)
+  assert.match(profileEndpoint, /published_at, updated_at/)
+  assert.match(profileEndpoint, /updatedAt: dbEntry\.updated_at \|\| dbEntry\.published_at/)
+  assert.match(schema, /dateModified: saas\.updatedAt \|\| saas\.publishedAt/)
+})
+
+test('llms.txt follows the curated site-only link format', () => {
+  const llms = readProjectFile('public/llms.txt')
+  const links = [...llms.matchAll(/\]\((https:\/\/[^)]+)\)/g)].map(match => match[1])
+  const featured = llms.split('## Featured SaaS and alternatives')[1]
+
+  assert.match(llms, /^# Facto\r?\n\r?\n> /)
+  assert.match(llms, /^## Main pages/m)
+  assert.match(llms, /^## Categories/m)
+  assert.match(llms, /^## Countries/m)
+  assert.equal(links.every(link => link.startsWith('https://www.factosaas.com/')), true)
+  assert.equal((featured.match(/^-/gm) || []).length >= 10, true)
+  assert.equal((featured.match(/^-/gm) || []).length <= 20, true)
 })
 
 test('profile OG image uses only serializable Island props', () => {
@@ -179,10 +214,26 @@ test('startups without a revenue value render the incognito marker', () => {
 
 test('only a connected provider can expose zero revenue on the public profile', () => {
   const profileEndpoint = readProjectFile('server/api/saas/[slug].get.ts')
+  const historyEndpoint = readProjectFile('server/api/saas/[slug]/history.get.ts')
+  const profileView = readProjectFile('modules/visuals/views/SaasProfileView.vue')
 
   assert.match(profileEndpoint, /const hasConnectedProvider = Boolean\(providerSlug\)/)
   assert.match(profileEndpoint, /persistedRevenue >= 0 && hasConnectedProvider/)
   assert.match(profileEndpoint, /else allTimeRev = `\$\${Math\.round\(revenueValue\)}`/)
+  assert.match(historyEndpoint, /update\(\{\s*mrr: 0,\s*revenue: 0,\s*\}\)/)
+  assert.match(historyEndpoint, /const effectiveRevenue = summary\.revenue \?\?/)
+  assert.match(profileView, /historyRevenue\.value === 0\) return props\.saas\.provider \? '\$0'/)
+})
+
+test('home ranking randomizes zero-revenue startups per session seed while keeping chunk order stable', () => {
+  const rankingService = readProjectFile('modules/ranking/server/services/ranking.ts')
+  const listEndpoint = readProjectFile('modules/ranking/server/api/ranking/list.get.ts')
+  const saasList = readProjectFile('composables/useSaasList.ts')
+
+  assert.match(rankingService, /seededOrderValue\(a\.id, seed!\)/)
+  assert.match(listEndpoint, /query\.seed !== undefined/)
+  assert.match(saasList, /seed: options\.scope === 'home'/)
+  assert.match(saasList, /seededOrderValue\(a\.id, seed\)/)
 })
 
 test('an expired key with prior data changes the verification legend and sends one deduplicated email', () => {

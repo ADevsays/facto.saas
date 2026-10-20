@@ -33,7 +33,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="w-full max-w-5xl mt-24 pt-16 border-t border-white/5 flex flex-col items-center">
+  <div class="w-full max-w-5xl mt-12 md:mt-14 pt-10 md:pt-12 border-t border-white/5 flex flex-col items-center">
     
     <!-- Header with Title and Button -->
     <div class="w-full flex items-end justify-between mb-10 border-b border-white/5 pb-4">

@@ -68,7 +68,8 @@ const providerKeyStatus = ref<'ok' | 'invalid' | 'permissions' | 'missing'>('ok'
 const effectiveMrr = computed(() => historyResolved.value ? historyMrr.value : props.saas.mrr)
 const effectiveAllTimeRevenue = computed(() => {
   if (!historyResolved.value) return props.saas.allTimeRevenue
-  if (historyRevenue.value === null || historyRevenue.value <= 0) return props.saas.allTimeRevenue || null
+  if (historyRevenue.value === null || historyRevenue.value < 0) return props.saas.allTimeRevenue || null
+  if (historyRevenue.value === 0) return props.saas.provider ? '$0' : (props.saas.allTimeRevenue || null)
   if (historyRevenue.value >= 1_000_000) return `$${(historyRevenue.value / 1_000_000).toFixed(1)}M`.replace('.0', '')
   if (historyRevenue.value >= 1_000) return `$${(historyRevenue.value / 1_000).toFixed(1).replace('.0', '')}K`
   return `$${Math.round(historyRevenue.value)}`
@@ -179,7 +180,7 @@ async function handleClaim() {
 </script>
 
 <template>
-  <main class="min-h-screen bg-[#030305] text-white overflow-x-clip relative isolate flex flex-col items-center pt-14 pb-20 px-6">
+  <main class="min-h-screen bg-[#030305] text-white overflow-x-clip relative isolate flex flex-col items-center pt-6 md:pt-8 pb-20 px-6">
     <div class="absolute inset-0 z-[-1] pointer-events-none flex items-center justify-center">
       <div class="w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-[#00D4FF]/5 rounded-full blur-[120px] opacity-50"></div>
     </div>

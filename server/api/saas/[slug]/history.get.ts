@@ -28,6 +28,7 @@ export default defineEventHandler(async (event) => {
   if (!entry) throw createError({ statusCode: 404, message: 'SaaS not found' })
 
   const fallbackMrr = entry.mrr === null ? null : Number(entry.mrr)
+  const persistedRevenue = entry.revenue === null || entry.revenue === undefined ? null : Number(entry.revenue)
   if (!entry.provider_key_encrypted) {
     return {
       history: null,
@@ -53,7 +54,17 @@ export default defineEventHandler(async (event) => {
   let history = normalizeSaasHistory(cacheRow?.history_cache)
   const legacySnapshot = getLegacyFinancialSnapshot(cacheRow?.history_cache)
   let lastSyncedAt = cachedAt || null
-  const cacheIsFresh = Boolean(history && cachedAt && nowMs - cachedAt < HISTORY_TTL_MS)
+  const hasEmptyCachedHistory = Boolean(
+    cacheRow?.history_cache
+    && typeof cacheRow.history_cache === 'object'
+    && !hasFinancialHistory(history)
+    && !legacySnapshot
+  )
+  const cacheIsFresh = Boolean(
+    cachedAt
+    && nowMs - cachedAt < HISTORY_TTL_MS
+    && (history || (hasEmptyCachedHistory && fallbackMrr !== null && persistedRevenue !== null))
+  )
 
   if (!cacheIsFresh) {
     try {
@@ -61,15 +72,16 @@ export default defineEventHandler(async (event) => {
       const providerRelation = entry.payment_providers as { slug?: string } | Array<{ slug?: string }> | null
       const providerSlug = Array.isArray(providerRelation) ? providerRelation[0]?.slug : providerRelation?.slug
 
+      let rawHistory: any = null
       if (providerSlug === 'stripe' && stripeService.getHistory) {
-        history = await stripeService.getHistory(apiKey)
+        rawHistory = await stripeService.getHistory(apiKey)
       } else if (providerSlug === 'mercadopago' && mercadopagoService.getHistory) {
-        history = await mercadopagoService.getHistory(apiKey)
+        rawHistory = await mercadopagoService.getHistory(apiKey)
       } else if (providerSlug === 'whop' && whopService.getHistory) {
-        history = await whopService.getHistory(apiKey)
+        rawHistory = await whopService.getHistory(apiKey)
       }
 
-      history = normalizeSaasHistory(history)
+      history = normalizeSaasHistory(rawHistory)
       if (hasFinancialHistory(history)) {
         const summary = summarizeSaasHistory(history, fallbackMrr)
         const syncedAt = new Date(nowMs).toISOString()
@@ -80,8 +92,22 @@ export default defineEventHandler(async (event) => {
             history_synced_at: syncedAt,
           }),
           supabase.from('saas_entries').update({
-            mrr: summary.mrr,
-            revenue: summary.revenue,
+            mrr: summary.mrr ?? 0,
+            revenue: summary.revenue ?? 0,
+          }).eq('id', entry.id),
+        ])
+        lastSyncedAt = nowMs
+      } else if (rawHistory) {
+        const syncedAt = new Date(nowMs).toISOString()
+        await Promise.all([
+          supabase.from('saas_metrics_cache').upsert({
+            saas_id: entry.id,
+            history_cache: { subscriptions: [], charges: [] },
+            history_synced_at: syncedAt,
+          }),
+          supabase.from('saas_entries').update({
+            mrr: 0,
+            revenue: 0,
           }).eq('id', entry.id),
         ])
         lastSyncedAt = nowMs
@@ -123,10 +149,14 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  const summary = summarizeSaasHistory(history, fallbackMrr ?? 0)
+  const effectiveRevenue = summary.revenue ?? (persistedRevenue !== null && persistedRevenue >= 0 ? persistedRevenue : 0)
   return {
     history: buildSaasHistoryChart(history, nowMs),
     lastSyncedAt,
-    ...summarizeSaasHistory(history, fallbackMrr),
+    mrr: summary.mrr ?? 0,
+    revenue: effectiveRevenue,
+    formattedRevenue: `$${Math.round(effectiveRevenue)}`,
     keyStatus: 'ok',
   }
 })

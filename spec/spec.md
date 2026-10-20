@@ -6,6 +6,57 @@ Cada feature sigue la estructura: **Contrato â†’ Dominio â†’ Validaci�
 
 ---
 
+## SEO de perfiles y directorio SaaS
+
+### Contrato
+
+- Las fichas `/saas/[slug]`, categorías `/saas/categoria/[slug]` y países `/saas/pais/[slug]` publican títulos y descripciones únicos con la marca `| Facto` una sola vez.
+- El JSON-LD `SoftwareApplication` de una ficha incluye `dateModified` con la última actualización de `saas_entries`, o su fecha de publicación si no existe otra fecha.
+- `public/llms.txt` sigue el formato llmstxt.org y enlaza únicamente recursos de `https://www.factosaas.com`.
+- La ausencia de `updated_at` en una migración antigua no elimina los campos de Showcase (propuesta de valor, problema, stack, canales, mensaje, GitHub y FAQ) del perfil público.
+
+### Dominio
+
+- "Una ficha usa `{Nombre} — Software de {Categoría} para {País} {año} | Facto`. Si no tiene país asignado o figura como Global, omite el fragmento `para {País}`."
+- "Una categoría usa `Mejores herramientas de {categoría} [{año}] | Facto`."
+- "Un país usa `Mejores Software y SaaS en {País} [{año}] | Facto` y toma el nombre oficial, nunca el slug."
+- "La descripción usa la misma intención de búsqueda y no repite el dominio."
+- "La plantilla global no añade una segunda marca a títulos que ya la incluyen."
+
+### Validación
+
+- ✅ Las fórmulas SEO contienen un único separador de marca, la categoría, el año vigente y el país únicamente cuando pertenece realmente a la ficha.
+- ✅ El perfil entrega `updatedAt` al schema y declara `dateModified`.
+- ✅ Un fallback por `updated_at` conserva los campos de Showcase; solo un esquema que tampoco los tenga usa el payload legado.
+- ✅ `/llms.txt` contiene el título, resumen, secciones de enlaces y de 10 a 20 fichas SaaS.
+
+---
+
+## GEO e indexación pública
+
+### Contrato
+
+- Una URL pública inexistente de SaaS o founder responde HTTP 404 en SSR; no responde una pantalla de error con HTTP 200.
+- El sitemap incluye solo perfiles con `status = published`, rutas públicas existentes y fechas `updated_at` cuando estén disponibles.
+- Rutas privadas (`/dashboard/**`, `/admin/**` y edición de perfiles) no entran al sitemap y devuelven `X-Robots-Tag: noindex, nofollow, noarchive`.
+- Cada ficha pública muestra métricas, fuente disponible y fecha de actualización, enlazadas a una metodología pública.
+- El JSON-LD de ficha no inventa una oferta gratuita para un SaaS; publica `SoftwareApplication`, `Dataset` y migas de pan coherentes con contenido visible.
+
+### Dominio
+
+- "El sitemap nunca contiene `/categorias` ni `/paises`; las rutas correctas son `/saas/categoria` y `/saas/pais`."
+- "MRR, ingresos, fuente y actualización deben poder ser leídos tanto por una persona como por un crawler en el HTML inicial."
+- "El infinite scroll y su navegación actual no se modifican para esta mejora GEO."
+- "Una respuesta fallida de `useLazyFetch` se observa reactivamente durante SSR para propagar su estado HTTP sin bloquear la navegación."
+
+### Validación
+
+- ✅ Un slug inexistente de SaaS o founder conserva la interfaz de error pero emite 404.
+- Un perfil pendiente, oculto o con slug reservado no se publica por el sitemap.
+- Las fichas visibles enlazan a `/metodologia`; la página explica MRR, ARR, ingresos, fuentes, caché de 48 horas y límites de verificación.
+
+---
+
 # QuÃ© es Facto
 
 Facto es una plataforma que permite a los fundadores de SaaS publicar sus productos en un ranking global. El ranking se ordena por MRR (Monthly Recurring Revenue) y permite a los usuarios filtrar por categorÃ­a, nombre, fundador, etc.
@@ -59,6 +110,7 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - "`revenue` representa el dinero total realmente cobrado; nunca se rellena con `MRR × 12`."
 - "`ARR` representa la anualización del MRR (`MRR × 12`) y se muestra como estimación cuando no es revenue real."
 - "Las cards de `Mejores startups` muestran MRR y revenue real; las cards generales muestran MRR y ARR; los rankings mundial y por país muestran revenue real acumulado."
+- "Cuando una startup tiene una pasarela de pago conectada y válida (`provider` presente y `keyStatus: 'ok'`), `0` (`$0`) es un valor válido tanto para `mrr` como para `revenue` (incluso con 0 suscripciones activas y 0 cargos históricos) y se persiste en `saas_entries` al publicar, reclamar o sincronizar historial, situando a esas startups por encima de las startups sin pasarela conectada."
 - "Los valores compactos en miles conservan una cifra decimal significativa (`$6.5K`) y omiten el decimal cuando es cero (`$6K`)."
 - "En el ranking mundial, una startup sin revenue confirmado muestra el icono vectorial `HelpCircle` en lugar de una línea vacía o texto plano."
 - "En el ranking mundialista por país, las startups en modo incógnito (anónimas) quedan excluidas del listado visual y del conteo de startups por país."
@@ -68,7 +120,7 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - ✅ SSR público no declara `isr`, `swr` ni `x-prerender-revalidate` y responde con política `no-store`.
 - ✅ Publicar, editar o aprobar un SaaS y modificar anuncios no dispara solicitudes internas a páginas públicas.
 - Home, ranking y listados hidratan `useSaasList` (o el payload de página de `/saas`) desde el payload SSR y no ejecutan un fetch duplicado ni destruyen la hidratación al entrar directamente o recargar `/saas`.
-- Home y ranking comparten `RankingSection` y cargan inicialmente 10 filas; el home admite hasta 30 y `/ranking` hasta 100 mediante chunks de 10 disparados cerca del final visible (`rootMargin: '650px 0px'`), prerenderizando filas skeleton de continuación de altura idéntica (`72px`) con `[overflow-anchor:none]` y garantizando un orden determinístico idéntico entre servidor y cliente para evitar saltos de scroll o reordenamiento de filas ya renderizadas. Las tarjetas recientes y mejores se derivan del payload inicial sin cargar el resto del ranking.
+- Home y ranking comparten `RankingSection` y cargan inicialmente 10 filas; el home admite hasta 30 y `/ranking` hasta 100 mediante chunks de 10 disparados cerca del final visible (`rootMargin: '650px 0px'`), prerenderizando filas skeleton de continuación de altura idéntica (`72px`) con `[overflow-anchor:none]` y garantizando un orden determinístico idéntico entre servidor y cliente para evitar saltos de scroll o reordenamiento de filas ya renderizadas. En Home (`scope === 'home'`), las startups sin revenue positivo (primero las que tienen pasarela conectada con `$0` y después las no verificadas con `mrr: null`) se ordenan de forma aleatoria en cada carga usando un `seed` de sesión compartido entre SSR y los chunks de paginación. Las tarjetas recientes y mejores se derivan del payload inicial sin cargar el resto del ranking.
 - ✅ El catálogo `/saas` carga inicialmente un máximo estricto de 12 startups (`PAGE_SIZE = 12`) sin hacer scroll, prerenderiza los skeletons de continuación (`hasMore || loadingMore`) de altura idéntica a la card (`h-[210px]`, `[overflow-anchor:none]`) para indicar que hay más contenido debajo, y solicita las páginas siguientes a medida que el usuario hace scroll (`rootMargin: '650px 0px'`) preservando exactamente la posición de scroll y la animación de entrada progresiva (`.reveal-card`).
 - ✅ El header del catálogo (`SaasListHeader.vue`) en `/saas` y sus subrutas permanece fijo (`sticky z-[15]`) con fondo opaco (`bg-[#030305]`) inmediatamente debajo de la banda de anuncios (`top-[91px] md:top-[105px]` cuando `showAds` está activo, `top-0` si está oculto) únicamente dentro del contenedor del listado de startups, dejando de ser sticky al terminar las startups y pasando por debajo de la banda de anuncios (`z-20`) al llegar al final de la sección o al footer.
 - ✅ Navegar Home → `/saas` → Home o entrar directamente a `/saas` conserva consultas independientes, hidrata desde `data` sin desajustes SSR/cliente y muestra el skeleton de destino sin bloquear la transición.
@@ -278,7 +330,7 @@ interface SaasPublicProfile {
 - **Gráficas de MercadoPago Reales**: Al consultar el detalle del SaaS con Access Token de Mercado Pago válido, se carga el histórico de cobros (payments) y preaprobaciones (suscripciones) mapeados al eje temporal de forma análoga a Stripe.
 - **Prueba Sandbox MercadoPago**: El uso de la key de desarrollo 'APP_USR_TEST_FACTO' inyecta en el servidor una serie histórica realista de pruebas para validar el gráfico.
 - **Key inválida**: Respuesta 401 → error inline en Paso 2, el founder puede publicar igual sin MRR.
-- **MRR = 0**: Key válida sin suscripciones activas → SaaS publicado con `$0`.
+- **MRR = 0 y Revenue = 0**: Key válida sin suscripciones activas ni cargos históricos → SaaS publicado y sincronizado con `mrr: 0` y `revenue: 0` (`$0` visible en el perfil y en el ranking por encima de las startups sin pasarela).
 - **Categoría inválida**: `categorySlug` no existe en BD → `publish.post.ts` devuelve 422.
 - **Edge Case — Nuevo provider**: Solo crear service + registrar en factory → funciona sin cambios en API ni UI.
 - **Edge Case — Key expirada en reload**: Key válida al publicar, revocada después → `mrr: null` y `history: null` en el detalle.
@@ -631,15 +683,24 @@ Permite a cualquier fundador o patrocinador autenticarse en su cuenta desde el p
 
 ---
 
-## Notificación por Email al Registrar Startup
+## Notificación por Email al Registrar Startup y al Alcanzar Hitos de Visitas
 
 ### Contrato
-- **Módulo**: `modules/add-saas/server/services/founderEmail.ts`
-- **Invocación**: Automática en `modules/add-saas/server/api/publish.post.ts`.
+- **Módulos**:
+  - `modules/add-saas/server/services/founderEmail.ts` (`buildFounderWelcomeEmailHtml`, `sendFounderWelcomeEmail`).
+  - `modules/achievements/server/utils/achievementEmail.ts` (`buildAchievementEmailHtml`) y `modules/achievements/server/services/achievements.ts`.
+- **Invocación**:
+  - Bienvenida: Automática en `modules/add-saas/server/api/publish.post.ts` cuando se crea una nueva startup con `founderEmail`.
+  - Hitos de visitas: Automática en `checkAndNotifyAchievement` al alcanzar un umbral de `ACHIEVEMENT_THRESHOLDS`.
 
 ### Dominio
-- "Al registrar una startup exitosamente, si se proporcionó `founderEmail`, el servidor despacha un correo de bienvenida transaccional con la plantilla de diseño Facto (`facto-email-design`)."
-- "El correo incluye el nombre de la startup, enlace para reclamarla / editarla y botón directo a `/dashboard`."
+- "Todos los correos transaccionales dirigidos a founders siguen la doctrina B2B text-first (`email-marketing` y `facto-email-design`): diseño minimalista sin tarjetas pesadas, sin gradientes decorativos y sin emojis en el asunto ni en el cuerpo."
+- "Al registrar una startup exitosamente, si se proporcionó `founderEmail`, el servidor despacha un correo de bienvenida que da la bienvenida a Facto, incluye el enlace a la ficha pública (`/saas/[slug]`), explica el funcionamiento del inicio de sesión sin contraseñas mediante código temporal de 6 dígitos (OTP) enviado a ese mismo correo de fundador, detalla qué elementos puede editar (datos básicos, propuesta de valor, problema que resuelve, stack, canales, GitHub, FAQs, perfil de founder y pasarela) e incluye un botón principal directo a `/dashboard` para entrar y editar sus cosas."
+- "Cuando una startup alcanza un hito de visitas, el correo de logro informa del hito alcanzado, muestra la insignia oficial con el número alcanzado (`badge-${milestone}.png`), sin usar emojis (`🚀`, `⚡`, `▲`) ni bloques recargados, y presenta de forma limpia la propuesta para impulsar las visitas asegurando uno de los 20 puestos exclusivos en la marquesina superior (`?action=buy_ad&utm_source=milestone_email&utm_medium=email&utm_campaign=boost_visits`), manteniendo el enlace secundario para ver o compartir el logro en su ficha pública."
+
+### Validación
+- ✅ **Correo de bienvenida**: Incluye saludo al fundador, enlace a `/saas/[slug]`, explicación clara del login por código OTP de 6 dígitos, botón CTA hacia `/dashboard` para editar la startup y cero emojis.
+- ✅ **Correo de hito de visitas (ES/EN)**: Renderiza el hito de visitas y la propuesta de compra de anuncio en la marquesina superior con estilo minimalista text-first y sin emojis en asunto ni cuerpo.
 
 ---
 
@@ -787,22 +848,27 @@ NOTIFIER_MAX_DAILY_MILESTONES=8
 
 ### Contrato
 
-- El cliente de PostHog se inicializa únicamente en el navegador y solo si existen `NUXT_PUBLIC_POSTHOG_PROJECT_TOKEN` y `NUXT_PUBLIC_POSTHOG_HOST`.
+- El cliente de PostHog se inicializa únicamente en el navegador y solo si existen `NUXT_PUBLIC_POSTHOG_PROJECT_TOKEN` y `NUXT_PUBLIC_POSTHOG_HOST`. En producción el host público puede ser un subdominio de proxy propio (`https://m.factosaas.com`) que reenvía hacia PostHog sin pasar por Vercel.
 - Las sesiones autenticadas se identifican con el `founders.id` estable. El correo y el nombre son propiedades de la persona; nunca se usan como identificador ni se capturan secretos, códigos OTP, formularios completos o adjuntos.
 - Al cerrar sesión o cambiar de cuenta, PostHog ejecuta `reset()` antes de asociar eventos a otra persona.
 - Se capturan los resultados exitosos de inicio de sesión, publicación/edición de startups, inicio de checkout de anuncios, feedback, facturas y valoración SaaS. Los errores Vue no controlados se envían mediante la integración global.
+- Se capturan aperturas de ambos modales de anuncios: `ad_bid_modal_opened` al abrir la puja de un puesto y `ad_auction_modal_opened` al abrir “Anúnciate aquí”.
 
 ### Dominio
 
 - `plugins/posthog.client.ts` mantiene la única instancia de `posthog-js` y la expone como `$posthog`.
-- `runtimeConfig.public.posthog` recibe exclusivamente el token de proyecto público y el host desde el entorno; `.env.example` documenta las variables sin valores.
+- `runtimeConfig.public.posthog` recibe exclusivamente el token de proyecto público y el host desde el entorno; `.env.example` documenta las variables sin valores. El SDK usa `ui_host: https://us.posthog.com` para que las funciones de interfaz de PostHog no intenten resolverse contra el proxy de ingesta.
+- El proxy externo enruta `/static/` y `/array/` a `us-assets.i.posthog.com`, y el resto de rutas a `us.i.posthog.com`; nunca reenvía `Cookie` ni `Authorization`.
 - Los eventos de conversión incluyen solo propiedades operativas mínimas, por ejemplo proveedor, número de categorías, estado de envío, posición y valor de una puja.
+- `ad_bid_modal_opened` incluye únicamente `slot_position`; `ad_auction_modal_opened` no identifica a la persona ni incluye datos de pago.
 
 ### Validación
 
 - Sin variables públicas configuradas, la aplicación continúa sin analítica y muestra el diagnóstico solo en desarrollo.
 - Una sesión válida identifica una vez al founder; logout o cambio de founder elimina la identidad anterior.
+- ✅ Cada apertura de puja y de “Anúnciate aquí” produce un evento distinto; una apertura de puja conserva el puesto elegido.
 - `npm run build` y `npm test` deben completarse antes de publicar la integración.
+- ✅ `m.factosaas.com/flags?v=2` y `/static/array.js` responden `200` a través del proxy TLS del VPS.
 
 ---
 

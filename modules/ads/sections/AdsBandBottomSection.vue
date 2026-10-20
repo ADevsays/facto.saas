@@ -147,7 +147,7 @@ onUnmounted(() => {
 <template>
   <section
     ref="sectionRef"
-    class="w-full overflow-hidden py-3 border-t border-white/10 bg-[#030305]/95 backdrop-blur-md fixed bottom-0 left-0 right-0 z-30 block md:hidden shadow-[0_-8px_30px_rgba(0,0,0,0.85)]"
+    class="w-full overflow-hidden py-4 border-t border-white/10 bg-[#030305]/95 backdrop-blur-md fixed bottom-0 left-0 right-0 z-30 block md:hidden shadow-[0_-8px_30px_rgba(0,0,0,0.85)]"
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
   >

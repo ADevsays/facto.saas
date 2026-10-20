@@ -28,6 +28,7 @@ export interface SaasListState {
   error: string | null
   rankingLoaded: number
   rankingExhausted: boolean
+  seed?: number
 }
 
 export interface ListQueryParams {
@@ -39,6 +40,7 @@ export interface ListQueryParams {
   limit?: number
   offset?: number
   excludeIncognito?: boolean
+  seed?: number
 }
 
 export interface CountryLeaderboardItem {

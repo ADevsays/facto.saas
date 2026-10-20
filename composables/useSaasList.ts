@@ -17,6 +17,14 @@ const compareByRevenue = (a: SaasListItem, b: SaasListItem) => {
   return (b.views ?? 0) - (a.views ?? 0) || a.id.localeCompare(b.id)
 }
 
+const seededOrderValue = (id: string, seed: number) => {
+  let hash = seed | 0
+  for (let i = 0; i < id.length; i++) {
+    hash = Math.imul(hash ^ id.charCodeAt(i), 16777619)
+  }
+  return hash >>> 0
+}
+
 type SaasListScope = 'home' | 'ranking' | 'catalog' | 'recommendations'
 
 const PAGE_SIZE = 10
@@ -43,9 +51,13 @@ export function useSaasList(options: { server?: boolean; scope?: SaasListScope }
     error: null,
     rankingLoaded: 0,
     rankingExhausted: false,
+    seed: options.scope === 'home' ? Math.floor(Math.random() * 1_000_000_000) : undefined,
   }))
   const loadingMore = ref(false)
-  const { data, pending, error, refresh } = useLazyFetch<SaasListItem[]>(endpoint, {
+  const resolvedEndpoint = options.scope === 'home' && typeof state.value.seed === 'number'
+    ? `${endpoint}&seed=${state.value.seed}`
+    : endpoint
+  const { data, pending, error, refresh } = useLazyFetch<SaasListItem[]>(resolvedEndpoint, {
     key,
     server: options.server !== false,
     immediate: options.server !== false,
@@ -99,8 +111,9 @@ export function useSaasList(options: { server?: boolean; scope?: SaasListScope }
     const offset = state.value.rankingLoaded
     try {
       const amount = Math.min(PAGE_SIZE, maxItems - offset)
+      const seedParam = scope === 'home' && typeof state.value.seed === 'number' ? `&seed=${state.value.seed}` : ''
       const nextEndpoint = scope === 'home'
-        ? `/api/ranking/list?scope=home&rankingOnly=true&rankingLimit=${amount}&rankingOffset=${offset}`
+        ? `/api/ranking/list?scope=home&rankingOnly=true&rankingLimit=${amount}&rankingOffset=${offset}${seedParam}`
         : `/api/ranking/list?scope=ranking&limit=${amount}&offset=${offset}&excludeIncognito=true`
       const nextItems = await $fetch<SaasListItem[]>(nextEndpoint)
       const existingIds = new Set(state.value.items.map(item => item.id))
@@ -118,12 +131,27 @@ export function useSaasList(options: { server?: boolean; scope?: SaasListScope }
 
   const rankingItems = computed(() => {
     const scope = options.scope ?? 'catalog'
+    const seed = scope === 'home' ? state.value.seed : undefined
     const sorted = [...localizedItems.value]
       .filter(item => !item.isIncognito)
       .sort((a, b) => {
-        if (a.mrr === null && b.mrr === null) return (b.views ?? 0) - (a.views ?? 0) || a.id.localeCompare(b.id)
+        if (a.mrr === null && b.mrr === null) {
+          if (typeof seed === 'number' && Number.isFinite(seed)) {
+            return seededOrderValue(a.id, seed) - seededOrderValue(b.id, seed) || a.id.localeCompare(b.id)
+          }
+          return (b.views ?? 0) - (a.views ?? 0) || a.id.localeCompare(b.id)
+        }
         if (a.mrr === null) return 1
         if (b.mrr === null) return -1
+        if (
+          typeof seed === 'number' &&
+          Number.isFinite(seed) &&
+          parseRevenue(a.revenue, a.mrr) === 0 &&
+          parseRevenue(b.revenue, b.mrr) === 0 &&
+          Boolean(a.provider) === Boolean(b.provider)
+        ) {
+          return seededOrderValue(a.id, seed) - seededOrderValue(b.id, seed) || a.id.localeCompare(b.id)
+        }
         return compareByRevenue(a, b)
       })
     return scope === 'home' || scope === 'ranking' ? sorted.slice(0, state.value.rankingLoaded) : sorted

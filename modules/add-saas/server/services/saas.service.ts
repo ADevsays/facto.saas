@@ -86,7 +86,7 @@ export async function upsertSaasEntry(
     founder_email: body.founderEmail?.trim().toLowerCase() || null,
     startup_type: startupType,
     is_incognito: isIncognito,
-    ...(pData.mrr !== null && { mrr: pData.mrr }),
+    ...(pData.mrr !== null && { mrr: pData.mrr, revenue: 0 }),
     ...(pData.currency && { currency: pData.currency }),
     ...(pData.providerId && { provider_id: pData.providerId }),
     ...(pData.providerKeyEncrypted && { provider_key_encrypted: pData.providerKeyEncrypted })

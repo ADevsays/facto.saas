@@ -207,10 +207,19 @@ export default defineEventHandler(async (event) => {
           await storage.setItem(cacheKey, { history, timestamp: Date.now() })
           await storage.setItem(`metrics:${finalEntry.id}`, { mrr: mrrVal, revenue: allTimeRev })
 
-          if (mrrVal !== pData.mrr) {
-            await supabase.from('saas_entries').update({ mrr: mrrVal }).eq('id', finalEntry.id)
-            finalEntry.mrr = mrrVal
-          }
+          const syncedRevenue = Math.round(realAllTimeRevenue)
+          await Promise.all([
+            supabase.from('saas_metrics_cache').upsert({
+              saas_id: finalEntry.id,
+              history_cache: history,
+              history_synced_at: new Date().toISOString()
+            }),
+            supabase.from('saas_entries').update({
+              mrr: mrrVal,
+              revenue: syncedRevenue
+            }).eq('id', finalEntry.id)
+          ])
+          finalEntry.mrr = mrrVal
         }
       }
     } catch (e) {

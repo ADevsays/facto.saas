@@ -14,7 +14,7 @@ defineProps<{
 </script>
 
 <template>
-  <nav class="w-full max-w-5xl mx-auto flex flex-wrap items-center gap-2 text-xs md:text-sm font-sans tracking-widest uppercase mb-10 z-10 animate-fade-in">
+  <nav class="w-full max-w-5xl mx-auto flex flex-wrap items-center gap-2 text-xs md:text-sm font-sans tracking-widest uppercase mb-5 md:mb-6 z-10 animate-fade-in">
     <NuxtLink :to="localePath('/')" class="text-neutral-500 hover:text-white transition-colors duration-300 flex items-center gap-1.5 font-semibold shrink-0">
       <img src="/favicon.svg" alt="Facto" class="w-3.5 h-3.5 opacity-60" />
       facto
