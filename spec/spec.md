@@ -586,6 +586,22 @@ interface MyAdsResponse {
   - Accesible para administradores autenticados con `x-admin-key`.
   - Permite inyectar empresas afiliadas o patrocinadores directamente en cualquiera de los 20 cupos sin pasar por Whop, estableciendo el precio base simulado y enlace de afiliado.
 
+### Caso protegido: lenguaje visual del modal de anuncios
+
+Este caso queda separado para evitar que futuras iteraciones funcionales pisen la composición aprobada del formulario.
+
+- El título conserva la tipografía serif de Facto.
+- Todo el contenido operativo del formulario (métricas, explicación, puja, selector de puestos, estados y CTA) usa la misma tipografía monoespaciada de la preview, con una escala coherente entre las columnas.
+- El modal es compacto y vertical, con ancho máximo de `900px`; la columna izquierda contiene las métricas y la puja, mientras el selector lateral comienza a la misma altura y se extiende hasta la zona del CTA.
+- Las métricas usan iconos propios y diferenciados: `Users` para audiencia, `ScanSearch` para intención y `TicketCheck` para cupos disponibles. No se reutilizan el ojo ni el rayo.
+- Al seleccionar otro puesto, la fila seleccionada y el resumen del puesto reciben una microanimación breve de escala y brillo; el cambio no altera el estado de la subasta ni introduce saltos de layout.
+
+### Validación del caso protegido
+
+- El formulario mantiene una sola familia tipográfica monoespaciada en las dos columnas y no reintroduce `font-sans` en el contenido operativo.
+- La anchura máxima permanece en `900px` salvo adaptación responsive en pantallas pequeñas.
+- Cambiar de puesto actualiza la puja mínima y ejecuta una única microanimación visible sobre la selección.
+
 ### Validación
 - **Happy Path Subasta**: Un nuevo anunciante hace click en un puesto libre (#3) en la marquesina a $1 USD o pulsa "RECLAMAR" en el modal de "Anúnciate aquí" para superar un puesto ocupado (#1) a $5 USD. Se abre el modal con el precio grande y botón directo a Whop. Realiza el pago, configura sus datos y logo en `AddAdModal.vue`, y el usuario es redirigido a `/dashboard/ads` con su anuncio activo.
 - **Toggle Ad-Free**: Un anunciante activa el toggle de ocultar anuncios. Las secciones `AdsBandSection` y `AdsBandBottomSection` desaparecen inmediatamente en todas las páginas.

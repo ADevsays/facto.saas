@@ -86,14 +86,6 @@ export function useAdCheckout(options: {
     customBid.value += amount
   }
 
-  function setPreset(amount: number) {
-    if (amount === 0) {
-      customBid.value = minPrice.value
-    } else {
-      customBid.value = Math.max(minPrice.value, customBid.value) + amount
-    }
-  }
-
   function syncBidWithMin() {
     const target = slots.value?.find(s => s.position === selectedSlot.value)
     const base = target ? (target.isAvailable ? target.currentPrice : target.nextPrice) : (targetPrice.value || (selectedSlot.value === 1 ? 10 : 1))
@@ -150,7 +142,6 @@ export function useAdCheckout(options: {
     selectSlot,
     decrementBid,
     incrementBid,
-    setPreset,
     syncBidWithMin,
     startCheckout
   }

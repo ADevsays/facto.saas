@@ -16,7 +16,6 @@ const emit = defineEmits<{
   (e: 'update:customBid', val: number): void
   (e: 'decrement'): void
   (e: 'increment', amount?: number): void
-  (e: 'preset', amount: number): void
 }>()
 
 const inputRef = ref<HTMLInputElement | null>(null)
@@ -69,7 +68,7 @@ function handleBlur() {
   <div class="flex flex-col gap-2.5">
     <div class="flex items-center justify-between text-[10px] font-bold text-neutral-400 uppercase tracking-widest px-0.5">
       <span>{{ t.modal.sale.your_bid }}</span>
-      <span class="text-xs font-sans text-neutral-400 lowercase font-normal">
+      <span class="text-xs font-mono text-neutral-400 lowercase font-normal">
         {{ t.modal.sale.min_base }} <strong class="text-white">${{ minPrice }} USD</strong>
       </span>
     </div>
@@ -118,41 +117,5 @@ function handleBlur() {
       </button>
     </div>
 
-    <!-- Preset chips -->
-    <div class="grid grid-cols-4 gap-2">
-      <button
-        type="button"
-        @click="emit('preset', 0)"
-        :class="[
-          'py-1.5 px-2 rounded-lg text-xs font-mono transition-all border text-center truncate cursor-pointer active:scale-95',
-          customBid === minPrice
-            ? 'bg-[#00D4FF]/15 border-[#00D4FF]/40 text-[#00D4FF] font-bold shadow-[0_0_10px_rgba(0,212,255,0.15)]'
-            : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:border-white/20 hover:bg-white/10'
-        ]"
-      >
-        ${{ minPrice }}
-      </button>
-      <button
-        type="button"
-        @click="emit('preset', 5)"
-        class="py-1.5 px-2 rounded-lg text-xs font-mono transition-all border text-center truncate cursor-pointer active:scale-95 bg-white/5 border-white/10 text-neutral-300 hover:text-white hover:border-[#00D4FF]/30 hover:bg-[#00D4FF]/10"
-      >
-        + $5
-      </button>
-      <button
-        type="button"
-        @click="emit('preset', 10)"
-        class="py-1.5 px-2 rounded-lg text-xs font-mono transition-all border text-center truncate cursor-pointer active:scale-95 bg-white/5 border-white/10 text-neutral-300 hover:text-white hover:border-[#00D4FF]/30 hover:bg-[#00D4FF]/10"
-      >
-        + $10
-      </button>
-      <button
-        type="button"
-        @click="emit('preset', 25)"
-        class="py-1.5 px-2 rounded-lg text-xs font-mono transition-all border text-center truncate cursor-pointer active:scale-95 bg-white/5 border-white/10 text-neutral-300 hover:text-white hover:border-[#00D4FF]/30 hover:bg-[#00D4FF]/10"
-      >
-        + $25
-      </button>
-    </div>
   </div>
 </template>

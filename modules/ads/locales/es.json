@@ -6,9 +6,9 @@
     "bid": "Pujar"
   },
   "empty": {
-    "title": "Tu Startup Aquí",
-    "views": "Visto por 10k",
-    "bid_from": "Puja desde"
+    "title": "Tu startup aquí",
+    "views": "Vista por 10k",
+    "bid_from": "Anuncio por"
   },
   "auction_modal": {
     "title": "Anúnciate en Facto",
@@ -24,7 +24,7 @@
     "empty_spot_desc": "Cupo disponible · Sé el primero en anunciarte aquí",
     "base_price": "Precio base: ${price} USD",
     "reclaim_btn": "Reclamar · ${price} USD",
-    "occupy_btn": "Ocupar · ${price} USD",
+    "occupy_btn": "Pujar · ${price} USD",
     "footer_realtime": "Actualización en tiempo real",
     "footer_total": "Total 20 puestos fijos"
   },
@@ -32,7 +32,7 @@
     "gold_badge": "★ Oro",
     "occupied": "Ocupado",
     "sale": {
-      "title": "Tu próximo cliente ya está aquí",
+      "title": "Anúnciate en Facto",
       "subtitle": "+10,000 fundadores activos cada mes",
       "benefit_1_title": "Siempre visible",
       "benefit_1_desc": "En la barra superior de Facto, en cada página.",
@@ -40,6 +40,21 @@
       "benefit_2_desc": "Posición fija y garantizada, sin depender de un feed ni pagar por clics.",
       "benefit_3_title": "Audiencia con intención",
       "benefit_3_desc": "Fundadores buscando herramientas para su startup.",
+      "audience_value": "+10,000",
+      "audience_label": "Fundadores activos",
+      "intent_value": "Alta intención",
+      "intent_label": "Fundadores buscando herramientas",
+      "spots_value": "{count}/20",
+      "spots_label": "Cupos disponibles",
+      "how_it_works_title": "Cómo funciona",
+      "how_it_works_paragraph_1": "Esto es una puja en vivo por visibilidad. Solo existen 20 puestos y todos los anunciantes compiten por ellos. Si alguien quiere tu puesto, tendrá que superarte pagando más. Tu anuncio puede ser robado en cualquier momento.",
+      "how_it_works_paragraph_2": "La marquesina se mueve continuamente por todas las páginas de Facto. Cada anuncio aparece 14 segundos, mientras otra persona no te gane el puesto primero.",
+      "slot_help": "Escoge el puesto por el que quieres competir. Los puestos ocupados pueden ser superados con una puja mayor.",
+      "base_price": "Precio base",
+      "outbid_price": "Siguiente puja",
+      "one_time_note": "Pago único · Tu anuncio permanece activo mientras nadie supere tu puja.",
+      "occupy_cta": "Pagar ${price} USD y ocupar el puesto {slot} →",
+      "outbid_cta": "Pagar ${price} USD y robar el puesto {slot} →",
       "slot_label": "Puesto en cabecera",
       "status_free": "libre",
       "status_auction": "en subasta",

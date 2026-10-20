@@ -6,9 +6,9 @@
     "bid": "Bid"
   },
   "empty": {
-    "title": "Your Startup Here",
+    "title": "Your startup here",
     "views": "Viewed by 10k",
-    "bid_from": "Bid from"
+    "bid_from": "Ad for"
   },
   "auction_modal": {
     "title": "Advertise on Facto",
@@ -24,7 +24,7 @@
     "empty_spot_desc": "Available spot · Be the first to advertise here",
     "base_price": "Base price: ${price} USD",
     "reclaim_btn": "Claim · ${price} USD",
-    "occupy_btn": "Occupy · ${price} USD",
+    "occupy_btn": "Bid · ${price} USD",
     "footer_realtime": "Real-time updates",
     "footer_total": "Total 20 fixed spots"
   },
@@ -32,7 +32,7 @@
     "gold_badge": "★ Gold",
     "occupied": "Occupied",
     "sale": {
-      "title": "Your next customer is already here",
+      "title": "Advertise on Facto",
       "subtitle": "+10,000 active founders each month",
       "benefit_1_title": "Always visible",
       "benefit_1_desc": "On Facto's top header, on every page.",
@@ -40,6 +40,21 @@
       "benefit_2_desc": "Guaranteed fixed position, without feeds or paying per click.",
       "benefit_3_title": "High-intent audience",
       "benefit_3_desc": "Founders actively looking for software and tools.",
+      "audience_value": "+10,000",
+      "audience_label": "Active founders",
+      "intent_value": "High intent",
+      "intent_label": "Founders looking for tools",
+      "spots_value": "{count}/20",
+      "spots_label": "Spots available",
+      "how_it_works_title": "How it works",
+      "how_it_works_paragraph_1": "This is a live visibility auction. There are only 20 spots and every advertiser competes for them. If someone wants your spot, they have to outbid you. Your ad can be stolen at any moment.",
+      "how_it_works_paragraph_2": "The marquee moves continuously across every Facto page. Each ad appears for 14 seconds, unless someone beats you to the spot first.",
+      "slot_help": "Choose the spot you want to compete for. Occupied spots can be taken with a higher bid.",
+      "base_price": "Base price",
+      "outbid_price": "Next bid",
+      "one_time_note": "One-time payment · Your ad stays active while nobody outbids you.",
+      "occupy_cta": "Pay ${price} USD to take spot {slot} →",
+      "outbid_cta": "Pay ${price} USD to steal spot {slot} →",
       "slot_label": "Header position",
       "status_free": "open",
       "status_auction": "in auction",
