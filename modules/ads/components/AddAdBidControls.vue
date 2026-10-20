@@ -117,5 +117,17 @@ function handleBlur() {
       </button>
     </div>
 
+    <div class="grid grid-cols-3 gap-2">
+      <button
+        v-for="amount in [5, 10, 25]"
+        :key="amount"
+        type="button"
+        @click="emit('increment', amount)"
+        class="rounded-lg border border-white/10 bg-white/[0.035] px-2 py-2 text-xs font-mono font-bold text-neutral-300 transition-all hover:border-[#00D4FF]/40 hover:bg-[#00D4FF]/10 hover:text-white active:scale-[0.98] cursor-pointer"
+      >
+        +{{ amount }}
+      </button>
+    </div>
+
   </div>
 </template>

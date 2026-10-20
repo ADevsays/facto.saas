@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { Users, ScanSearch, TicketCheck, Loader2, X } from 'lucide-vue-next'
 import { useAddAdModal } from '../composables/useAddAdModal'
 import { useAdsSlots } from '../composables/useAdsSlots'
@@ -8,6 +8,7 @@ import { useAdSetupForm } from '../composables/useAdSetupForm'
 import { useLanguage } from '~/composables/useLanguage'
 import { useOtpModal } from '~/composables/useOtpModal'
 import { useFounderSession } from '~/composables/useFounderSession'
+import { useKeycapSound } from '~/composables/useKeycapSound'
 
 import AddAdBidControls from './AddAdBidControls.vue'
 import AddAdSetupForm from './AddAdSetupForm.vue'
@@ -22,11 +23,29 @@ const localePath = useLocalePath()
 const { t } = useLanguage({ es, en })
 const { open: openOtpModal } = useOtpModal()
 const { founder, checkSession } = useFounderSession()
+const { playNextKeySound } = useKeycapSound()
 
 const { isOpen, mode, selectedSlot, targetPrice, targetAdName, setupToken, verifiedEmail, close, openForSetup } = useAddAdModal()
 const { slots, refresh: refreshSlots, freeSlotsCount } = useAdsSlots()
 const animatedSlot = ref<number | null>(null)
 let selectionAnimationTimer: ReturnType<typeof setTimeout> | undefined
+
+const availabilityColor = computed(() => {
+  const count = Math.max(0, Math.min(20, freeSlotsCount.value))
+  const hue = count <= 15
+    ? (count / 15) * 35
+    : 35 + ((count - 15) / 5) * 107
+  return `hsl(${hue} 92% 60%)`
+})
+
+const availabilityStyle = computed(() => {
+  const color = availabilityColor.value
+  return {
+    color,
+    backgroundColor: '#131316',
+    boxShadow: `0 0 22px color-mix(in srgb, ${color} 18%, transparent)`
+  }
+})
 
 const {
   customBid,
@@ -73,7 +92,9 @@ const {
 })
 
 async function onSelectSlot(pos: number) {
+  const changed = pos !== selectedSlot.value
   selectSlot(pos)
+  if (changed) playNextKeySound()
   animatedSlot.value = null
   await nextTick()
   animatedSlot.value = pos
@@ -207,30 +228,32 @@ watch(minPrice, (newMin) => {
 
           <!-- SALE MODE -->
           <template v-if="mode === 'sale'">
-            <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_252px] gap-8 items-start font-mono text-[13px]">
+            <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-8 items-start font-mono text-[13px]">
               <div class="min-w-0 flex flex-col gap-5">
                 <div class="grid grid-cols-3 gap-2.5 lg:gap-3">
                   <div class="min-h-[136px] rounded-2xl border border-white/10 bg-white/[0.035] px-2 py-4 flex flex-col items-center justify-center text-center gap-2">
                     <Users class="w-8 h-8 text-white" />
                     <strong class="text-white text-lg font-mono leading-tight">{{ t.modal.sale.audience_value }}</strong>
-                    <span class="text-[10px] leading-tight text-neutral-400 font-mono">{{ t.modal.sale.audience_label }}</span>
+                    <span class="min-h-[24px] flex items-center justify-center text-[10px] sm:text-[11px] leading-snug text-neutral-300 font-mono">{{ t.modal.sale.audience_label }}</span>
                   </div>
                   <div class="min-h-[136px] rounded-2xl border border-white/10 bg-white/[0.035] px-2 py-4 flex flex-col items-center justify-center text-center gap-2 min-w-0">
                     <ScanSearch class="w-8 h-8 text-white" />
                     <strong class="max-w-full text-white text-sm sm:text-base font-mono leading-tight break-words">{{ t.modal.sale.intent_value }}</strong>
-                    <span class="max-w-full text-[10px] leading-tight text-neutral-400 font-mono">{{ t.modal.sale.intent_label }}</span>
+                    <span class="max-w-full min-h-[24px] flex items-center justify-center text-[10px] sm:text-[11px] leading-snug text-neutral-300 font-mono">{{ t.modal.sale.intent_label }}</span>
                   </div>
-                  <div class="min-h-[136px] rounded-2xl border border-red-500/60 bg-red-500/[0.08] px-2 py-4 flex flex-col items-center justify-center text-center gap-2">
-                    <TicketCheck class="w-8 h-8 text-red-400" />
-                    <strong class="text-red-400 text-lg font-mono leading-tight">{{ t.modal.sale.spots_value.replace('{count}', String(freeSlotsCount)) }}</strong>
-                    <span class="text-[10px] leading-tight text-neutral-400 font-mono">{{ t.modal.sale.spots_label }}</span>
+                  <div class="animated-availability-frame min-h-[136px]" :style="{ '--availability-color': availabilityColor }">
+                    <div class="animated-availability-frame__content h-full rounded-[14px] px-2 py-4 flex flex-col items-center justify-center text-center gap-2 transition-colors duration-500" :style="availabilityStyle">
+                      <TicketCheck class="w-8 h-8" />
+                      <strong class="text-lg font-mono leading-tight">{{ t.modal.sale.spots_value.replace('{count}', String(freeSlotsCount)) }}</strong>
+                      <span class="min-h-[24px] flex items-center justify-center text-[10px] sm:text-[11px] leading-snug text-neutral-300 font-mono">{{ t.modal.sale.spots_label }}</span>
+                    </div>
                   </div>
                 </div>
 
                 <section class="border-t border-white/10 pt-1">
                   <h3 class="text-sm font-mono font-bold text-white mt-5 mb-2">{{ t.modal.sale.how_it_works_title }}</h3>
-                  <p class="text-[13px] sm:text-sm text-neutral-400 leading-relaxed">{{ t.modal.sale.how_it_works_paragraph_1 }}</p>
-                  <p class="text-[13px] sm:text-sm text-neutral-400 leading-relaxed mt-3">{{ t.modal.sale.how_it_works_paragraph_2 }}</p>
+                  <p class="text-[13px] sm:text-sm text-neutral-400 leading-relaxed" v-html="t.modal.sale.how_it_works_paragraph_1"></p>
+                  <p class="text-[13px] sm:text-sm text-neutral-400 leading-relaxed mt-3" v-html="t.modal.sale.how_it_works_paragraph_2"></p>
                 </section>
 
                 <AddAdBidControls
@@ -266,7 +289,7 @@ watch(minPrice, (newMin) => {
 
               <aside class="border-t lg:border-t-0 lg:border-l border-white/10 pt-5 lg:pt-0 lg:pl-5 min-w-0 flex flex-col">
                 <h3 class="text-sm font-mono font-bold text-white mb-1">{{ t.modal.sale.slot_label }}</h3>
-                <p class="text-xs text-neutral-500 leading-relaxed mb-3">{{ t.modal.sale.slot_help }}</p>
+                <p class="text-[13px] sm:text-sm text-neutral-500 leading-relaxed mb-3">{{ t.modal.sale.slot_help }}</p>
                 <div class="h-[395px] overflow-y-auto rounded-xl border border-white/10 bg-[#08080b] p-1.5 custom-scrollbar">
                   <button
                     v-for="s in allSlotsList"
@@ -274,20 +297,20 @@ watch(minPrice, (newMin) => {
                     type="button"
                     @click="onSelectSlot(s.position)"
                     :class="[
-                      'w-full grid grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-2 py-2.5 text-left transition-colors duration-300 cursor-pointer text-xs',
+                      'w-full grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-2 py-2.5 text-left transition-colors duration-300 cursor-pointer text-[13px]',
                       animatedSlot === s.position ? 'slot-selection-pulse' : '',
                       s.position === selectedSlot ? 'border border-[#00D4FF]/50 bg-[#00D4FF]/10' : 'border border-transparent hover:bg-white/[0.06]'
                     ]"
                   >
-                    <span :class="['font-mono text-[11px] font-bold', s.position === 1 ? 'text-[#FFD700]' : 'text-neutral-300']">#{{ s.position }}</span>
+                    <span :class="['font-mono text-[13px] font-bold', s.position === 1 ? 'text-[#FFD700]' : 'text-neutral-300']">#{{ s.position }}</span>
                     <span class="min-w-0">
-                      <span class="block truncate text-xs text-neutral-200">{{ s.isAvailable ? t.modal.sale.status_free : (s.ad?.name || t.modal.occupied) }}</span>
-                      <span class="block text-[10px] text-neutral-500">{{ s.isAvailable ? t.modal.sale.base_price : t.modal.sale.outbid_price }}</span>
+                      <span class="block truncate text-[13px] text-neutral-200">{{ s.isAvailable ? t.modal.sale.status_free : (s.ad?.name || t.modal.occupied) }}</span>
+                      <span class="block text-[11px] text-neutral-500">{{ s.isAvailable ? t.modal.sale.base_price : t.modal.sale.outbid_price }}</span>
                     </span>
-                    <span :class="['font-mono text-[10px] shrink-0', s.isAvailable ? 'text-emerald-400' : 'text-amber-300']">${{ s.isAvailable ? s.currentPrice : s.nextPrice }}</span>
+                    <span :class="['font-mono text-xs shrink-0', s.isAvailable ? 'text-emerald-400' : 'text-amber-300']">${{ s.isAvailable ? s.currentPrice : s.nextPrice }}</span>
                   </button>
                 </div>
-                <div :class="['mt-3 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2.5 text-[11px] font-mono transition-all duration-300', animatedSlot === selectedSlot ? 'slot-selection-pulse' : '']">
+                <div :class="['mt-3 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2.5 text-[13px] font-mono transition-all duration-300', animatedSlot === selectedSlot ? 'slot-selection-pulse' : '']">
                   <strong class="block text-white">{{ t.modal.setup.slot_prefix.replace('{slot}', String(selectedSlot)) }}</strong>
                   <span class="text-emerald-400">{{ isSlotAvailable ? t.modal.sale.status_free : t.modal.sale.status_auction }} · ${{ minPrice }} USD</span>
                 </div>
@@ -337,6 +360,50 @@ watch(minPrice, (newMin) => {
 .custom-scrollbar {
   -webkit-overflow-scrolling: touch;
   scrollbar-gutter: stable;
+}
+
+.animated-availability-frame {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 2px;
+  border-radius: 16px;
+}
+
+.animated-availability-frame::before {
+  content: '';
+  position: absolute;
+  width: 170%;
+  aspect-ratio: 1;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--availability-color) 75deg,
+    transparent 145deg,
+    transparent 220deg,
+    var(--availability-color) 300deg,
+    transparent 360deg
+  );
+  animation: animated-availability-border-spin 4.5s linear infinite;
+}
+
+.animated-availability-frame__content {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes animated-availability-border-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated-availability-frame::before {
+    animation: none;
+  }
 }
 
 @media (min-width: 1024px) {

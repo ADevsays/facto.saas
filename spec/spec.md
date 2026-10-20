@@ -651,6 +651,12 @@ Este caso queda separado para evitar que futuras iteraciones funcionales pisen l
 - Todo el contenido operativo del formulario (métricas, explicación, puja, selector de puestos, estados y CTA) usa la misma tipografía monoespaciada de la preview, con una escala coherente entre las columnas.
 - El modal es compacto y vertical, con ancho máximo de `900px`; la columna izquierda contiene las métricas y la puja, mientras el selector lateral comienza a la misma altura y se extiende hasta la zona del CTA.
 - Las métricas usan iconos propios y diferenciados: `Users` para audiencia, `ScanSearch` para intención y `TicketCheck` para cupos disponibles. No se reutilizan el ojo ni el rayo.
+- Las métricas muestran `+6000`, “Páginas vistas cada semana” y “Compradores, no curiosos”; sus subtítulos se mantienen en un máximo de dos líneas para preservar los iconos. El panel de selección de puesto usa una columna lateral más ancha que la composición anterior y conserva la escala tipográfica monoespaciada del modal.
+- El color de cupos disponibles escala desde verde con 20 cupos hasta rojo intenso con 0 cupos, manteniendo naranja en el tramo medio; icono, cifra, glow y borde animado usan siempre el mismo tono.
+- La puja incluye incrementos rápidos de `+5`, `+10` y `+25` debajo del input, que se suman inmediatamente al valor actual.
+- La tarjeta de cupos disponibles es la única métrica con borde animado; su interior es opaco, permanece estático y respeta `prefers-reduced-motion`.
+- La explicación enfatiza `Todas`, `10k` y los dos `sin` en blanco, sin subrayado, incluye un salto tras `herramientas` y usa “Escoge un puesto y se publicará en cuanto pagues”.
+- El selector de puestos usa la misma escala de texto del cuerpo de “Cómo funciona”.
 - Al seleccionar otro puesto, la fila seleccionada y el resumen del puesto reciben una microanimación breve de escala y brillo; el cambio no altera el estado de la subasta ni introduce saltos de layout.
 
 ### Validación del caso protegido

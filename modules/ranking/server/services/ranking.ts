@@ -148,7 +148,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
 
   const { data, error } = await query
   if (error) throw createError({ statusCode: 500, message: error.message })
-  let rawData = data ?? []
+  let rawData = (data ?? []) as any[]
 
   if (excludeIncognito) {
     rawData = rawData.filter(row => row.is_incognito !== true && row.is_incognito !== 'true')
