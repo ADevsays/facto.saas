@@ -44,7 +44,13 @@ export function useSaasViewMeta() {
     const titleStart = header.category_title_start
     const titleHighlight = displayName
     const fullTitle = `${titleStart} ${titleHighlight}`
-    const seoTitle = header.seo_category_title?.replace('{category}', displayName) || fullTitle
+    const year = new Date().getFullYear()
+    const seoTitle = locale === 'en'
+      ? `Best ${displayName} tools [${year}] | Facto`
+      : `Mejores herramientas de ${displayName} [${year}] | Facto`
+    const seoDescription = locale === 'en'
+      ? `Compare the best ${displayName} tools in ${year}, including features, reviews and alternatives on Facto.`
+      : `Compara las mejores herramientas de ${displayName} en ${year}: funciones, opiniones y alternativas en Facto.`
 
     return {
       titleStart,
@@ -52,7 +58,7 @@ export function useSaasViewMeta() {
       fullTitle,
       description: desc,
       seoTitle,
-      seoDescription: desc
+      seoDescription
     }
   }
 
@@ -65,7 +71,13 @@ export function useSaasViewMeta() {
     const titleHighlight = countryName
     const fullTitle = `${titleStart} ${titleHighlight}`
     const desc = header.country_description?.replace('{country}', countryName) || ''
-    const seoTitle = header.seo_country_title?.replace('{country}', countryName) || fullTitle
+    const year = new Date().getFullYear()
+    const seoTitle = locale === 'en'
+      ? `Best Software and SaaS in ${countryName} [${year}] | Facto`
+      : `Mejores Software y SaaS en ${countryName} [${year}] | Facto`
+    const seoDescription = locale === 'en'
+      ? `Discover the best software and SaaS in ${countryName} in ${year}. Compare verified tools, revenue and alternatives on Facto.`
+      : `Descubre los mejores software y SaaS en ${countryName} en ${year}. Compara herramientas, ingresos y alternativas verificadas en Facto.`
 
     return {
       titleStart,
@@ -73,7 +85,7 @@ export function useSaasViewMeta() {
       fullTitle,
       description: desc,
       seoTitle,
-      seoDescription: desc
+      seoDescription
     }
   }
 

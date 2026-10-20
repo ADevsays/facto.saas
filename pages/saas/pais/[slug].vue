@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useRoute } from 'nuxt/app'
 import { computed } from 'vue'
-import { useCountries } from '~/composables/useCountries'
 import { useSaasViewMeta } from '~/composables/useSaasViewMeta'
 import SaasListView from '~/modules/visuals/views/SaasListView.vue'
 
@@ -14,12 +13,14 @@ defineI18nRoute({
 
 const route = useRoute()
 const slug = computed(() => route.params.slug as string)
-const { countries, fetchCountries } = useCountries()
 const { getCountryMeta } = useSaasViewMeta()
+const { data: countries } = await useLazyFetch<Array<{ name: string, slug: string }>>('/api/countries', {
+  key: 'seo-countries',
+  server: true,
+  getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
+})
 
-fetchCountries()
-
-const country = computed(() => countries.value.find(c => c.slug === slug.value))
+const country = computed(() => countries.value?.find(c => c.slug === slug.value))
 
 const { locale } = useI18n()
 

@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     const fullRes = await supabase
       .from('saas_entries')
       .select(`
-        id, name, slug, logo_url, website_url, founder_name, founder_id, founder_email, startup_type, is_incognito, mrr, revenue, currency, views, published_at,
+        id, name, slug, logo_url, website_url, founder_name, founder_id, founder_email, startup_type, is_incognito, mrr, revenue, currency, views, published_at, updated_at,
         value_proposition, problem_solved, tech_stack, acquisition_channels, facto_message, faq, github_repo,
         categories!saas_categories ( name, slug ),
         countries!saas_countries ( name, slug, flag, iso_code ),
@@ -39,11 +39,13 @@ export default defineEventHandler(async (event) => {
       .maybeSingle()
 
     if (fullRes.error && fullRes.error.code === '42703') {
-      // Si aún no se corrió el SQL en Supabase, hacer fallback a las columnas existentes
-      const fallbackRes = await supabase
+      // `updated_at` is optional on older deployments. Do not discard the
+      // showcase fields merely because that timestamp has not been migrated.
+      const showcaseFallbackRes = await supabase
         .from('saas_entries')
         .select(`
           id, name, slug, logo_url, website_url, founder_name, founder_id, founder_email, startup_type, is_incognito, mrr, revenue, currency, views, published_at,
+          value_proposition, problem_solved, tech_stack, acquisition_channels, facto_message, faq, github_repo,
           categories!saas_categories ( name, slug ),
           countries!saas_countries ( name, slug, flag, iso_code ),
           payment_providers ( slug ),
@@ -55,8 +57,30 @@ export default defineEventHandler(async (event) => {
         .limit(1)
         .maybeSingle()
 
-      dbEntry = fallbackRes.data
-      dbError = fallbackRes.error
+      if (showcaseFallbackRes.error?.code === '42703') {
+        // Only deployments that also lack the Showcase migration use this
+        // legacy projection.
+        const legacyFallbackRes = await supabase
+          .from('saas_entries')
+          .select(`
+            id, name, slug, logo_url, website_url, founder_name, founder_id, founder_email, startup_type, is_incognito, mrr, revenue, currency, views, published_at,
+            categories!saas_categories ( name, slug ),
+            countries!saas_countries ( name, slug, flag, iso_code ),
+            payment_providers ( slug ),
+            founder:founders!saas_entries_founder_id_fkey ( avatar_url, bio, twitter_url, linkedin_url, instagram_url ),
+            saas_achievements ( achievement_type, unlocked_at )
+          `)
+          .eq('slug', slug)
+          .order('published_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        dbEntry = legacyFallbackRes.data
+        dbError = legacyFallbackRes.error
+      } else {
+        dbEntry = showcaseFallbackRes.data
+        dbError = showcaseFallbackRes.error
+      }
     } else {
       dbEntry = fullRes.data
       dbError = fullRes.error
@@ -157,6 +181,7 @@ export default defineEventHandler(async (event) => {
       provider: providerSlug ?? null,
       views: seoOnly ? Number(dbEntry.views) || 0 : nextViews,
       publishedAt: dbEntry.published_at,
+      updatedAt: dbEntry.updated_at || dbEntry.published_at,
       allTimeRevenue: allTimeRev,
       country: isGlobal ? 'Global' : (countryData?.name || 'Global'),
       countrySlug: isGlobal ? 'global' : (countryData?.slug || 'global'),

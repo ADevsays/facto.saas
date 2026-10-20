@@ -14,12 +14,14 @@ defineI18nRoute({
 
 const route = useRoute()
 const slug = computed(() => route.params.slug as string)
-const { categories, fetchCategories } = useCategories()
 const { getCategoryMeta } = useSaasViewMeta()
+const { data: categories } = await useLazyFetch<Array<{ name: string, slug: string }>>('/api/categories', {
+  key: 'seo-categories',
+  server: true,
+  getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
+})
 
-fetchCategories()
-
-const category = computed(() => categories.value.find(c => c.slug === slug.value))
+const category = computed(() => categories.value?.find(c => c.slug === slug.value))
 
 const { locale } = useI18n()
 
