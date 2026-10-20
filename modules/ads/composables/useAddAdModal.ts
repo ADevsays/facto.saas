@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { AD_ANALYTICS_EVENTS } from '../const/analytics'
 
 const isOpen = ref(false)
 const isAuctionListOpen = ref(false)
@@ -10,6 +11,8 @@ const setupToken = ref<string | null>(null)
 const verifiedEmail = ref<string>('')
 
 export function useAddAdModal() {
+  const { $posthog } = useNuxtApp()
+
   function open(slot: number = 1, price?: number | null, adName?: string | null) {
     mode.value = 'sale'
     selectedSlot.value = slot
@@ -17,6 +20,9 @@ export function useAddAdModal() {
     targetAdName.value = adName ?? null
     setupToken.value = null
     isOpen.value = true
+    $posthog?.capture(AD_ANALYTICS_EVENTS.bidModalOpened, {
+      slot_position: slot
+    })
   }
 
   function openBuy(slot: number = 1, price?: number | null, adName?: string | null) {
@@ -25,6 +31,7 @@ export function useAddAdModal() {
 
   function openAuctionList() {
     isAuctionListOpen.value = true
+    $posthog?.capture(AD_ANALYTICS_EVENTS.auctionModalOpened)
   }
 
   function closeAuctionList() {

@@ -21,6 +21,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const posthogClient = posthog.init(publicKey, {
     api_host: host,
+    ui_host: 'https://us.posthog.com',
     defaults: posthogDefaults as any,
     // Join browser and Nuxt API captures to the same authenticated session.
     tracing_headers: [window.location.hostname],
