@@ -3,6 +3,7 @@ import { useSaasList } from '~/composables/useSaasList'
 
 export function useAddSaasForm() {
   const { close, prefillData } = useAddSaasModal()
+  const { $posthog } = useNuxtApp()
   
   const provider = ref<'stripe' | 'mercadopago' | 'whop' | 'none'>('stripe')
   const apiKey = ref('')
@@ -71,6 +72,11 @@ export function useAddSaasForm() {
 
       publishedData.value = response
       const wasUpdate = !!form.value.id
+      $posthog?.capture(wasUpdate ? 'startup_submission_updated' : 'startup_submitted', {
+        provider: provider.value,
+        category_count: form.value.categorySlugs.length,
+        submission_status: response.status
+      })
 
       const { fetchAll } = useSaasList()
       fetchAll(true).catch(() => {})

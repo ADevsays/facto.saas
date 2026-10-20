@@ -7,6 +7,7 @@ const userRank = ref<number | null>(null);
 const chartUrl = ref<string | null>(null);
 
 export function useRankSubmit() {
+    const { $posthog } = useNuxtApp();
     const form = ref({ startupUrl: '', email: '', gateway: '', gatewayOther: '' });
 
     const submit = async (metrics: {
@@ -41,6 +42,7 @@ export function useRankSubmit() {
                 chartUrl.value = response.chartUrl;
             }
             isSubmitted.value = true;
+            $posthog?.capture('saas_valuation_requested');
         } catch (err: any) {
             error.value = err?.data?.message || 'Ocurrió un error. Inténtalo de nuevo.';
         } finally {

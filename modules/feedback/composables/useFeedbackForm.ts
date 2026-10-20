@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 
 export function useFeedbackForm() {
+  const { $posthog } = useNuxtApp()
   const details = ref('')
   const selectedFile = ref<File | null>(null)
   const selectedFileUrl = ref<string | null>(null)
@@ -66,6 +67,9 @@ export function useFeedbackForm() {
       })
 
       if (response && (response as any).success) {
+        $posthog?.capture('feedback_submitted', {
+          has_attachment: Boolean(selectedFile.value)
+        })
         isSuccess.value = true
         details.value = ''
         removeFile(fileInputRef)

@@ -8,6 +8,7 @@ const { checkSession, startups } = useFounderSession()
 const router = useRouter()
 const localePath = useLocalePath()
 const { t } = useI18n()
+const { $posthog } = useNuxtApp()
 
 const step = ref<'email' | 'otp'>('email')
 const email = ref('')
@@ -155,6 +156,7 @@ async function submitOtp() {
     }
 
     await checkSession(true)
+    $posthog?.capture('founder_signed_in')
 
     if (config.value.onSuccess) {
       await config.value.onSuccess({

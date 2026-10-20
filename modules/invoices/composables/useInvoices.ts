@@ -21,6 +21,7 @@ function getDefaults(): InvoiceAppData {
 }
 
 export function useInvoices() {
+  const { $posthog } = useNuxtApp()
   const data = ref<InvoiceAppData>(getDefaults())
   const view = ref<'list' | 'editor'>('list')
   const editingInvoice = ref<Invoice | null>(null)
@@ -93,6 +94,7 @@ export function useInvoices() {
 
     view.value = 'list'
     editingInvoice.value = null
+    $posthog?.capture(existingIndex >= 0 ? 'invoice_updated' : 'invoice_created')
     showToast(existingIndex >= 0 ? 'Factura actualizada' : 'Factura guardada')
   }
 
@@ -103,6 +105,7 @@ export function useInvoices() {
       ...data.value,
       invoices: filtered
     })
+    $posthog?.capture('invoice_deleted')
     showToast('Factura eliminada')
   }
 

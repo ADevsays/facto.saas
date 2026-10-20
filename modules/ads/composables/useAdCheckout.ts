@@ -10,6 +10,7 @@ export function useAdCheckout(options: {
   onCheckoutSuccess?: () => void
 }) {
   const { selectedSlot, targetPrice, targetAdName, slots, onCheckoutSuccess } = options
+  const { $posthog } = useNuxtApp()
 
   const customBid = ref(selectedSlot.value === 1 ? 10 : 1)
   const isCreatingCheckout = ref(false)
@@ -124,6 +125,10 @@ export function useAdCheckout(options: {
           window.open(res.checkoutUrl, '_blank')
         }
         isCreatingCheckout.value = false
+        $posthog?.capture('ad_checkout_started', {
+          slot_position: selectedSlot.value,
+          bid_amount: customBid.value
+        })
         if (onCheckoutSuccess) onCheckoutSuccess()
       } else {
         throw new Error('No se pudo generar la URL de pago')

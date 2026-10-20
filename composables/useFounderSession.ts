@@ -18,17 +18,52 @@ export function useFounderSession() {
   const startups = useState<any[]>('facto_founder_startups', () => [])
   const isChecking = useState<boolean>('facto_founder_checking', () => false)
   const isInitialized = useState<boolean>('facto_founder_init', () => false)
+  const isPosthogIdentified = useState<boolean>('facto_posthog_identified', () => false)
+
+  const identifyFounder = (profile: FounderProfile | null) => {
+    if (!import.meta.client || !profile?.id || isPosthogIdentified.value) return
+
+    const { $posthog } = useNuxtApp()
+    $posthog?.identify(profile.id, {
+      email: profile.email,
+      name: profile.name || undefined
+    })
+    isPosthogIdentified.value = true
+  }
+
+  const resetPosthog = () => {
+    if (!import.meta.client) return
+
+    const { $posthog } = useNuxtApp()
+    $posthog?.reset()
+    isPosthogIdentified.value = false
+  }
 
   const checkSession = async (force = false) => {
-    if (isInitialized.value && !force) return
+    if (isInitialized.value && !force) {
+      if (isAuthenticated.value) identifyFounder(founder.value)
+      return
+    }
+
+    const previousFounderId = founder.value?.id
     try {
       const headers = import.meta.server ? useRequestHeaders(['cookie']) : undefined
       const data = await $fetch<{ authenticated: boolean; email?: string; founder: FounderProfile | null; startups: any[] }>('/api/founder/session', { headers })
+
+      if (previousFounderId && previousFounderId !== data.founder?.id) {
+        resetPosthog()
+      }
+
       isAuthenticated.value = data.authenticated
       founder.value = data.founder
       startups.value = data.startups || []
       isInitialized.value = true
+      identifyFounder(data.founder)
     } catch {
+      if (previousFounderId) {
+        resetPosthog()
+      }
+
       isAuthenticated.value = false
       founder.value = null
       startups.value = []
@@ -42,6 +77,7 @@ export function useFounderSession() {
     try {
       await $fetch('/api/founder/logout', { method: 'POST' })
     } finally {
+      resetPosthog()
       isAuthenticated.value = false
       founder.value = null
       startups.value = []

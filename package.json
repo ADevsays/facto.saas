@@ -29,6 +29,8 @@
     "lucide-vue-next": "^1.0.0",
     "nodemailer": "^8.0.1",
     "nuxt": "^3.21.11",
+    "posthog-js": "^1.438.9",
+    "posthog-node": "^5.56.1",
     "svix": "^1.95.2",
     "vue": "^3.5.13",
     "vue-chartjs": "^5.3.3"
