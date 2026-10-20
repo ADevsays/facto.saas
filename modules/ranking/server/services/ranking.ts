@@ -114,7 +114,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
     payment_providers ( name, slug )
   `
 
-  const isExplicitLimited = typeof limit === 'number' && limit < 1000
+  const isExplicitLimited = typeof limit === 'number' && limit < 1000 && sort !== 'mrr'
 
   let rawData: any[] = []
 
@@ -142,7 +142,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
   } else {
     // Auto-paginate in 1000-row chunks to ensure no ceiling when catalog grows past 1,000
     const CHUNK_SIZE = 1000
-    let currentFrom = offset
+    let currentFrom = sort === 'mrr' && typeof limit === 'number' && limit < 1000 ? 0 : offset
 
     while (true) {
       let query = supabase
@@ -188,10 +188,19 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
 
   if (sort === 'mrr') {
     items.sort((a, b) => {
+      if (a.mrr === null && b.mrr === null) return (b.views ?? 0) - (a.views ?? 0) || a.id.localeCompare(b.id)
+      if (a.mrr === null) return 1
+      if (b.mrr === null) return -1
       const revenueDiff = parseFormattedRevenue(b.revenue, b.mrr) - parseFormattedRevenue(a.revenue, a.mrr)
       if (revenueDiff !== 0) return revenueDiff
-      return Number(Boolean(b.provider)) - Number(Boolean(a.provider))
+      const providerDiff = Number(Boolean(b.provider)) - Number(Boolean(a.provider))
+      if (providerDiff !== 0) return providerDiff
+      return (b.views ?? 0) - (a.views ?? 0) || a.id.localeCompare(b.id)
     })
+
+    if (typeof limit === 'number' && limit < 1000) {
+      return items.slice(offset, offset + limit)
+    }
   }
 
   return items

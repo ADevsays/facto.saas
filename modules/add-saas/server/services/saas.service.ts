@@ -64,7 +64,7 @@ export async function upsertSaasEntry(
   pData: ProviderData, 
   matchedCategories: { id: number, name: string, slug: string }[],
   matchedCountry: { id: number, name: string, slug: string, flag: string } | null
-): Promise<SaasPublicProfile & { status: string }> {
+): Promise<SaasPublicProfile & { status: string, created: boolean, duplicate: boolean }> {
   const isIncognito = !!body.isIncognito
   const slugVal = isIncognito ? null : slugify(body.name.trim())
   
@@ -142,17 +142,29 @@ export async function upsertSaasEntry(
     }
   }
 
+  // A registration request is public. When it resolves to an existing row but
+  // does not explicitly target that row, it is a replay, not an edit. Never let
+  // a retry overwrite a reviewed startup or retrigger registration side effects.
+  const isDuplicateRegistration = !body.id && !!existingEntry
+
+  if (body.id && !existingEntry) {
+    throw createError({ statusCode: 404, message: 'Startup not found' })
+  }
+
   let entry: any
   let error: any
   // A valid provider key publishes immediately. Without a key, a new
   // submission enters manual review. Explicit edits to an already published
   // entry preserve its public status even when the founder does not resubmit a key.
   let status = pData.hasProvider ? 'published' : 'pending_review'
-  if (body.id && existingEntry?.status === 'published' && !pData.hasProvider) {
+  if (existingEntry?.status === 'published' && !pData.hasProvider) {
     status = 'published'
   }
 
-  if (entryId && existingEntry) {
+  if (isDuplicateRegistration) {
+    entry = existingEntry
+    status = existingEntry.status
+  } else if (entryId && existingEntry) {
     const shouldSetPublishedAt = status === 'published' && existingEntry.status !== 'published'
     
     const res = await supabase.from('saas_entries').update({
@@ -190,12 +202,14 @@ export async function upsertSaasEntry(
 
   if (error || !entry) throw createError({ statusCode: 500, message: error?.message || 'Failed to save entry' })
 
-  await supabase.from('saas_categories').insert(
-    matchedCategories.map(cat => ({ saas_id: entry.id, category_id: cat.id }))
-  )
+  if (!isDuplicateRegistration) {
+    await supabase.from('saas_categories').insert(
+      matchedCategories.map(cat => ({ saas_id: entry.id, category_id: cat.id }))
+    )
 
-  if (matchedCountry) {
-    await supabase.from('saas_countries').insert({ saas_id: entry.id, country_id: matchedCountry.id })
+    if (matchedCountry) {
+      await supabase.from('saas_countries').insert({ saas_id: entry.id, country_id: matchedCountry.id })
+    }
   }
 
   const { data: finalEntry } = await supabase
@@ -225,6 +239,8 @@ export async function upsertSaasEntry(
     mrr: finalEntry.mrr,
     currency: finalEntry.currency,
     publishedAt: finalEntry.published_at,
-    status
-  } as SaasPublicProfile & { status: string }
+    status,
+    created: !existingEntry,
+    duplicate: isDuplicateRegistration
+  } as SaasPublicProfile & { status: string, created: boolean, duplicate: boolean }
 }

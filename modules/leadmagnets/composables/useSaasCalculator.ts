@@ -57,7 +57,7 @@ export const useSaasCalculator = () => {
     // Formateadores
     const formatCurrency = (val: number) => {
         if (val >= 1000000) return `$${(val / 1000000).toFixed(2)}M`;
-        if (val >= 1000) return `$${(val / 1000).toFixed(0)}K`;
+        if (val >= 1000) return `$${(val / 1000).toFixed(1).replace('.0', '')}K`;
         return `$${Math.round(val).toLocaleString()}`;
     };
 

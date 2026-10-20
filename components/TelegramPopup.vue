@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { nextTick, ref, onMounted, onUnmounted } from 'vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -13,7 +13,7 @@ function closePopup() {
   isOpen.value = false
   if (typeof window !== 'undefined') {
     localStorage.setItem(STORAGE_KEY, String(Date.now()))
-    window.removeEventListener('scroll', handleScroll)
+    stopRankingTrigger()
   }
 }
 
@@ -24,22 +24,23 @@ function handleJoin() {
   }
 }
 
-function handleScroll() {
-  if (isOpen.value || typeof window === 'undefined') return
+let rankingSection: Element | null = null
 
-  const scrollY = window.scrollY
-  const viewportHeight = window.innerHeight
-  const fullHeight = document.documentElement.scrollHeight
-
-  const isNearEnd = (scrollY + viewportHeight >= fullHeight - 750) || (scrollY + viewportHeight >= fullHeight * 0.7)
-
-  if (isNearEnd && scrollY > 350) {
-    isOpen.value = true
-    window.removeEventListener('scroll', handleScroll)
-  }
+function stopRankingTrigger() {
+  window.removeEventListener('scroll', openAtRankingStart)
 }
 
-onMounted(() => {
+function openAtRankingStart() {
+  if (isOpen.value || !rankingSection || window.scrollY <= 80) return
+
+  const bounds = rankingSection.getBoundingClientRect()
+  if (bounds.top > window.innerHeight * 0.7 || bounds.bottom <= 0) return
+
+  isOpen.value = true
+  stopRankingTrigger()
+}
+
+onMounted(async () => {
   if (typeof window === 'undefined') return
 
   const forceOpen = route.query.telegram_popup === '1' || route.query.popup === '1'
@@ -57,12 +58,18 @@ onMounted(() => {
     return
   }
 
-  window.addEventListener('scroll', handleScroll, { passive: true })
+  await nextTick()
+  rankingSection = document.querySelector('[data-ranking-section]')
+  if (rankingSection) {
+    window.addEventListener('scroll', openAtRankingStart, { passive: true })
+    openAtRankingStart()
+  }
 })
 
 onUnmounted(() => {
   if (typeof window !== 'undefined') {
-    window.removeEventListener('scroll', handleScroll)
+    stopRankingTrigger()
+    rankingSection = null
   }
 })
 </script>
@@ -71,11 +78,11 @@ onUnmounted(() => {
   <Transition name="popup-fade">
     <div
       v-if="isOpen"
-      class="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-[100] max-w-[390px] w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]"
+      class="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-[100] max-w-[488px] w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]"
     >
       <!-- Glowing Border Outer Wrapper with Facto brand cyan colors -->
-      <div class="relative p-[1.5px] rounded-3xl bg-gradient-to-r from-[#00D4FF] via-white/50 to-[#00D4FF] shadow-[0_0_25px_rgba(0,212,255,0.45),0_0_50px_rgba(0,212,255,0.2)] transition-all duration-300">
-        <div class="bg-surface-elevated rounded-[22.5px] p-6 sm:p-7 text-left relative overflow-hidden">
+      <div class="telegram-popup-frame relative isolate overflow-hidden p-[2px] rounded-3xl shadow-[0_0_25px_rgba(0,212,255,0.45),0_0_50px_rgba(0,212,255,0.2)]">
+        <div class="bg-surface-elevated rounded-[22px] p-7 sm:p-9 text-left relative overflow-hidden">
           
           <!-- Subtle Ambient Cyan Glow Inside -->
           <div class="absolute -top-12 -right-12 w-32 h-32 bg-[#00D4FF]/15 rounded-full blur-3xl pointer-events-none"></div>
@@ -100,8 +107,8 @@ onUnmounted(() => {
               <span>{{ t('telegram_popup.badge') }}</span>
             </div>
             
-            <div class="w-7 h-7 rounded-lg bg-[#00D4FF]/10 border border-[#00D4FF]/25 text-[#00D4FF] flex items-center justify-center shrink-0">
-              <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-[#00D4FF]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="w-9 h-9 rounded-xl bg-[#00D4FF]/10 border border-[#00D4FF]/25 text-[#00D4FF] flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" class="w-5 h-5 text-[#00D4FF]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21.5 2L2 9.5l7 3 3 7.5 9.5-18z"></path>
                 <path d="M9 12.5L21.5 2"></path>
               </svg>
@@ -109,11 +116,11 @@ onUnmounted(() => {
           </div>
 
           <!-- Title & Description -->
-          <h3 class="font-serif text-lg sm:text-xl font-bold text-white tracking-tight mt-5 leading-snug">
+          <h3 class="font-serif text-xl sm:text-2xl font-bold text-white tracking-tight mt-6 leading-snug">
             {{ t('telegram_popup.title') }}
           </h3>
           
-          <p class="text-xs sm:text-[13px] font-sans font-light text-neutral-400 leading-relaxed mt-2.5 tracking-wide">
+          <p class="text-sm sm:text-base font-sans font-light text-neutral-400 leading-relaxed mt-3 tracking-wide">
             {{ t('telegram_popup.description') }}
           </p>
 
@@ -121,10 +128,10 @@ onUnmounted(() => {
           <button
             type="button"
             @click="handleJoin"
-            class="mt-6 w-full py-3.5 px-6 rounded-full bg-white text-black font-sans font-bold text-xs uppercase tracking-wider hover:scale-[1.02] hover:bg-neutral-100 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.35),0_0_30px_rgba(0,212,255,0.15)] flex items-center justify-center gap-2 cursor-pointer group"
+            class="mt-7 w-full py-4 px-7 rounded-full bg-white text-black font-sans font-bold text-sm uppercase tracking-wider hover:scale-[1.02] hover:bg-neutral-100 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.35),0_0_30px_rgba(0,212,255,0.15)] flex items-center justify-center gap-2 cursor-pointer group"
           >
             <span>{{ t('telegram_popup.cta') }}</span>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:translate-x-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:translate-x-1">
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
@@ -146,5 +153,26 @@ onUnmounted(() => {
 .popup-fade-leave-to {
   opacity: 0;
   transform: translateY(20px) scale(0.96);
+}
+
+.telegram-popup-frame::before {
+  content: '';
+  position: absolute;
+  width: 170%;
+  aspect-ratio: 1;
+  left: 50%;
+  top: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(0, 212, 255, 0.95) 75deg, rgba(255, 255, 255, 0.9) 140deg, transparent 220deg, rgba(0, 212, 255, 0.75) 300deg, transparent 360deg);
+  animation: telegram-border-spin 5.4s linear infinite;
+  z-index: 0;
+}
+
+.telegram-popup-frame > div {
+  z-index: 1;
+}
+
+@keyframes telegram-border-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 </style>

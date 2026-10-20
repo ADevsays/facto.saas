@@ -199,7 +199,7 @@ const sizeMap = {
         loaded ? 'opacity-0' : 'opacity-100',
         {
           'text-[11px]': size === 'sm',
-          'text-xs': !size || size === 'md',
+          'text-xs': !size || size === 'md' || size === 'home',
           'text-lg': size === 'lg',
           'text-lg md:text-xl': size === 'xl'
         }

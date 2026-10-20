@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import UnverifiedOverlay from './UnverifiedOverlay.vue'
 import GlassChart from '~/ui/components/GlassChart.vue'
 import RevenueChartControls from './RevenueChartControls.vue'
 import VerificationLegend from './VerificationLegend.vue'
 import ProbableRankCallout from './ProbableRankCallout.vue'
-import { useRevenueChart, type HistoryData, type Metric, type Timeframe } from '../composables/useRevenueChart'
+import { useRevenueChart, determineInitialChartSettings, type HistoryData, type Metric, type Timeframe } from '../composables/useRevenueChart'
 
 import es from '../locales/es.json'
 import en from '../locales/en.json'
@@ -42,6 +42,17 @@ const probableRank = computed(() => {
 
 const activeMetric = ref<Metric>('mrr')
 const activeTimeframe = ref<Timeframe>('30d')
+const isUserConfigured = ref(false)
+
+function syncInitialSettings() {
+  if (isUserConfigured.value) return
+  const initial = determineInitialChartSettings(props.history, props.mrr)
+  activeMetric.value = initial.metric
+  activeTimeframe.value = initial.timeframe
+}
+
+syncInitialSettings()
+watch(() => props.history, () => syncInitialSettings(), { deep: true })
 
 const { chartData } = useRevenueChart(historyRef, activeMetric, activeTimeframe)
 const renderedChartData = computed(() => {
@@ -77,8 +88,10 @@ const currencyFormatter = (val: number) => {
       <UnverifiedOverlay v-if="isLocked" @claim="emit('claim')" />
 
       <RevenueChartControls 
-        v-model:activeMetric="activeMetric"
-        v-model:activeTimeframe="activeTimeframe"
+        :activeMetric="activeMetric"
+        :activeTimeframe="activeTimeframe"
+        @update:activeMetric="(val) => { activeMetric = val; isUserConfigured = true }"
+        @update:activeTimeframe="(val) => { activeTimeframe = val; isUserConfigured = true }"
         :class="{ 'blur-sm pointer-events-none select-none': isLocked }"
       />
 

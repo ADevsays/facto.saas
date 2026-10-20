@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import test from 'node:test'
 import { buildSaasHistoryChart, formatRevenue, normalizeSaasHistory, summarizeSaasHistory } from '../../../server/utils/saas-history'
+import { determineInitialChartSettings } from '../../visuals/composables/useRevenueChart'
 
 const projectRoot = resolve(import.meta.dirname, '../../..')
 const readProjectFile = (path: string) => readFileSync(resolve(projectRoot, path), 'utf8')
@@ -68,6 +69,22 @@ test('home and ranking request ten-row chunks and load later chunks on demand', 
   assert.match(list, /rankingOffset=\$\{offset\}/)
   assert.match(endpoint, /query\.rankingOnly === 'true'/)
   assert.match(section, /rootMargin: '650px 0px'/)
+  assert.match(section, /watch\(loadMoreSentinel/)
+  assert.match(section, /hasScrolled = true/)
+  assert.match(section, /continuationSkeletonCount/)
+  assert.match(section, /\[overflow-anchor:none\]/)
+  assert.match(list, /offset \+ nextItems\.length/)
+  assert.match(list, /rankingExhausted = nextItems\.length < amount/)
+})
+
+test('telegram popup opens at the beginning of the ranking with an isolated animated border', () => {
+  const popup = readProjectFile('components/TelegramPopup.vue')
+
+  assert.match(popup, /data-ranking-section/)
+  assert.match(popup, /getBoundingClientRect\(\)/)
+  assert.match(popup, /window\.innerHeight \* 0\.7/)
+  assert.doesNotMatch(popup, /fullHeight \* 0\.7/)
+  assert.match(popup, /translate\(-50%, -50%\) rotate\(360deg\)/)
 })
 
 test('initial profile stays light and history has a dedicated endpoint', () => {
@@ -196,6 +213,42 @@ test('revenue chart does not fabricate matching MRR and revenue curves without p
   const chart = readProjectFile('modules/visuals/composables/useRevenueChart.ts')
   assert.match(chart, /if \(!history\.value\) return \[\]/)
   assert.doesNotMatch(chart, /generateSeries|bucketRevenue/)
+})
+
+test('revenue chart auto-configures initial metric and timeframe with the most data', () => {
+  const emptySeries = Array.from({ length: 10 }, (_, i) => ({ at: i * 1000, mrr: 0, revenue: 0 }))
+  const revOnly60d = {
+    '7d': emptySeries,
+    '30d': emptySeries,
+    '60d': emptySeries.map((pt, i) => ({ ...pt, revenue: i === 2 ? 450 : 0 })),
+    'all': emptySeries.map((pt, i) => ({ ...pt, revenue: i === 1 ? 450 : 0 })),
+  }
+  assert.deepEqual(determineInitialChartSettings(revOnly60d, 0), {
+    metric: 'revenue',
+    timeframe: '60d',
+  })
+
+  const revMoreInAll = {
+    '7d': emptySeries,
+    '30d': emptySeries,
+    '60d': emptySeries.map((pt, i) => ({ ...pt, revenue: i === 2 ? 450 : 0 })),
+    'all': emptySeries.map((pt, i) => ({ ...pt, revenue: i < 4 ? 200 : 0 })),
+  }
+  assert.deepEqual(determineInitialChartSettings(revMoreInAll, 0), {
+    metric: 'revenue',
+    timeframe: 'all',
+  })
+
+  const mrrActive30d = {
+    '7d': emptySeries.map(pt => ({ ...pt, mrr: 100 })),
+    '30d': emptySeries.map(pt => ({ ...pt, mrr: 100 })),
+    '60d': emptySeries.map(pt => ({ ...pt, mrr: 100 })),
+    'all': emptySeries.map(pt => ({ ...pt, mrr: 100 })),
+  }
+  assert.deepEqual(determineInitialChartSettings(mrrActive30d, 100), {
+    metric: 'mrr',
+    timeframe: '30d',
+  })
 })
 
 test('provider history is reduced to four ten-point chart series', () => {

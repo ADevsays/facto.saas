@@ -29,7 +29,7 @@ useAppSeo({
 </script>
 
 <template>
-  <main class="min-h-screen bg-[#030305] text-white overflow-x-clip relative isolate flex flex-col items-center pt-14 pb-20 px-6">
+  <main class="min-h-screen bg-[#030305] text-white overflow-x-clip relative isolate flex flex-col items-center pt-14 pb-20 px-6 [overflow-anchor:none]">
     <!-- Background glow -->
     <div class="absolute inset-0 z-[-1] pointer-events-none flex items-center justify-center">
       <div class="w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-[#00D4FF]/5 rounded-full blur-[120px] opacity-40"></div>

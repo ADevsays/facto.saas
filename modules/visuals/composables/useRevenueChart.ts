@@ -32,3 +32,45 @@ export function useRevenueChart(
     chartData
   }
 }
+
+export function determineInitialChartSettings(
+  history: HistoryData | null | undefined,
+  mrr: number | null | undefined
+): { metric: Metric; timeframe: Timeframe } {
+  if (!history) {
+    return {
+      metric: 'mrr',
+      timeframe: '30d'
+    }
+  }
+
+  const timeframes: Timeframe[] = ['30d', '60d', 'all', '7d']
+
+  const hasMrr = timeframes.some(tf => (history[tf] || []).some(pt => pt.mrr > 0))
+  const hasRevenue = timeframes.some(tf => (history[tf] || []).some(pt => pt.revenue > 0))
+
+  let metric: Metric = 'mrr'
+  if (!hasMrr && hasRevenue) {
+    metric = 'revenue'
+  } else if (hasMrr) {
+    metric = 'mrr'
+  } else if (mrr !== null && mrr !== undefined && mrr > 0) {
+    metric = 'mrr'
+  }
+
+  let bestTf: Timeframe = '30d'
+  let maxNonZeroPoints = -1
+
+  for (const tf of timeframes) {
+    const points = history[tf] || []
+    const nonZeroPoints = points.filter(pt => (metric === 'mrr' ? pt.mrr : pt.revenue) > 0).length
+    if (nonZeroPoints > maxNonZeroPoints) {
+      maxNonZeroPoints = nonZeroPoints
+      bestTf = tf
+    }
+  }
+
+  const timeframe: Timeframe = maxNonZeroPoints > 0 ? bestTf : '30d'
+
+  return { metric, timeframe }
+}

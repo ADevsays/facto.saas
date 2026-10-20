@@ -30,7 +30,7 @@ const localePath = useLocalePath()
 <template>
   <NuxtLink
     :to="localePath(`/saas/${item.slug || slugify(item.name || '')}`)"
-    class="ranking-row grid grid-cols-[1.2rem_1fr_1fr_80px] sm:grid-cols-[2rem_1fr_1fr_100px] items-center py-[18px] px-3 sm:px-5 border-b border-white/5 last:border-0 transition-all duration-300 group gap-2 sm:gap-3 cursor-pointer"
+    class="ranking-row grid grid-cols-[1.2rem_1fr_1fr_80px] sm:grid-cols-[2rem_1fr_1fr_100px] items-center py-[18px] px-3 sm:px-5 border-b border-white/5 last:border-0 transition-all duration-300 group gap-2 sm:gap-3 cursor-pointer [overflow-anchor:none]"
     :style="{ '--glow': rowColor }"
   >
     <span class="text-xs font-mono text-neutral-600 text-center">{{ position }}</span>

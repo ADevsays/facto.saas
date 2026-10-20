@@ -26,8 +26,15 @@ export default defineEventHandler(async (event) => {
   }
 
   if (query.scope === 'home') {
+    const rankingLimit = Math.min(Math.max(toPageNumber(query.rankingLimit, 10), 1), 30)
+    const rankingOffset = toPageNumber(query.rankingOffset, 0)
+
+    if (query.rankingOnly === 'true') {
+      return fetchSaasList({ sort: 'mrr', limit: rankingLimit, offset: rankingOffset, excludeIncognito: true })
+    }
+
     const [ranking, recent] = await Promise.all([
-      fetchSaasList({ sort: 'mrr', limit: 30, excludeIncognito: true }),
+      fetchSaasList({ sort: 'mrr', limit: rankingLimit, offset: rankingOffset, excludeIncognito: true }),
       fetchSaasList({ sort: 'latest', limit: 6 }),
     ])
     return [...new Map([...ranking, ...recent].map(item => [item.id, item])).values()]

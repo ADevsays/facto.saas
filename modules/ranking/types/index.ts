@@ -26,6 +26,8 @@ export interface SaasListState {
   items: SaasListItem[]
   loading: boolean
   error: string | null
+  rankingLoaded: number
+  rankingExhausted: boolean
 }
 
 export interface ListQueryParams {

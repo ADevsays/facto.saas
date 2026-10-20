@@ -5,12 +5,39 @@ import { sendFoundersReport } from '~/modules/leadmagnets/server/services/email'
 import { sendFounderWelcomeEmail } from '../services/founderEmail'
 import { NotifierOrchestrator } from '~/modules/notifier/server/services/notifier.orchestrator'
 
+async function assertFounderCanUpdate(event: any, saasId: string) {
+  const token = getCookie(event, 'facto_founder_token') || getHeader(event, 'x-founder-token')
+  if (!token) throw createError({ statusCode: 401, message: 'Founder session required to update a startup' })
+
+  const { data: session, error: sessionError } = await supabase
+    .from('founder_sessions')
+    .select('founder_email, expires_at')
+    .eq('token', token)
+    .single()
+
+  if (sessionError || !session || new Date(session.expires_at) < new Date()) {
+    throw createError({ statusCode: 401, message: 'Session expired or invalid' })
+  }
+
+  const { data: startup, error: startupError } = await supabase
+    .from('saas_entries')
+    .select('founder_email')
+    .eq('id', saasId)
+    .single()
+
+  if (startupError || !startup) throw createError({ statusCode: 404, message: 'Startup not found' })
+  if (!startup.founder_email || startup.founder_email.trim().toLowerCase() !== session.founder_email.trim().toLowerCase()) {
+    throw createError({ statusCode: 403, message: 'You do not have permission to update this startup' })
+  }
+}
+
 export default defineEventHandler(async (event) => {
   const body = await readBody<SaasSubmission>(event)
 
   // 1. Guard clauses for essential fields
   if (!body.name?.trim()) throw createError({ statusCode: 400, message: 'name is required' })
   if (!body.categorySlugs?.length) throw createError({ statusCode: 400, message: 'categories are required' })
+  if (body.id) await assertFounderCanUpdate(event, body.id)
 
   // 2. Format URL
   let websiteUrl = body.websiteUrl?.trim() || null
@@ -72,7 +99,7 @@ export default defineEventHandler(async (event) => {
   const finalEntry = await upsertSaasEntry(body, websiteUrl, pData, matchedCategories, matchedCountry)
 
   // 5.5 Notify founder upon registration
-  if (body.founderEmail?.trim() && finalEntry) {
+  if (finalEntry.created && body.founderEmail?.trim()) {
     const config = useRuntimeConfig()
     const siteUrl = config.public.siteUrl || 'https://factosaas.com'
     sendFounderWelcomeEmail({
@@ -85,7 +112,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // 5.6 Reactively notify Telegram channel if published
-  if (finalEntry && finalEntry.status === 'published') {
+  if (finalEntry.created && finalEntry.status === 'published') {
     const orchestrator = new NotifierOrchestrator()
     orchestrator.notifyNewStartupReactive(finalEntry.id).catch(e => {
       console.error('[Publish] Error notifying Telegram channel:', e)
@@ -93,7 +120,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // 6. Notify admin if startup requires manual review
-  if (finalEntry.status === 'pending_review') {
+  if (finalEntry.created && finalEntry.status === 'pending_review') {
     const adminEmail = process.env.ADMIN_EMAIL || 'adevsaysinfo@gmail.com'
     const name = finalEntry.name || 'Sin nombre'
     const config = useRuntimeConfig()
@@ -139,7 +166,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // 7. Async Background Sync for verified SaaS
-  if (pData.hasProvider && body.providerKey && body.providerSlug) {
+  if (!finalEntry.duplicate && pData.hasProvider && body.providerKey && body.providerSlug) {
     try {
       const { getProvider } = await import('../services/provider.factory')
       const service = getProvider(body.providerSlug as any)

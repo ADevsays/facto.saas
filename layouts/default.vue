@@ -87,7 +87,7 @@ watch(() => route.query.login, () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#030305] text-white font-sans selection:bg-cyan-500/30 pb-16 md:pb-0">
+  <div class="min-h-screen bg-[#030305] text-white font-sans selection:bg-cyan-500/30 pb-16 md:pb-0 [overflow-anchor:none]">
     <AdsBandSection v-if="!isInfoPage && showAds" />
     <slot />
     <Analytics />
@@ -108,6 +108,7 @@ html, body {
   margin: 0;
   padding: 0;
   background-color: #030305;
+  overflow-anchor: none;
 }
 
 /* Scrollbar custom */
