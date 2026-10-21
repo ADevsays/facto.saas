@@ -202,7 +202,7 @@ watch(minPrice, (newMin) => {
   <Transition name="fade">
     <div v-if="isOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 pointer-events-none" @click.self="close">
       <div
-        class="ad-modal-shell relative w-full max-w-[900px] min-h-0 bg-[#0c0c10] border border-white/10 rounded-3xl overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.85)] flex flex-col max-h-[calc(100dvh-2rem)] sm:max-h-[96vh] pointer-events-auto"
+        class="ad-modal-shell relative w-full max-w-[900px] min-h-0 bg-[#0c0c10] border border-white/10 rounded-3xl overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.85)] flex flex-col max-h-[calc(100dvh-1rem)] sm:max-h-[90vh] pointer-events-auto"
       >
         <!-- Header -->
         <div class="px-6 pt-6 pb-2 sm:px-8 md:px-9 sm:pt-7 flex items-start justify-between">
@@ -224,36 +224,36 @@ watch(minPrice, (newMin) => {
         </div>
 
         <!-- Body -->
-        <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6 sm:px-8 md:px-9 sm:pb-8 pt-3 flex flex-col gap-5 custom-scrollbar">
+        <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-4 sm:px-8 md:px-9 sm:pb-5 pt-2 flex flex-col gap-3 custom-scrollbar">
 
           <!-- SALE MODE -->
           <template v-if="mode === 'sale'">
-            <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-8 items-start font-mono text-[13px]">
-              <div class="min-w-0 flex flex-col gap-5">
+            <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-5 items-start font-mono text-[13px]">
+              <div class="min-w-0 flex flex-col gap-3">
                 <div class="grid grid-cols-3 gap-2.5 lg:gap-3">
-                  <div class="min-h-[136px] rounded-2xl border border-white/10 bg-white/[0.035] px-2 py-4 flex flex-col items-center justify-center text-center gap-2">
-                    <Users class="w-8 h-8 text-white" />
-                    <strong class="text-white text-lg font-mono leading-tight">{{ t.modal.sale.audience_value }}</strong>
-                    <span class="min-h-[24px] flex items-center justify-center text-[10px] sm:text-[11px] leading-snug text-neutral-300 font-mono">{{ t.modal.sale.audience_label }}</span>
+                  <div class="min-h-[104px] rounded-2xl border border-white/10 bg-white/[0.035] px-2 py-2.5 flex flex-col items-center justify-center text-center gap-1.5">
+                    <Users class="w-6 h-6 text-white" />
+                    <strong class="text-white text-base font-mono leading-tight">{{ t.modal.sale.audience_value }}</strong>
+                    <span class="min-h-[22px] flex items-center justify-center text-[9px] sm:text-[10px] leading-snug text-neutral-300 font-mono">{{ t.modal.sale.audience_label }}</span>
                   </div>
-                  <div class="min-h-[136px] rounded-2xl border border-white/10 bg-white/[0.035] px-2 py-4 flex flex-col items-center justify-center text-center gap-2 min-w-0">
-                    <ScanSearch class="w-8 h-8 text-white" />
-                    <strong class="max-w-full text-white text-sm sm:text-base font-mono leading-tight break-words">{{ t.modal.sale.intent_value }}</strong>
-                    <span class="max-w-full min-h-[24px] flex items-center justify-center text-[10px] sm:text-[11px] leading-snug text-neutral-300 font-mono">{{ t.modal.sale.intent_label }}</span>
+                  <div class="min-h-[104px] rounded-2xl border border-white/10 bg-white/[0.035] px-2 py-2.5 flex flex-col items-center justify-center text-center gap-1.5 min-w-0">
+                    <ScanSearch class="w-6 h-6 text-white" />
+                    <strong class="max-w-full text-white text-sm font-mono leading-tight break-words">{{ t.modal.sale.intent_value }}</strong>
+                    <span class="max-w-full min-h-[22px] flex items-center justify-center text-[9px] sm:text-[10px] leading-snug text-neutral-300 font-mono">{{ t.modal.sale.intent_label }}</span>
                   </div>
-                  <div class="animated-availability-frame min-h-[136px]" :style="{ '--availability-color': availabilityColor }">
-                    <div class="animated-availability-frame__content h-full rounded-[14px] px-2 py-4 flex flex-col items-center justify-center text-center gap-2 transition-colors duration-500" :style="availabilityStyle">
-                      <TicketCheck class="w-8 h-8" />
-                      <strong class="text-lg font-mono leading-tight">{{ t.modal.sale.spots_value.replace('{count}', String(freeSlotsCount)) }}</strong>
-                      <span class="min-h-[24px] flex items-center justify-center text-[10px] sm:text-[11px] leading-snug text-neutral-300 font-mono">{{ t.modal.sale.spots_label }}</span>
+                  <div class="animated-availability-frame min-h-[104px]" :style="{ '--availability-color': availabilityColor }">
+                    <div class="animated-availability-frame__content h-full rounded-[14px] px-2 py-2.5 flex flex-col items-center justify-center text-center gap-1.5 transition-colors duration-500" :style="availabilityStyle">
+                      <TicketCheck class="w-6 h-6" />
+                      <strong class="text-base font-mono leading-tight">{{ t.modal.sale.spots_value.replace('{count}', String(freeSlotsCount)) }}</strong>
+                      <span class="min-h-[22px] flex items-center justify-center text-[9px] sm:text-[10px] leading-snug text-neutral-300 font-mono">{{ t.modal.sale.spots_label }}</span>
                     </div>
                   </div>
                 </div>
 
                 <section class="border-t border-white/10 pt-1">
-                  <h3 class="text-sm font-mono font-bold text-white mt-5 mb-2">{{ t.modal.sale.how_it_works_title }}</h3>
-                  <p class="text-[13px] sm:text-sm text-neutral-400 leading-relaxed" v-html="t.modal.sale.how_it_works_paragraph_1"></p>
-                  <p class="text-[13px] sm:text-sm text-neutral-400 leading-relaxed mt-3" v-html="t.modal.sale.how_it_works_paragraph_2"></p>
+                  <h3 class="text-sm font-mono font-bold text-white mt-3 mb-1.5">{{ t.modal.sale.how_it_works_title }}</h3>
+                  <p class="text-xs sm:text-[13px] text-neutral-400 leading-[1.45]" v-html="t.modal.sale.how_it_works_paragraph_1"></p>
+                  <p class="text-xs sm:text-[13px] text-neutral-400 leading-[1.45] mt-2" v-html="t.modal.sale.how_it_works_paragraph_2"></p>
                 </section>
 
                 <AddAdBidControls
@@ -264,14 +264,14 @@ watch(minPrice, (newMin) => {
                   @increment="incrementBid"
                 />
 
-                <p class="text-[11px] text-neutral-500 leading-relaxed">{{ t.modal.sale.one_time_note }}</p>
+                <p class="text-[10px] text-neutral-500 leading-relaxed">{{ t.modal.sale.one_time_note }}</p>
                 <p v-if="checkoutError" class="text-red-400 text-xs px-1">{{ checkoutError }}</p>
 
                 <button
                   type="button"
                   @click="startCheckout"
                   :disabled="isCreatingCheckout"
-                  class="w-full group inline-flex items-center justify-center gap-2.5 bg-white text-black font-bold uppercase tracking-[0.08em] sm:tracking-[0.12em] text-[10px] sm:text-sm leading-none px-2 py-4 rounded-xl transition-all duration-300 hover:bg-neutral-100 hover:scale-[1.01] active:scale-[0.99] shadow-xl hover:shadow-[#00D4FF]/20 disabled:opacity-50 cursor-pointer"
+                  class="w-full group inline-flex items-center justify-center gap-2.5 bg-white text-black font-bold uppercase tracking-[0.08em] sm:tracking-[0.12em] text-[10px] sm:text-sm leading-none px-2 py-3 rounded-xl transition-all duration-300 hover:bg-neutral-100 hover:scale-[1.01] active:scale-[0.99] shadow-xl hover:shadow-[#00D4FF]/20 disabled:opacity-50 cursor-pointer"
                 >
                   <Loader2 v-if="isCreatingCheckout" class="w-4 h-4 animate-spin" />
                   <span class="whitespace-nowrap">
@@ -287,17 +287,17 @@ watch(minPrice, (newMin) => {
 
               </div>
 
-              <aside class="border-t lg:border-t-0 lg:border-l border-white/10 pt-5 lg:pt-0 lg:pl-5 min-w-0 flex flex-col">
+              <aside class="border-t lg:border-t-0 lg:border-l border-white/10 pt-3 lg:pt-0 lg:pl-5 min-w-0 flex flex-col">
                 <h3 class="text-sm font-mono font-bold text-white mb-1">{{ t.modal.sale.slot_label }}</h3>
-                <p class="text-[13px] sm:text-sm text-neutral-500 leading-relaxed mb-3">{{ t.modal.sale.slot_help }}</p>
-                <div class="h-[395px] overflow-y-auto rounded-xl border border-white/10 bg-[#08080b] p-1.5 custom-scrollbar">
+                <p class="text-xs sm:text-[13px] text-neutral-500 leading-relaxed mb-2">{{ t.modal.sale.slot_help }}</p>
+                <div class="h-[300px] overflow-y-auto rounded-xl border border-white/10 bg-[#08080b] p-1.5 custom-scrollbar">
                   <button
                     v-for="s in allSlotsList"
                     :key="s.position"
                     type="button"
                     @click="onSelectSlot(s.position)"
                     :class="[
-                      'w-full grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-2 py-2.5 text-left transition-colors duration-300 cursor-pointer text-[13px]',
+                      'w-full grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-2 py-2 text-left transition-colors duration-300 cursor-pointer text-[13px]',
                       animatedSlot === s.position ? 'slot-selection-pulse' : '',
                       s.position === selectedSlot ? 'border border-[#00D4FF]/50 bg-[#00D4FF]/10' : 'border border-transparent hover:bg-white/[0.06]'
                     ]"
@@ -310,7 +310,7 @@ watch(minPrice, (newMin) => {
                     <span :class="['font-mono text-xs shrink-0', s.isAvailable ? 'text-emerald-400' : 'text-amber-300']">${{ s.isAvailable ? s.currentPrice : s.nextPrice }}</span>
                   </button>
                 </div>
-                <div :class="['mt-3 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2.5 text-[13px] font-mono transition-all duration-300', animatedSlot === selectedSlot ? 'slot-selection-pulse' : '']">
+                <div :class="['mt-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-[13px] font-mono transition-all duration-300', animatedSlot === selectedSlot ? 'slot-selection-pulse' : '']">
                   <strong class="block text-white">{{ t.modal.setup.slot_prefix.replace('{slot}', String(selectedSlot)) }}</strong>
                   <span class="text-emerald-400">{{ isSlotAvailable ? t.modal.sale.status_free : t.modal.sale.status_auction }} · ${{ minPrice }} USD</span>
                 </div>

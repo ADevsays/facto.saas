@@ -51,7 +51,7 @@ function handleClick() {
     tabindex="0"
     @click="handleClick"
     :class="[
-      'empty-ad-card group shrink-0 flex items-center gap-3.5 md:gap-4 rounded-2xl px-4 py-3 md:px-5 md:py-3.5 cursor-pointer transition-all duration-500 select-none border border-dashed w-[320px] sm:w-[350px] md:w-[380px] max-w-[380px] h-[78px] md:h-[86px]',
+      'empty-ad-card group shrink-0 flex items-center gap-3.5 md:gap-4 rounded-2xl px-4 py-3 md:px-5 md:py-3.5 cursor-pointer transition-all duration-500 select-none border border-dashed w-[282px] sm:w-[312px] md:w-[342px] max-w-[342px] h-[74px] md:h-[82px]',
       position === 1
         ? 'border-[#FFD700]/70 bg-[#FFD700]/[0.05] hover:border-[#FFD700] hover:bg-[#FFD700]/[0.09] shadow-[0_0_15px_rgba(255,215,0,0.2)] hover:shadow-[0_0_25px_rgba(255,215,0,0.4)]'
         : 'border-white/15 bg-white/[0.02]'
@@ -61,7 +61,7 @@ function handleClick() {
     } : {}"
   >
     <div
-      class="w-11 h-11 md:w-12 md:h-12 rounded-2xl border flex items-center justify-center text-base md:text-xl font-serif font-bold tracking-tight leading-none transition-all duration-300 shrink-0 select-none"
+      class="w-10 h-10 md:w-11 md:h-11 rounded-2xl border flex items-center justify-center text-[12px] md:text-[16px] font-serif font-bold tracking-tight leading-none transition-all duration-300 shrink-0 select-none"
       :style="position === 1 ? {
         backgroundColor: 'rgba(255,215,0,0.15)',
         borderColor: 'rgba(255,215,0,0.4)',
@@ -77,7 +77,7 @@ function handleClick() {
     </div>
 
     <div class="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-      <p class="text-white text-[13px] md:text-sm font-sans font-medium whitespace-nowrap truncate group-hover:text-white transition-colors">
+      <p class="text-white text-[12px] md:text-[13px] font-sans font-medium whitespace-nowrap truncate group-hover:text-white transition-colors">
         {{ t.empty.title }}
       </p>
       <div class="flex items-center gap-1.5 text-neutral-400 text-[11px] md:text-xs font-sans font-extralight tracking-[0.05em] whitespace-nowrap group-hover:text-neutral-300 transition-colors">

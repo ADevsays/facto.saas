@@ -65,7 +65,7 @@ const cardColor = computed(() => {
     rel="noopener noreferrer"
     @click="playNextKeySound"
     :class="[
-      'ad-card group shrink-0 flex items-center gap-3.5 md:gap-4 rounded-2xl px-4 py-3 md:px-5 md:py-3.5 cursor-pointer transition-all duration-500 select-none border w-[320px] sm:w-[350px] md:w-[380px] max-w-[380px] h-[78px] md:h-[86px] relative overflow-hidden',
+      'ad-card group shrink-0 flex items-center gap-3.5 md:gap-4 rounded-2xl px-4 py-3 md:px-5 md:py-3.5 cursor-pointer transition-all duration-500 select-none border w-[282px] sm:w-[312px] md:w-[342px] max-w-[342px] h-[74px] md:h-[82px] relative overflow-hidden',
       isPositionOne
         ? 'gold-glow-border bg-[#FFD700]/[0.05] hover:bg-[#FFD700]/[0.1] hover:scale-[1.01]'
         : ''
@@ -89,12 +89,18 @@ const cardColor = computed(() => {
       :src="image_url"
       :alt="name"
       @error="imageError = true"
-      class="w-11 h-11 md:w-12 md:h-12 object-contain rounded-2xl shrink-0 p-1 bg-black/40 border"
+      :class="[
+        'object-contain rounded-2xl shrink-0 p-1 bg-black/40 border',
+        'w-10 h-10 md:w-11 md:h-11'
+      ]"
       :style="{ borderColor: isPositionOne ? 'rgba(255,215,0,0.4)' : `${cardColor}40` }"
     />
     <div
       v-else
-      class="w-11 h-11 md:w-12 md:h-12 rounded-2xl shrink-0 flex items-center justify-center text-base md:text-xl font-serif font-bold tracking-tight leading-none transition-all duration-300 shrink-0 select-none"
+      :class="[
+        'rounded-2xl shrink-0 flex items-center justify-center font-serif font-bold tracking-tight leading-none transition-all duration-300 select-none',
+        'w-10 h-10 md:w-11 md:h-11 text-[12px] md:text-[16px]'
+      ]"
       :style="isPositionOne ? {
         backgroundColor: 'rgba(255,215,0,0.15)',
         borderColor: 'rgba(255,215,0,0.5)',
@@ -111,7 +117,10 @@ const cardColor = computed(() => {
     <!-- Content (takes remaining width) -->
     <div class="flex-1 min-w-0 flex flex-col justify-center gap-0.5 relative z-10">
       <div class="flex items-center gap-1.5">
-        <p class="text-white text-[13px] md:text-sm font-sans font-medium whitespace-nowrap truncate">
+        <p :class="[
+          'text-white font-sans font-medium whitespace-nowrap truncate',
+          'text-[12px] md:text-[13px]'
+        ]">
           {{ name }}
         </p>
         <span
