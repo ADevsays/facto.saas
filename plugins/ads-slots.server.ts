@@ -5,11 +5,25 @@ import type { AdSlot } from '~/modules/ads/types'
 let cachedSlots: AdSlot[] | null = null
 let cacheExpiresAt = 0
 let pendingSlots: Promise<AdSlot[]> | null = null
+const ADS_SSR_TIMEOUT_MS = 1_500
+
+function withTimeout<T>(request: Promise<T>, timeoutMs: number): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+
+  return Promise.race([
+    request,
+    new Promise<T>((_, reject) => {
+      timeout = setTimeout(() => reject(new Error(`Ads slots timed out after ${timeoutMs}ms`)), timeoutMs)
+    }),
+  ]).finally(() => {
+    if (timeout) clearTimeout(timeout)
+  })
+}
 
 async function getCachedSlots() {
   if (cachedSlots && Date.now() < cacheExpiresAt) return cachedSlots
 
-  pendingSlots ||= adsService.getAuctionSlots()
+  pendingSlots ||= withTimeout(adsService.getAuctionSlots(), ADS_SSR_TIMEOUT_MS)
     .then((slots) => {
       cachedSlots = slots
       cacheExpiresAt = Date.now() + 15_000

@@ -132,7 +132,7 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - ✅ La consulta del listado no selecciona `saas_metrics_cache.history_cache` y conserva orden, búsqueda y filtros.
 - ✅ El perfil inicial no serializa historial; el gráfico carga el historial de una sola startup desde el endpoint dedicado.
 - El historial público contiene cuatro series de diez puntos y no expone los arrays originales del proveedor.
-- La banda de anuncios se consulta una vez durante SSR y `/api/ads/slots` se usa después únicamente para refrescos explícitos.
+- ✅ La banda de anuncios se consulta una vez durante SSR y `/api/ads/slots` se usa después únicamente para refrescos explícitos; si Supabase supera el timeout corto, el SSR continúa con los slots vacíos.
 - Una sesión anónima ya comprobada no vuelve a consultar `/api/founder/session` sin `force`.
 - La gráfica no produce cambios de altura durante la carga, reemplaza el loader tanto al resolver como al fallar el historial, y al cargar se configura automáticamente en la métrica (`mrr` o `revenue`) y ventana temporal (`30d`, `60d`, `all`, `7d`) que muestre la mayor cantidad de datos con valor mayor a cero.
 - Sin key o sin historial verificable, el perfil responde de forma válida y muestra la gráfica con una serie plana de ceros; nunca simula una curva con valores financieros.

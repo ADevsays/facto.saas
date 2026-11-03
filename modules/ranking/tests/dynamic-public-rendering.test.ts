@@ -323,6 +323,8 @@ test('SSR ads, anonymous sessions and missing logos avoid repeated internal requ
 
   assert.doesNotMatch(ads, /useFetch<AdSlot\[]>/)
   assert.match(adsPlugin, /adsService\.getAuctionSlots\(\)/)
+  assert.match(adsPlugin, /ADS_SSR_TIMEOUT_MS = 1_500/)
+  assert.match(adsPlugin, /Promise\.race/)
   assert.match(session, /isInitialized\.value && !force/)
   assert.doesNotMatch(profile, /const historyRequest = loadHistory\(\)\s+await checkSession\(\)/)
   assert.doesNotMatch(logo, /\/api\/favicon/)
