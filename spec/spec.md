@@ -34,7 +34,8 @@ Cada feature sigue la estructura: **Contrato â†’ Dominio â†’ Validaci�
 - ✅ Con `VIEW_TRACKING_ENABLED=false`, las rutas públicas no escriben contadores; con `true`, las visitas no SEO actualizan ambos contadores.
 - ✅ `/llms.txt` contiene el título, resumen, secciones de enlaces y de 10 a 20 fichas SaaS.
 - Los componentes y utilidades de media no contienen dominios `*.supabase.co` ni fallbacks con refs de proyecto; al cambiar `SUPABASE_URL`, los badges y logos de OG se resuelven desde el nuevo origen configurado.
-- Un logo WebP almacenado en Supabase se adapta a PNG para la imagen OG mediante una ruta interna que acepta únicamente su path de Storage configurado y conserva una caché CDN inmutable; un formato no soportado nunca degrada silenciosamente a la inicial cuando el logo existe.
+- Los logos y badges se conservan optimizados como WebP en Storage. Al generar una OG con Satori, sus fuentes WebP se adaptan internamente al formato embebible y se reutilizan desde una caché de memoria acotada; las visitas normales no convierten imágenes ni invocan una ruta pública adicional.
+- La OG muestra el logo y el badge almacenados; la inicial es únicamente un respaldo visual superpuesto si el recurso no puede cargarse.
 
 ---
 

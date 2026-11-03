@@ -105,17 +105,10 @@ useHead(() => {
 
 const localePath = useLocalePath()
 const runtimeConfig = useRuntimeConfig()
-const requestOrigin = import.meta.server ? useRequestURL().origin : ''
 
 function resolveOgLogoUrl(logoUrl?: string | null, websiteUrl?: string | null): string {
   const raw = String(logoUrl || '').trim()
   const clean = raw.toLowerCase().split('?')[0]
-  const isStoredWebp = clean.endsWith('.webp') && raw.startsWith(`${String(runtimeConfig.supabaseUrl || '').replace(/\/$/, '')}/storage/v1/object/public/saas_logos/`)
-  if (isStoredWebp) {
-    const path = new URL(raw).pathname.replace('/storage/v1/object/public/saas_logos/', '')
-    return `${requestOrigin}/api/og-logo?path=${encodeURIComponent(path)}`
-  }
-
   const isGeneratedFallback = clean.endsWith('.ico') || raw.includes('google.com/s2/favicons') || raw.includes('googleusercontent.com/s2/favicons') || raw.includes('icons.duckduckgo.com/ip3/') || raw.includes('icon.horse/icon/')
 
   if (!isGeneratedFallback && raw) return raw
@@ -137,9 +130,11 @@ if (import.meta.server && profileSaas.value) {
   const isMilestoneView = route.query.h === 'mile' && serverSaas.latestMilestone
 
   if (isMilestoneView) {
+    const supabaseUrl = String(runtimeConfig.supabaseUrl || '').replace(/\/$/, '')
     defineOgImageComponent('VisitsMilestone', {
       name: String(serverSaas.name || 'SaaS'),
       logoUrl: resolveOgLogoUrl(serverSaas.logoUrl, serverSaas.websiteUrl),
+      badgeUrl: supabaseUrl ? `${supabaseUrl}/storage/v1/object/public/achievements/v2/badge-${serverSaas.latestMilestone}.png` : '',
       milestone: serverSaas.latestMilestone,
       revenue: String(revenueDisplay.value),
       views: String(viewsDisplay.value),

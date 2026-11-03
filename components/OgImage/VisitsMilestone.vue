@@ -4,6 +4,7 @@ import { computed } from 'vue'
 const props = defineProps<{
   name?: string
   logoUrl?: string
+  badgeUrl?: string
   milestone?: number | string
   revenue?: string
   category?: string
@@ -12,14 +13,6 @@ const props = defineProps<{
 
 const cleanMilestone = computed(() => {
   return props.milestone ? String(props.milestone) : '100'
-})
-
-const config = useRuntimeConfig()
-const supabaseUrl = String(config.supabaseUrl || '').replace(/\/$/, '')
-
-const badgeUrl = computed(() => {
-  if (!supabaseUrl) return ''
-  return `${supabaseUrl}/storage/v1/object/public/achievements/v2/badge-${cleanMilestone.value}.png`
 })
 
 const formattedMilestoneText = computed(() => {
@@ -37,11 +30,6 @@ const showRevenue = computed(() => {
   return parseRevenueAmount(props.revenue) > 10
 })
 
-const hasValidLogo = computed(() => {
-  if (!props.logoUrl) return false
-  const clean = props.logoUrl.toLowerCase().split('?')[0]
-  return !clean.endsWith('.webp') && !clean.endsWith('.ico')
-})
 </script>
 
 <template>
@@ -85,18 +73,12 @@ const hasValidLogo = computed(() => {
 
         <div class="flex flex-row items-center mb-6">
           <div
-            v-if="hasValidLogo"
-            class="w-[88px] h-[88px] rounded-[22px] overflow-hidden border border-white/15 bg-[#111622] flex items-center justify-center mr-5 shadow-2xl flex-shrink-0"
-          >
-            <img :src="logoUrl" width="88" height="88" class="w-full h-full object-cover" />
-          </div>
-          <div
-            v-else
-            class="w-[88px] h-[88px] rounded-[22px] border border-white/15 bg-[#111622] flex items-center justify-center mr-5 shadow-2xl flex-shrink-0"
+            class="w-[88px] h-[88px] rounded-[22px] overflow-hidden border border-white/15 bg-[#111622] flex items-center justify-center mr-5 shadow-2xl flex-shrink-0 relative"
           >
             <span class="text-4xl font-black text-[#00D4FF]">
               {{ name ? name.charAt(0).toUpperCase() : 'S' }}
             </span>
+            <img v-if="logoUrl" :src="logoUrl" width="88" height="88" class="w-full h-full object-cover absolute inset-0" />
           </div>
 
           <h2 class="text-white font-extrabold text-[64px] tracking-tight leading-none">
@@ -113,8 +95,8 @@ const hasValidLogo = computed(() => {
       <!-- Right Column: Massive Badge -->
       <div class="flex items-center justify-center">
         <img
-          v-if="badgeUrl"
-          :src="badgeUrl"
+          v-if="props.badgeUrl"
+          :src="props.badgeUrl"
           width="440"
           height="406"
           class="w-[440px] h-[406px]"

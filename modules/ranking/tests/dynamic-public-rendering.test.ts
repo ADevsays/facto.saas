@@ -2,7 +2,9 @@ import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import test from 'node:test'
+import sharp from 'sharp'
 import { buildSaasHistoryChart, formatRevenue, normalizeSaasHistory, summarizeSaasHistory } from '../../../server/utils/saas-history'
+import { fetchWebpAsPngDataUrl } from '../../../server/utils/og-webp'
 import { determineInitialChartSettings } from '../../visuals/composables/useRevenueChart'
 
 const projectRoot = resolve(import.meta.dirname, '../../..')
@@ -154,25 +156,43 @@ test('visits milestone OG mirrors the normal startup OG logo handling', () => {
   const profileOg = readProjectFile('components/OgImage/SaasProfile.vue')
   const profilePage = readProjectFile('pages/saas/[slug]/index.vue')
 
-  assert.match(milestoneOg, /<img :src="logoUrl"/)
-  assert.match(milestoneOg, /useRuntimeConfig\(\)/)
-  assert.match(milestoneOg, /config\.supabaseUrl/)
+  assert.match(milestoneOg, /:src="logoUrl"/)
+  assert.match(milestoneOg, /badgeUrl\?: string/)
   assert.doesNotMatch(milestoneOg, /qsjnouwunclflruotduc\.supabase\.co/)
-  assert.match(milestoneOg, /return !clean\.endsWith\('\.webp'\) && !clean\.endsWith\('\.ico'\)/)
-  assert.match(profileOg, /return !clean\.endsWith\('\.webp'\) && !clean\.endsWith\('\.ico'\)/)
-  assert.match(profilePage, /const isStoredWebp = clean\.endsWith\('\.webp'\)/)
-  assert.match(profilePage, /\/api\/og-logo\?path=/)
+  assert.doesNotMatch(milestoneOg, /endsWith\('\.webp'\)/)
+  assert.doesNotMatch(profileOg, /endsWith\('\.webp'\)/)
+  assert.match(profilePage, /badgeUrl: supabaseUrl \?/)
   assert.match(profilePage, /resolveOgLogoUrl\(serverSaas\.logoUrl, serverSaas\.websiteUrl\)/)
 })
 
-test('OG logo adapter only converts configured Supabase storage paths and caches PNG output', () => {
-  const adapter = readProjectFile('server/api/og-logo.get.ts')
+test('Satori adapts configured Supabase WebP media internally without a public conversion route', () => {
+  const plugin = readProjectFile('server/plugins/og-webp.ts')
+  const adapter = readProjectFile('server/utils/og-webp.ts')
 
-  assert.match(adapter, /const LOGO_PREFIX = '\/storage\/v1\/object\/public\/saas_logos\/'/)
-  assert.match(adapter, /config\.supabaseUrl/)
+  assert.match(plugin, /nuxt-og-image:satori:vnodes/)
+  assert.match(plugin, /config\.supabaseUrl/)
+  assert.match(plugin, /MAX_MEMORY_ENTRIES = 128/)
+  assert.match(plugin, /storage\/v1\/object\/public\//)
   assert.match(adapter, /sharp\(/)
   assert.match(adapter, /\.png\(\)/)
-  assert.match(adapter, /s-maxage=31536000/)
+  assert.match(adapter, /data:image\/png;base64/)
+  assert.equal(existsSync(resolve(projectRoot, 'server/api/og-logo.get.ts')), false)
+})
+
+test('Satori WebP adapter produces an embeddable PNG data URL', async () => {
+  const webp = await sharp({
+    create: { width: 2, height: 2, channels: 4, background: '#00D4FF' }
+  }).webp().toBuffer()
+  const fetchImage = async () => new Response(webp, {
+    status: 200,
+    headers: { 'content-type': 'image/webp', 'content-length': String(webp.length) }
+  })
+
+  const dataUrl = await fetchWebpAsPngDataUrl('https://storage.invalid/logo.webp', fetchImage as typeof fetch)
+  assert.match(dataUrl || '', /^data:image\/png;base64,/)
+
+  const png = Buffer.from(String(dataUrl).split(',')[1], 'base64')
+  assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a')
 })
 
 test('og-island-compat plugin reconciles legacy nuxt-og-image hash in event.$fetch with Nuxt island hash algorithm', async () => {

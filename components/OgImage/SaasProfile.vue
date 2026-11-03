@@ -36,11 +36,6 @@ const gemColor = computed(() => {
   return (props.categorySlug && map[props.categorySlug]) || '#00D4FF'
 })
 
-const hasValidLogo = computed(() => {
-  if (!props.logoUrl) return false
-  const clean = props.logoUrl.toLowerCase().split('?')[0]
-  return !clean.endsWith('.webp') && !clean.endsWith('.ico')
-})
 </script>
 
 <template>
@@ -75,11 +70,9 @@ const hasValidLogo = computed(() => {
     <!-- Center Section: Logo, Title & Subtitle -->
     <div class="flex flex-col items-center justify-center text-center my-auto">
       <!-- Startup Logo -->
-      <div v-if="hasValidLogo" class="w-24 h-24 rounded-3xl overflow-hidden border border-white/15 bg-[#131316] flex items-center justify-center mb-4">
-        <img :src="logoUrl" width="96" height="96" class="w-24 h-24 object-cover" />
-      </div>
-      <div v-else class="w-24 h-24 rounded-3xl border border-white/15 bg-[#131316] flex items-center justify-center mb-4">
+      <div class="w-24 h-24 rounded-3xl overflow-hidden border border-white/15 bg-[#131316] flex items-center justify-center mb-4 relative">
         <span class="text-4xl text-white font-bold">{{ name ? name.charAt(0).toUpperCase() : 'S' }}</span>
+        <img v-if="logoUrl" :src="logoUrl" width="96" height="96" class="w-24 h-24 object-cover absolute inset-0" />
       </div>
 
       <!-- Title -->
