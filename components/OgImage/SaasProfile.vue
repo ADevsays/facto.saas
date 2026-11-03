@@ -71,8 +71,8 @@ const gemColor = computed(() => {
     <div class="flex flex-col items-center justify-center text-center my-auto">
       <!-- Startup Logo -->
       <div class="w-24 h-24 rounded-3xl overflow-hidden border border-white/15 bg-[#131316] flex items-center justify-center mb-4 relative">
-        <span class="text-4xl text-white font-bold">{{ name ? name.charAt(0).toUpperCase() : 'S' }}</span>
-        <img v-if="logoUrl" :src="logoUrl" width="96" height="96" class="w-24 h-24 object-cover absolute inset-0" />
+        <img v-if="logoUrl" :src="logoUrl" width="96" height="96" class="w-24 h-24 object-cover" />
+        <span v-else class="text-4xl text-white font-bold">{{ name ? name.charAt(0).toUpperCase() : 'S' }}</span>
       </div>
 
       <!-- Title -->

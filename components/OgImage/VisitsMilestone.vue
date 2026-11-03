@@ -75,10 +75,10 @@ const showRevenue = computed(() => {
           <div
             class="w-[88px] h-[88px] rounded-[22px] overflow-hidden border border-white/15 bg-[#111622] flex items-center justify-center mr-5 shadow-2xl flex-shrink-0 relative"
           >
-            <span class="text-4xl font-black text-[#00D4FF]">
+            <img v-if="logoUrl" :src="logoUrl" width="88" height="88" class="w-full h-full object-cover" />
+            <span v-else class="text-4xl font-black text-[#00D4FF]">
               {{ name ? name.charAt(0).toUpperCase() : 'S' }}
             </span>
-            <img v-if="logoUrl" :src="logoUrl" width="88" height="88" class="w-full h-full object-cover absolute inset-0" />
           </div>
 
           <h2 class="flex-1 min-w-0 text-white font-extrabold text-[56px] tracking-tight leading-none">
