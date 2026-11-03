@@ -39,7 +39,7 @@ Cada feature sigue la estructura: **Contrato â†’ Dominio â†’ Validaci�
 - Las OG no intentan resolver favicons externos (Google, DuckDuckGo, Icon Horse ni `.ico` heredados): una fuente no persistida equivale a no tener logo y muestra la inicial.
 - El logo, el título y el badge ocupan columnas acotadas y no se superponen incluso con nombres de startup largos.
 - El endpoint servidor del perfil resuelve la URL del badge desde `SUPABASE_URL` junto con el último hito; la página solo entrega al island OG props serializables ya resueltas.
-- Una OG de hito sin `logo_url` muestra la inicial de la startup (o `S` si no hay nombre), no un contenedor vacío.
+- Una OG de hito sin `logo_url` muestra la inicial de la startup (o `S` si no hay nombre), centrada horizontal y verticalmente en los 88×88 px del contenedor, no un contenedor vacío.
 
 ---
 

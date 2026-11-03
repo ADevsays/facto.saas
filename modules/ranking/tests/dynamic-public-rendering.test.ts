@@ -159,7 +159,7 @@ test('visits milestone OG mirrors the normal startup OG logo handling', () => {
 
   assert.match(milestoneOg, /:src="logoUrl"/)
   assert.match(milestoneOg, /const fallbackInitial = computed/)
-  assert.match(milestoneOg, /v-if="!logoUrl"/)
+  assert.match(milestoneOg, /v-if="!logoUrl"[\s\S]*?width: 88px; height: 88px; display: flex; align-items: center; justify-content: center;/)
   assert.match(milestoneOg, /\{\{ fallbackInitial \}\}/)
   assert.match(milestoneOg, /badgeUrl\?: string/)
   assert.match(milestoneOg, /w-\[650px\] flex flex-col/)
