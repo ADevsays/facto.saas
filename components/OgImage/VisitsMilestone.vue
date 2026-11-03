@@ -30,6 +30,10 @@ const showRevenue = computed(() => {
   return parseRevenueAmount(props.revenue) > 10
 })
 
+const fallbackInitial = computed(() => {
+  return props.name?.trim().charAt(0).toUpperCase() || 'S'
+})
+
 </script>
 
 <template>
@@ -76,9 +80,11 @@ const showRevenue = computed(() => {
             class="w-[88px] h-[88px] rounded-[22px] overflow-hidden border border-white/15 bg-[#111622] flex items-center justify-center mr-5 shadow-2xl flex-shrink-0 relative"
           >
             <img v-if="logoUrl" :src="logoUrl" width="88" height="88" class="w-full h-full object-cover" />
-            <span v-else class="text-4xl font-black text-[#00D4FF]">
-              {{ name ? name.charAt(0).toUpperCase() : 'S' }}
-            </span>
+            <div v-if="!logoUrl" class="w-full h-full flex items-center justify-center">
+              <span class="font-black text-[#00D4FF]" style="font-size: 42px; line-height: 1;">
+                {{ fallbackInitial }}
+              </span>
+            </div>
           </div>
 
           <h2 class="w-[520px] text-white font-extrabold text-[50px] tracking-tight leading-none">

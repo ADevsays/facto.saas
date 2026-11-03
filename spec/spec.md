@@ -35,9 +35,10 @@ Cada feature sigue la estructura: **Contrato â†’ Dominio â†’ Validaci�
 - ✅ `/llms.txt` contiene el título, resumen, secciones de enlaces y de 10 a 20 fichas SaaS.
 - Los componentes y utilidades de media no contienen dominios `*.supabase.co` ni fallbacks con refs de proyecto; al cambiar `SUPABASE_URL`, los badges y logos de OG se resuelven desde el nuevo origen configurado.
 - Los logos y badges se conservan optimizados como WebP en Storage. Al generar una OG con Satori, sus fuentes WebP se adaptan internamente al formato embebible y se reutilizan desde una caché de memoria acotada; las visitas normales no convierten imágenes ni invocan una ruta pública adicional.
-- La OG muestra el logo y el badge almacenados; la inicial es únicamente un respaldo visual superpuesto si el recurso no puede cargarse.
+- La OG muestra el logo y el badge almacenados. Si la startup no tiene `logo_url`, renderiza siempre la inicial normalizada de su nombre dentro del contenedor del logo; si el recurso existe pero no puede cargarse, también conserva esa inicial como respaldo visual.
 - El logo, el título y el badge ocupan columnas acotadas y no se superponen incluso con nombres de startup largos.
 - El endpoint servidor del perfil resuelve la URL del badge desde `SUPABASE_URL` junto con el último hito; la página solo entrega al island OG props serializables ya resueltas.
+- Una OG de hito sin `logo_url` muestra la inicial de la startup (o `S` si no hay nombre), no un contenedor vacío.
 
 ---
 

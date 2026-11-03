@@ -158,6 +158,9 @@ test('visits milestone OG mirrors the normal startup OG logo handling', () => {
   const profileApi = readProjectFile('server/api/saas/[slug].get.ts')
 
   assert.match(milestoneOg, /:src="logoUrl"/)
+  assert.match(milestoneOg, /const fallbackInitial = computed/)
+  assert.match(milestoneOg, /v-if="!logoUrl"/)
+  assert.match(milestoneOg, /\{\{ fallbackInitial \}\}/)
   assert.match(milestoneOg, /badgeUrl\?: string/)
   assert.match(milestoneOg, /w-\[650px\] flex flex-col/)
   assert.match(milestoneOg, /w-\[520px\].*text-\[50px\]/)
