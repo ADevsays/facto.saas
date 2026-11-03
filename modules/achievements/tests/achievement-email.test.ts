@@ -1,7 +1,18 @@
-import { describe, it } from 'node:test'
+import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert'
 import { buildAchievementEmailHtml } from '../server/utils/achievementEmail'
 import { buildFounderWelcomeEmailHtml } from '../../add-saas/server/services/founderEmail'
+
+const originalSupabaseUrl = process.env.SUPABASE_URL
+
+before(() => {
+  process.env.SUPABASE_URL = 'https://test-supabase.invalid'
+})
+
+after(() => {
+  if (originalSupabaseUrl === undefined) delete process.env.SUPABASE_URL
+  else process.env.SUPABASE_URL = originalSupabaseUrl
+})
 
 describe('Achievement Email Template Rendering', () => {
   it('should render milestone achievement email in Spanish without emojis and with marquee boost incentive', () => {
