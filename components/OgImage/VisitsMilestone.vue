@@ -66,12 +66,12 @@ const showRevenue = computed(() => {
     <div class="w-full flex flex-row items-center justify-between gap-[32px] my-auto">
       
       <!-- Left Column: Title & Startup Info -->
-      <div class="w-[650px] min-w-0 flex flex-col items-start justify-center pl-2">
+      <div class="w-[650px] flex flex-col items-start justify-center pl-2">
         <span class="text-[#00D4FF] text-[13px] font-black tracking-[0.25em] uppercase mb-5">
           ¡NUEVO LOGRO DESBLOQUEADO!
         </span>
 
-        <div class="w-full min-w-0 flex flex-row items-center mb-6">
+        <div class="w-full flex flex-row items-center mb-6">
           <div
             class="w-[88px] h-[88px] rounded-[22px] overflow-hidden border border-white/15 bg-[#111622] flex items-center justify-center mr-5 shadow-2xl flex-shrink-0 relative"
           >
@@ -81,7 +81,7 @@ const showRevenue = computed(() => {
             </span>
           </div>
 
-          <h2 class="flex-1 min-w-0 text-white font-extrabold text-[56px] tracking-tight leading-none">
+          <h2 class="w-[520px] text-white font-extrabold text-[50px] tracking-tight leading-none">
             {{ name || 'SaaS' }}
           </h2>
         </div>
