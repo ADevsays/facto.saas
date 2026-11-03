@@ -36,6 +36,7 @@ Cada feature sigue la estructura: **Contrato â†’ Dominio â†’ Validaci�
 - Los componentes y utilidades de media no contienen dominios `*.supabase.co` ni fallbacks con refs de proyecto; al cambiar `SUPABASE_URL`, los badges y logos de OG se resuelven desde el nuevo origen configurado.
 - Los logos y badges se conservan optimizados como WebP en Storage. Al generar una OG con Satori, sus fuentes WebP se adaptan internamente al formato embebible y se reutilizan desde una caché de memoria acotada; las visitas normales no convierten imágenes ni invocan una ruta pública adicional.
 - La OG muestra el logo y el badge almacenados. Si la startup no tiene `logo_url`, renderiza siempre la inicial normalizada de su nombre dentro del contenedor del logo; si el recurso existe pero no puede cargarse, también conserva esa inicial como respaldo visual.
+- Las OG no intentan resolver favicons externos (Google, DuckDuckGo, Icon Horse ni `.ico` heredados): una fuente no persistida equivale a no tener logo y muestra la inicial.
 - El logo, el título y el badge ocupan columnas acotadas y no se superponen incluso con nombres de startup largos.
 - El endpoint servidor del perfil resuelve la URL del badge desde `SUPABASE_URL` junto con el último hito; la página solo entrega al island OG props serializables ya resueltas.
 - Una OG de hito sin `logo_url` muestra la inicial de la startup (o `S` si no hay nombre), no un contenedor vacío.
