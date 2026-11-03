@@ -155,13 +155,15 @@ test('visits milestone OG mirrors the normal startup OG logo handling', () => {
   const milestoneOg = readProjectFile('components/OgImage/VisitsMilestone.vue')
   const profileOg = readProjectFile('components/OgImage/SaasProfile.vue')
   const profilePage = readProjectFile('pages/saas/[slug]/index.vue')
+  const profileApi = readProjectFile('server/api/saas/[slug].get.ts')
 
   assert.match(milestoneOg, /:src="logoUrl"/)
   assert.match(milestoneOg, /badgeUrl\?: string/)
   assert.doesNotMatch(milestoneOg, /qsjnouwunclflruotduc\.supabase\.co/)
   assert.doesNotMatch(milestoneOg, /endsWith\('\.webp'\)/)
   assert.doesNotMatch(profileOg, /endsWith\('\.webp'\)/)
-  assert.match(profilePage, /badgeUrl: supabaseUrl \?/)
+  assert.match(profileApi, /latestMilestoneBadgeUrl = getMilestoneBadgeUrl\(milestone\)/)
+  assert.match(profilePage, /badgeUrl: String\(serverSaas\.latestMilestoneBadgeUrl \|\| ''\)/)
   assert.match(profilePage, /resolveOgLogoUrl\(serverSaas\.logoUrl, serverSaas\.websiteUrl\)/)
 })
 

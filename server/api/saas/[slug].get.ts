@@ -1,5 +1,6 @@
 import { supabase } from '~/server/lib/supabase'
 import { checkAndNotifyAchievement } from '~/modules/achievements/server/services/achievements'
+import { getMilestoneBadgeUrl } from '~/modules/achievements/server/const/thresholds'
 import { isViewTrackingEnabled, recordDailyView } from '~/server/lib/dailyViews'
 import { fetchCachedFinancialSummaries } from '~/server/utils/saas-financials'
 import { getPublicLogoUrl } from '~/server/utils/public-logo'
@@ -194,7 +195,8 @@ export default defineEventHandler(async (event) => {
       factoMessage: dbEntry.facto_message || null,
       faq: Array.isArray(dbEntry.faq) ? dbEntry.faq : [],
       githubRepo: dbEntry.github_repo || null,
-      latestMilestone: null as number | null
+      latestMilestone: null as number | null,
+      latestMilestoneBadgeUrl: null as string | null
     }
 
     const achievements = Array.isArray(dbEntry.saas_achievements) ? dbEntry.saas_achievements : []
@@ -202,7 +204,10 @@ export default defineEventHandler(async (event) => {
       !latest || item.unlocked_at > latest.unlocked_at ? item : latest
     ), null)
     const milestone = parseInt(achievement?.achievement_type, 10)
-    if (milestone > 0) result.latestMilestone = milestone
+    if (milestone > 0) {
+      result.latestMilestone = milestone
+      result.latestMilestoneBadgeUrl = getMilestoneBadgeUrl(milestone)
+    }
 
     const founderData = Array.isArray(dbEntry.founder) ? dbEntry.founder[0] : dbEntry.founder
     if (founderData) {

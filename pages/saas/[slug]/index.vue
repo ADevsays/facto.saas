@@ -104,7 +104,6 @@ useHead(() => {
 })
 
 const localePath = useLocalePath()
-const runtimeConfig = useRuntimeConfig()
 
 function resolveOgLogoUrl(logoUrl?: string | null, websiteUrl?: string | null): string {
   const raw = String(logoUrl || '').trim()
@@ -130,11 +129,10 @@ if (import.meta.server && profileSaas.value) {
   const isMilestoneView = route.query.h === 'mile' && serverSaas.latestMilestone
 
   if (isMilestoneView) {
-    const supabaseUrl = String(runtimeConfig.supabaseUrl || '').replace(/\/$/, '')
     defineOgImageComponent('VisitsMilestone', {
       name: String(serverSaas.name || 'SaaS'),
       logoUrl: resolveOgLogoUrl(serverSaas.logoUrl, serverSaas.websiteUrl),
-      badgeUrl: supabaseUrl ? `${supabaseUrl}/storage/v1/object/public/achievements/v2/badge-${serverSaas.latestMilestone}.png` : '',
+      badgeUrl: String(serverSaas.latestMilestoneBadgeUrl || ''),
       milestone: serverSaas.latestMilestone,
       revenue: String(revenueDisplay.value),
       views: String(viewsDisplay.value),
