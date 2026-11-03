@@ -159,6 +159,8 @@ test('visits milestone OG mirrors the normal startup OG logo handling', () => {
 
   assert.match(milestoneOg, /:src="logoUrl"/)
   assert.match(milestoneOg, /badgeUrl\?: string/)
+  assert.match(milestoneOg, /w-\[650px\] min-w-0/)
+  assert.match(milestoneOg, /w-\[360px\] flex-shrink-0/)
   assert.doesNotMatch(milestoneOg, /qsjnouwunclflruotduc\.supabase\.co/)
   assert.doesNotMatch(milestoneOg, /endsWith\('\.webp'\)/)
   assert.doesNotMatch(profileOg, /endsWith\('\.webp'\)/)

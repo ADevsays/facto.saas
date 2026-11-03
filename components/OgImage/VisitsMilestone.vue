@@ -63,15 +63,15 @@ const showRevenue = computed(() => {
     </div>
 
     <!-- Main Content: Left Column + Right Badge -->
-    <div class="w-full flex flex-row items-center justify-between my-auto">
+    <div class="w-full flex flex-row items-center justify-between gap-[32px] my-auto">
       
       <!-- Left Column: Title & Startup Info -->
-      <div class="flex flex-col items-start justify-center max-w-[620px] pl-2">
+      <div class="w-[650px] min-w-0 flex flex-col items-start justify-center pl-2">
         <span class="text-[#00D4FF] text-[13px] font-black tracking-[0.25em] uppercase mb-5">
           ¡NUEVO LOGRO DESBLOQUEADO!
         </span>
 
-        <div class="flex flex-row items-center mb-6">
+        <div class="w-full min-w-0 flex flex-row items-center mb-6">
           <div
             class="w-[88px] h-[88px] rounded-[22px] overflow-hidden border border-white/15 bg-[#111622] flex items-center justify-center mr-5 shadow-2xl flex-shrink-0 relative"
           >
@@ -81,7 +81,7 @@ const showRevenue = computed(() => {
             <img v-if="logoUrl" :src="logoUrl" width="88" height="88" class="w-full h-full object-cover absolute inset-0" />
           </div>
 
-          <h2 class="text-white font-extrabold text-[64px] tracking-tight leading-none">
+          <h2 class="flex-1 min-w-0 text-white font-extrabold text-[56px] tracking-tight leading-none">
             {{ name || 'SaaS' }}
           </h2>
         </div>
@@ -93,13 +93,13 @@ const showRevenue = computed(() => {
       </div>
 
       <!-- Right Column: Massive Badge -->
-      <div class="flex items-center justify-center">
+      <div class="w-[360px] flex-shrink-0 flex items-center justify-center">
         <img
           v-if="props.badgeUrl"
           :src="props.badgeUrl"
-          width="440"
-          height="406"
-          class="w-[440px] h-[406px]"
+          width="360"
+          height="332"
+          class="w-[360px] h-[332px] object-contain"
         />
       </div>
 
