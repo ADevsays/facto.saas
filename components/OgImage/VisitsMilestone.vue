@@ -14,8 +14,12 @@ const cleanMilestone = computed(() => {
   return props.milestone ? String(props.milestone) : '100'
 })
 
+const config = useRuntimeConfig()
+const supabaseUrl = String(config.supabaseUrl || '').replace(/\/$/, '')
+
 const badgeUrl = computed(() => {
-  return `https://qsjnouwunclflruotduc.supabase.co/storage/v1/object/public/achievements/v2/badge-${cleanMilestone.value}.png`
+  if (!supabaseUrl) return ''
+  return `${supabaseUrl}/storage/v1/object/public/achievements/v2/badge-${cleanMilestone.value}.png`
 })
 
 const formattedMilestoneText = computed(() => {
@@ -109,6 +113,7 @@ const hasValidLogo = computed(() => {
       <!-- Right Column: Massive Badge -->
       <div class="flex items-center justify-center">
         <img
+          v-if="badgeUrl"
           :src="badgeUrl"
           width="440"
           height="406"

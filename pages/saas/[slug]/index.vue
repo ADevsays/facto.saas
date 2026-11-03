@@ -108,7 +108,7 @@ const localePath = useLocalePath()
 function resolveOgLogoUrl(logoUrl?: string | null, websiteUrl?: string | null): string {
   const raw = String(logoUrl || '').trim()
   const clean = raw.toLowerCase().split('?')[0]
-  const isGeneratedFallback = clean.endsWith('.ico') || raw.includes('google.com/s2/favicons') || raw.includes('googleusercontent.com/s2/favicons') || raw.includes('icons.duckduckgo.com/ip3/') || raw.includes('icon.horse/icon/')
+  const isGeneratedFallback = clean.endsWith('.webp') || clean.endsWith('.ico') || raw.includes('google.com/s2/favicons') || raw.includes('googleusercontent.com/s2/favicons') || raw.includes('icons.duckduckgo.com/ip3/') || raw.includes('icon.horse/icon/')
 
   if (!isGeneratedFallback && raw) return raw
 

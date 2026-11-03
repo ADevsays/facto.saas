@@ -13,6 +13,7 @@ export function formatMilestone(value: number): string {
 }
 
 export function getMilestoneBadgeUrl(value: number | string): string {
-  const supabaseUrl = process.env.SUPABASE_URL || 'https://qsjnouwunclflruotduc.supabase.co'
+  const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, '')
+  if (!supabaseUrl) throw new Error('SUPABASE_URL must be configured to resolve achievement badges')
   return `${supabaseUrl}/storage/v1/object/public/achievements/v2/badge-${value}.png`
 }

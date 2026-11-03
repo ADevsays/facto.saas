@@ -15,6 +15,7 @@ Cada feature sigue la estructura: **Contrato â†’ Dominio â†’ Validaci�
 - `public/llms.txt` sigue el formato llmstxt.org y enlaza únicamente recursos de `https://www.factosaas.com`.
 - Los campos de Showcase (propuesta de valor, problema, stack, canales, mensaje, GitHub y FAQ) del perfil público no dependen de una columna `updated_at`.
 - `VIEW_TRACKING_ENABLED=true` habilita los contadores global y por ficha; cualquier otro valor los congela y no dispara hitos/notificaciones de visitas.
+- Ningún host, ref de proyecto o URL de Storage de Supabase se codifica literalmente en código de producción. Las URLs de logos, badges, OG images y archivos públicos se resuelven desde la configuración activa (`SUPABASE_URL` o runtime config); no se permite un fallback que apunte a un proyecto concreto.
 
 ### Dominio
 
@@ -23,6 +24,7 @@ Cada feature sigue la estructura: **Contrato â†’ Dominio â†’ Validaci�
 - "Un país usa `Mejores Software y SaaS en {País} [{año}] | Facto` y toma el nombre oficial, nunca el slug."
 - "La descripción usa la misma intención de búsqueda y no repite el dominio."
 - "La plantilla global no añade una segunda marca a títulos que ya la incluyen."
+- "Una migración de Supabase conserva las rutas de media sin cambios de código: la aplicación toma el origen configurado del entorno, nunca un identificador histórico de proyecto."
 
 ### Validación
 
@@ -31,6 +33,7 @@ Cada feature sigue la estructura: **Contrato â†’ Dominio â†’ Validaci�
 - ✅ El perfil y el sitemap no consultan `saas_entries.updated_at`; usan `published_at` como fecha disponible.
 - ✅ Con `VIEW_TRACKING_ENABLED=false`, las rutas públicas no escriben contadores; con `true`, las visitas no SEO actualizan ambos contadores.
 - ✅ `/llms.txt` contiene el título, resumen, secciones de enlaces y de 10 a 20 fichas SaaS.
+- Los componentes y utilidades de media no contienen dominios `*.supabase.co` ni fallbacks con refs de proyecto; al cambiar `SUPABASE_URL`, los badges y logos de OG se resuelven desde el nuevo origen configurado.
 
 ---
 
