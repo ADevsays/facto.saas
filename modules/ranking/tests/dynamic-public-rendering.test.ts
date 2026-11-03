@@ -160,8 +160,19 @@ test('visits milestone OG mirrors the normal startup OG logo handling', () => {
   assert.doesNotMatch(milestoneOg, /qsjnouwunclflruotduc\.supabase\.co/)
   assert.match(milestoneOg, /return !clean\.endsWith\('\.webp'\) && !clean\.endsWith\('\.ico'\)/)
   assert.match(profileOg, /return !clean\.endsWith\('\.webp'\) && !clean\.endsWith\('\.ico'\)/)
-  assert.match(profilePage, /clean\.endsWith\('\.webp'\) \|\| clean\.endsWith\('\.ico'\)/)
+  assert.match(profilePage, /const isStoredWebp = clean\.endsWith\('\.webp'\)/)
+  assert.match(profilePage, /\/api\/og-logo\?path=/)
   assert.match(profilePage, /resolveOgLogoUrl\(serverSaas\.logoUrl, serverSaas\.websiteUrl\)/)
+})
+
+test('OG logo adapter only converts configured Supabase storage paths and caches PNG output', () => {
+  const adapter = readProjectFile('server/api/og-logo.get.ts')
+
+  assert.match(adapter, /const LOGO_PREFIX = '\/storage\/v1\/object\/public\/saas_logos\/'/)
+  assert.match(adapter, /config\.supabaseUrl/)
+  assert.match(adapter, /sharp\(/)
+  assert.match(adapter, /\.png\(\)/)
+  assert.match(adapter, /s-maxage=31536000/)
 })
 
 test('og-island-compat plugin reconciles legacy nuxt-og-image hash in event.$fetch with Nuxt island hash algorithm', async () => {
