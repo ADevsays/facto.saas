@@ -90,6 +90,7 @@ test('telegram popup opens at the beginning of the ranking with an isolated anim
 test('initial profile stays light and history has a dedicated endpoint', () => {
   const profileEndpoint = readProjectFile('server/api/saas/[slug].get.ts')
   const profilePage = readProjectFile('pages/saas/[slug]/index.vue')
+  const founderPage = readProjectFile('pages/founder/[slug].vue')
   const historyEndpoint = resolve(projectRoot, 'server/api/saas/[slug]/history.get.ts')
 
   assert.match(profileEndpoint, /history: null/)
@@ -103,6 +104,9 @@ test('initial profile stays light and history has a dedicated endpoint', () => {
   assert.match(profileEndpoint, /const showcaseFallbackRes/)
   assert.match(profileEndpoint, /value_proposition, problem_solved, tech_stack, acquisition_channels, facto_message, faq, github_repo/)
   assert.match(profileEndpoint, /showcaseFallbackRes\.error\?\.code === '42703'/)
+  assert.match(founderPage, /useLazyFetch/)
+  assert.doesNotMatch(founderPage, /(?<!Lazy)useFetch/)
+  assert.match(founderPage, /key: \(\) => `founder-profile-\$\{slug\.value\}`/)
 })
 
 test('SaaS SEO uses one brand suffix, the agreed templates and a modification date', () => {

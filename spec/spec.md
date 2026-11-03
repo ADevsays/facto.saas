@@ -82,6 +82,7 @@ El diseÃ±o de Facto es minimalista, oscuro y premium.
 - **Navegación Fluida No Bloqueante**: Las páginas dinámicas (como `/saas/[slug]` y `/founder/[slug]`) **deben** utilizar `useLazyFetch` con key reactiva y renderizar inmediatamente sus respectivos skeletons (`pending`).
 - **Prohibición de `await useFetch` Bloqueante**: Bajo ningún concepto se permite utilizar `await useFetch` en el setup raíz de las páginas que congele la pantalla del usuario antes de transicionar. Tampoco se permite alterar el modo de renderizado de las páginas como parche para resolver errores intermedios.
 - **Validación de transición**: Al navegar entre rutas hacia un perfil SaaS, el skeleton debe aparecer de inmediato, sin exponer el fondo negro global entre la salida de la ruta anterior y la carga del perfil.
+- **Validación de founder**: ✅ `/founder/[slug]` usa `useLazyFetch` con una key reactiva y conserva el skeleton durante la navegación entre founders.
 
 ### Renderizado Público Dinámico y Datos Ligeros
 

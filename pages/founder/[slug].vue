@@ -9,18 +9,22 @@ const slug = computed(() => route.params.slug as string)
 const { t } = useLanguage({ es, en })
 const localePath = useLocalePath()
 
-const asyncData = useFetch<any>(() => `/api/founder/${slug.value}`, {
-  key: `founder-profile-${route.params.slug}`
+const asyncData = await useLazyFetch<any>(() => `/api/founder/${slug.value}`, {
+  key: () => `founder-profile-${slug.value}`,
+  server: true,
+  getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key],
+  onResponseError: ({ response }) => {
+    if (import.meta.server) setResponseStatus(useRequestEvent()!, response.status)
+  }
 })
 const { data, error, pending } = asyncData
 
-if (import.meta.server) {
-  await asyncData
-  if (error.value) {
+watchEffect(() => {
+  if (import.meta.server && error.value) {
     const status = Number((error.value as any).statusCode || (error.value as any).status || 404)
     setResponseStatus(useRequestEvent()!, status >= 400 ? status : 404)
   }
-}
+})
 
 useAppSeo({
   title: () => data.value?.founder?.name 
