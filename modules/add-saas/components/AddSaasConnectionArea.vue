@@ -2,7 +2,7 @@
 import { ref, watch, computed } from 'vue'
 import ProviderTutorial from './ProviderTutorial.vue'
 import AddSaasInput from './AddSaasInput.vue'
-import { resetProviderCredentials } from '../utils/submission'
+import { resetProviderCredentials } from '../utils/providerCredentials'
 import type { PaymentProvider } from '../types'
 
 const props = defineProps<{
