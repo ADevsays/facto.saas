@@ -107,21 +107,14 @@ const localePath = useLocalePath()
 
 function resolveOgLogoUrl(logoUrl?: string | null, websiteUrl?: string | null): string {
   const raw = String(logoUrl || '').trim()
-  if (!raw) return ''
-
   const clean = raw.toLowerCase().split('?')[0]
-  const isIco = clean.endsWith('.ico') || raw.includes('icons.duckduckgo.com/ip3/') || raw.includes('icon.horse/icon/')
-
-  // Google favicon endpoints return a PNG, which Satori can render. They are
-  // valid logo sources for older startups that have not uploaded a logo yet.
-  if (!isIco) return raw
-
-  const site = String(websiteUrl || '').trim()
-  if (!site) return ''
+  if (raw && !clean.endsWith('.ico') && !/(?:google\.com\/s2\/favicons|gstatic\.com\/faviconV2|icons\.duckduckgo\.com\/ip3\/|icon\.horse\/icon\/)/i.test(raw)) return raw
 
   try {
-    const href = new URL(site.startsWith('http') ? site : `https://${site}`).href
-    return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(href)}&sz=128`
+    const site = String(websiteUrl || '').trim()
+    if (!site) return ''
+    const domain = new URL(site.startsWith('http') ? site : `https://${site}`).hostname.replace(/^www\./, '')
+    return `https://t0.gstatic.com/faviconV2?client=SOCIAL&drop_404_icon=true&type=FAVICON&size=128&fallback_opts=TYPE,SIZE&url=https://${domain}`
   } catch {
     return ''
   }

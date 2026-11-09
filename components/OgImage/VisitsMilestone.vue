@@ -79,15 +79,10 @@ const fallbackInitial = computed(() => {
           <div
             class="w-[88px] h-[88px] rounded-[22px] overflow-hidden border border-white/15 bg-[#111622] flex items-center justify-center mr-5 shadow-2xl flex-shrink-0 relative"
           >
-            <img v-if="logoUrl" :src="logoUrl" width="88" height="88" class="w-full h-full object-cover object-center" />
-            <div
-              v-if="!logoUrl"
-              style="width: 88px; height: 88px; display: flex; align-items: center; justify-content: center;"
-            >
-              <span class="font-black text-[#00D4FF]" style="font-size: 42px; line-height: 1;">
-                {{ fallbackInitial }}
-              </span>
+            <div style="position: absolute; top: 18px; left: 0; width: 88px; height: 52px; display: flex; align-items: center; justify-content: center;">
+              <span class="font-black text-[#00D4FF]" style="font-size: 42px; line-height: 42px;">{{ fallbackInitial }}</span>
             </div>
+            <img v-if="logoUrl" :src="logoUrl" width="88" height="88" class="absolute top-0 left-0 w-[88px] h-[88px] object-cover object-center" />
           </div>
 
           <h2 class="w-[520px] text-white font-extrabold text-[50px] tracking-tight leading-none">

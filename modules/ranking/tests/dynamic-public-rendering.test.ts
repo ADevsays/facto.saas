@@ -159,8 +159,11 @@ test('visits milestone OG mirrors the normal startup OG logo handling', () => {
 
   assert.match(milestoneOg, /:src="logoUrl"/)
   assert.match(milestoneOg, /const fallbackInitial = computed/)
-  assert.match(milestoneOg, /v-if="!logoUrl"[\s\S]*?width: 88px; height: 88px; display: flex; align-items: center; justify-content: center;/)
+  assert.match(milestoneOg, /position: absolute; top: 18px; left: 0; width: 88px; height: 52px; display: flex; align-items: center; justify-content: center;/)
+  assert.match(milestoneOg, /<img v-if="logoUrl"[^>]*class="absolute top-0 left-0 w-\[88px\] h-\[88px\]/)
   assert.match(milestoneOg, /\{\{ fallbackInitial \}\}/)
+  assert.match(profileOg, /line-height: 96px; text-align: center;/)
+  assert.match(profileOg, /<img v-if="logoUrl"[^>]*class="absolute top-0 left-0 w-24 h-24/)
   assert.match(milestoneOg, /badgeUrl\?: string/)
   assert.match(milestoneOg, /w-\[650px\] flex flex-col/)
   assert.match(milestoneOg, /w-\[520px\].*text-\[50px\]/)
@@ -171,8 +174,7 @@ test('visits milestone OG mirrors the normal startup OG logo handling', () => {
   assert.match(profileApi, /latestMilestoneBadgeUrl = getMilestoneBadgeUrl\(milestone\)/)
   assert.match(profilePage, /badgeUrl: String\(serverSaas\.latestMilestoneBadgeUrl \|\| ''\)/)
   assert.match(profilePage, /resolveOgLogoUrl\(serverSaas\.logoUrl, serverSaas\.websiteUrl\)/)
-  assert.match(profilePage, /google\.com\/s2\/favicons/)
-  assert.doesNotMatch(profilePage, /t0\.gstatic\.com\/faviconV2/)
+  assert.match(profilePage, /t0\.gstatic\.com\/faviconV2/)
 })
 
 test('Satori adapts configured Supabase WebP media internally without a public conversion route', () => {
