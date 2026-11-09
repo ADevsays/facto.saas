@@ -8,12 +8,14 @@ import StatsDailyViewsCard from './cards/StatsDailyViewsCard.vue'
 import StatsCumulativeViewsCard from './cards/StatsCumulativeViewsCard.vue'
 import StatsCategoriesCard from './cards/StatsCategoriesCard.vue'
 import StatsCountriesCard from './cards/StatsCountriesCard.vue'
+import StatsProvidersCard from './cards/StatsProvidersCard.vue'
 
 defineProps<{
   timeline: StatsOverviewResponse['timeline']
   byCategory: StatsOverviewResponse['byCategory']
   byCountry: StatsOverviewResponse['byCountry']
   summary: StatsOverviewResponse['summary']
+  byProvider: StatsOverviewResponse['byProvider']
 }>()
 </script>
 
@@ -51,6 +53,8 @@ defineProps<{
     <StatsCategoriesCard
       :by-category="byCategory"
     />
+
+    <StatsProvidersCard :providers="byProvider" />
 
     <!-- 7. Evolución de Visitas Acumuladas (3 Cols) -->
     <StatsCumulativeViewsCard

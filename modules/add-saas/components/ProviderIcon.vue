@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  provider: 'stripe' | 'mercadopago' | 'whop' | 'none'
+  provider: 'stripe' | 'mercadopago' | 'whop' | 'conekta' | 'epayco' | 'polar' | 'dodo' | 'paddle' | 'revenuecat' | 'none'
 }>()
 </script>
 
@@ -8,10 +8,10 @@ defineProps<{
   <div
     :class="[
       'provider-icon-square flex items-center justify-center rounded-lg overflow-hidden shrink-0',
-      'w-8 h-8', // Tamaño discreto y simétrico
+    'w-8 h-8',
     ]"
     :style="{
-      backgroundColor: provider === 'stripe' ? '#635BFF' : (provider === 'mercadopago' ? '#00B1EA' : (provider === 'whop' ? '#FF5A1F' : '#27272a'))
+    backgroundColor: provider === 'stripe' ? '#635BFF' : (provider === 'mercadopago' ? '#00B1EA' : (provider === 'whop' ? '#FF5A1F' : '#27272a'))
     }"
   >
     <!-- Logo Stripe -->
@@ -44,6 +44,23 @@ defineProps<{
           alt="Whop" 
           class="w-full h-full object-contain"
         />
+      </div>
+    </template>
+
+    <template v-else-if="provider === 'epayco'">
+      <div class="w-full h-full bg-white flex items-center justify-center p-1">
+        <img src="/logos/epayco.webp" alt="ePayco" class="w-full h-full object-contain" />
+      </div>
+    </template>
+
+    <template v-else-if="provider === 'conekta'">
+      <div class="w-full h-full flex items-center justify-center bg-white">
+        <img src="/logos/conekta.webp" alt="Conekta" class="w-full h-full object-cover" />
+      </div>
+    </template>
+    <template v-else-if="['polar', 'dodo', 'paddle', 'revenuecat'].includes(provider)">
+      <div class="flex h-full w-full items-center justify-center" :class="provider === 'polar' ? 'bg-black' : provider === 'dodo' ? 'bg-[#C6FE1E]' : provider === 'paddle' ? 'bg-[#FFD100]' : 'bg-[#F2545B]'">
+        <img :src="`/logos/${provider}.webp`" :alt="provider" class="h-full w-full object-contain" />
       </div>
     </template>
 

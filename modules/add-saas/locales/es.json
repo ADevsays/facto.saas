@@ -28,6 +28,10 @@
   },
   "provider": {
     "select": "Escoge tu proveedor",
+    "choose": "Selecciona un proveedor de pago",
+    "searchPlaceholder": "Buscar proveedor de pago...",
+    "searchEmpty": "No se encontraron proveedores",
+    "epaycoSecurityWarning": "ePayco no documenta un perfil de solo lectura para estas credenciales. Facto las usa únicamente para consultar tus transacciones e ingresos.",
     "stripeDesc": "Solo Lectura: Clave restringida",
     "mpDesc": "Access Token de producción",
     "whopDesc": "API key de tu Whop Dashboard",
@@ -50,7 +54,12 @@
     "whopCompanyId": "2. Company ID (biz_...)",
     "whopApiKey": "3. Whop API Key",
     "connectMp": "Conectar Mercado Pago",
-    "reconnectMp": "Reconectar Mercado Pago"
+    "reconnectMp": "Reconectar Mercado Pago",
+    "epaycoHistoryOnly": "Consulta el historial de transacciones para calcular ingresos. El MRR no se deduce de los cobros.",
+    "epaycoPublicKey": "PUBLIC_KEY de ePayco",
+    "epaycoPrivateKey": "PRIVATE_KEY de ePayco",
+    "dodoReadOnlyLabel": "API key de solo lectura",
+    "dodoReadOnly": "Crea una key con acceso de lectura para Payments, Refunds y Subscriptions. Deja desactivado el acceso de escritura."
   },
   "footer": {
     "submiting": "Enviando...",
@@ -77,17 +86,17 @@
       "Pégala aquí y no la borres."
     ],
     "stripeLink": "Ir al Dashboard",
-    "mpTitle": "Mercado Pago (Conexión Segura)",
+    "mpTitle": "Mercado Pago · autorización de lectura",
     "mpSteps": [
       "Haz clic en \"Conectar Mercado Pago\"",
       "Inicia sesión y autoriza a Facto",
-      "Verifica permisos de \"Solo Lectura\"",
+      "Facto solicita el alcance OAuth `read`.",
       "El MRR se detectará automáticamente"
     ],
-    "whopTitle": "Whop (Conexión Segura)",
+    "whopTitle": "Whop · API key de solo lectura",
     "whopSteps": [
       "Crea una nueva Company API key.",
-      "Hereda los permisos de Admin para seguridad.",
+      "Limita la key a lectura de pagos (`payment:basic:read`), planes (`plan:basic:read`) y membresías/datos de miembros (`member:basic:read`).",
       "Copia tu company ID (empieza con biz_ en la URL)",
       "Pega ambos valores aquí."
     ],

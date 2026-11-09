@@ -38,6 +38,13 @@ export interface StatCountryPoint {
   totalViews: number
 }
 
+export interface StatProviderPoint {
+  slug: string
+  revenue: number
+  startups: number
+  averageRevenue: number
+}
+
 export interface StatsOverviewResponse {
   summary: {
     totalStartups: number
@@ -66,4 +73,5 @@ export interface StatsOverviewResponse {
   }
   byCategory: StatCategoryPoint[]
   byCountry: StatCountryPoint[]
+  byProvider: StatProviderPoint[]
 }

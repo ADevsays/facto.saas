@@ -115,7 +115,7 @@ function mapRow(row: Record<string, unknown>, searchCategory?: string): SaasList
 }
 
 export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasListItem[]> {
-  const { sort = 'mrr', category, country, countries, q, limit, offset = 0, excludeIncognito = false } = params
+  const { sort = 'mrr', category, country, countries, provider, q, limit, offset = 0, excludeIncognito = false } = params
   const column = SORT_COLUMN[sort]
   const nullsFirst = sort === 'mrr' ? false : false
   const pageSize = normalizePageSize(limit)
@@ -126,7 +126,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
     is_incognito, mrr, revenue, currency, views, published_at,
     categories!saas_categories${category ? '!inner' : ''} ( name, slug ),
     countries!saas_countries${country || countries?.length ? '!inner' : ''} ( name, slug, flag, iso_code ),
-    payment_providers ( name, slug )
+    payment_providers${provider ? '!inner' : ''} ( name, slug )
   `
 
   let query = supabase
@@ -140,6 +140,7 @@ export async function fetchSaasList(params: ListQueryParams = {}): Promise<SaasL
   if (category) query = query.eq('categories.slug', category)
   if (country) query = query.eq('countries.slug', country)
   if (countries?.length) query = query.in('countries.slug', countries)
+  if (provider) query = query.eq('payment_providers.slug', provider)
   if (excludeIncognito) query = query.not('is_incognito', 'is', true)
   if (q?.trim()) {
     const term = `%${q.trim()}%`

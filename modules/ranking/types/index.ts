@@ -1,4 +1,4 @@
-export type PaymentProvider = 'stripe' | 'mercadopago'
+export type PaymentProvider = 'stripe' | 'mercadopago' | 'whop' | 'conekta' | 'epayco' | 'polar' | 'dodo' | 'paddle' | 'revenuecat'
 export type SortOption = 'mrr' | 'latest' | 'views'
 
 export interface SaasListItem {
@@ -35,6 +35,7 @@ export interface ListQueryParams {
   category?: string
   country?: string
   countries?: string[]
+  provider?: PaymentProvider
   q?: string
   limit?: number
   offset?: number

@@ -28,6 +28,10 @@
   },
   "provider": {
     "select": "Choose your provider",
+    "choose": "Choose a payment provider",
+    "searchPlaceholder": "Search payment provider...",
+    "searchEmpty": "No providers found",
+    "epaycoSecurityWarning": "ePayco does not document a read-only profile for these credentials. Facto uses them only to read your transactions and revenue.",
     "stripeDesc": "Read-only: Restricted Key",
     "mpDesc": "Production Access Token",
     "whopDesc": "API key from your Whop Dashboard",
@@ -50,7 +54,12 @@
     "whopCompanyId": "2. Company ID (biz_...)",
     "whopApiKey": "3. Whop API Key",
     "connectMp": "Connect Mercado Pago",
-    "reconnectMp": "Reconnect Mercado Pago"
+    "reconnectMp": "Reconnect Mercado Pago",
+    "epaycoHistoryOnly": "Reads transaction history to calculate revenue. MRR is not inferred from payments.",
+    "epaycoPublicKey": "ePayco PUBLIC_KEY",
+    "epaycoPrivateKey": "ePayco PRIVATE_KEY",
+    "dodoReadOnlyLabel": "Read-only API key",
+    "dodoReadOnly": "Create a key with read access to Payments, Refunds, and Subscriptions. Leave write access disabled."
   },
   "footer": {
     "submiting": "Submitting...",
@@ -77,17 +86,17 @@
       "Paste it here and don't delete it."
     ],
     "stripeLink": "Go to Dashboard",
-    "mpTitle": "Mercado Pago (Secure Connection)",
+    "mpTitle": "Mercado Pago · read authorization",
     "mpSteps": [
       "Click \"Connect Mercado Pago\"",
       "Log in and authorize Facto",
-      "Verify \"Read-Only\" permissions",
+      "Facto requests the OAuth `read` scope.",
       "MRR will be detected automatically"
     ],
-    "whopTitle": "Whop (Secure Connection)",
+    "whopTitle": "Whop · read-only API key",
     "whopSteps": [
       "Create a new Company API key.",
-      "Inherit Admin permissions for security.",
+      "Limit the key to reading payments (`payment:basic:read`), plans (`plan:basic:read`), and memberships/member data (`member:basic:read`).",
       "Copy your company ID (starts with biz_ in the URL)",
       "Paste both values here."
     ],

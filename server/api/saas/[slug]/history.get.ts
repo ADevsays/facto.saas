@@ -1,9 +1,8 @@
 import { supabase } from '~/server/lib/supabase'
-import { stripeService } from '~/modules/add-saas/server/services/stripe.service'
-import { mercadopagoService } from '~/modules/add-saas/server/services/mercadopago.service'
-import { whopService } from '~/modules/add-saas/server/services/whop.service'
+import { getProvider } from '~/modules/add-saas/server/services/provider.factory'
+import type { PaymentProvider } from '~/modules/add-saas/types'
 import { notifyProviderKeyExpiredOnce } from '~/modules/add-saas/server/services/providerKeyExpiredEmail'
-import { buildSaasHistoryChart, getLegacyFinancialSnapshot, hasFinancialHistory, normalizeSaasHistory, summarizeSaasHistory } from '~/server/utils/saas-history'
+import { buildSaasHistoryChart, formatRevenue, getLegacyFinancialSnapshot, hasFinancialHistory, normalizeSaasHistory, summarizeSaasHistory } from '~/server/utils/saas-history'
 
 const HISTORY_TTL_MS = 48 * 60 * 60 * 1000
 
@@ -52,6 +51,7 @@ export default defineEventHandler(async (event) => {
     ? new Date(cacheRow.history_synced_at).getTime()
     : 0
   let history = normalizeSaasHistory(cacheRow?.history_cache)
+  let refreshFailed = false
   const legacySnapshot = getLegacyFinancialSnapshot(cacheRow?.history_cache)
   let lastSyncedAt = cachedAt || null
   const hasEmptyCachedHistory = Boolean(
@@ -72,14 +72,9 @@ export default defineEventHandler(async (event) => {
       const providerRelation = entry.payment_providers as { slug?: string } | Array<{ slug?: string }> | null
       const providerSlug = Array.isArray(providerRelation) ? providerRelation[0]?.slug : providerRelation?.slug
 
-      let rawHistory: any = null
-      if (providerSlug === 'stripe' && stripeService.getHistory) {
-        rawHistory = await stripeService.getHistory(apiKey)
-      } else if (providerSlug === 'mercadopago' && mercadopagoService.getHistory) {
-        rawHistory = await mercadopagoService.getHistory(apiKey)
-      } else if (providerSlug === 'whop' && whopService.getHistory) {
-        rawHistory = await whopService.getHistory(apiKey)
-      }
+      const rawHistory = providerSlug
+        ? await getProvider(providerSlug as PaymentProvider).getHistory(apiKey)
+        : null
 
       history = normalizeSaasHistory(rawHistory)
       if (hasFinancialHistory(history)) {
@@ -92,22 +87,8 @@ export default defineEventHandler(async (event) => {
             history_synced_at: syncedAt,
           }),
           supabase.from('saas_entries').update({
-            mrr: summary.mrr ?? 0,
-            revenue: summary.revenue ?? 0,
-          }).eq('id', entry.id),
-        ])
-        lastSyncedAt = nowMs
-      } else if (rawHistory) {
-        const syncedAt = new Date(nowMs).toISOString()
-        await Promise.all([
-          supabase.from('saas_metrics_cache').upsert({
-            saas_id: entry.id,
-            history_cache: { subscriptions: [], charges: [] },
-            history_synced_at: syncedAt,
-          }),
-          supabase.from('saas_entries').update({
-            mrr: 0,
-            revenue: 0,
+          mrr: summary.mrr,
+          revenue: summary.revenue,
           }).eq('id', entry.id),
         ])
         lastSyncedAt = nowMs
@@ -146,17 +127,31 @@ export default defineEventHandler(async (event) => {
         }
       }
       console.error('[saas history] Unable to refresh provider history:', error)
+      refreshFailed = true
     }
   }
 
-  const summary = summarizeSaasHistory(history, fallbackMrr ?? 0)
-  const effectiveRevenue = summary.revenue ?? (persistedRevenue !== null && persistedRevenue >= 0 ? persistedRevenue : 0)
+  if (refreshFailed) {
+    const summary = summarizeSaasHistory(history, fallbackMrr)
+    const revenue = summary.revenue ?? persistedRevenue
+    return {
+      history: buildSaasHistoryChart(history, nowMs),
+      lastSyncedAt,
+      mrr: summary.mrr,
+      revenue,
+      formattedRevenue: formatRevenue(revenue),
+      keyStatus: 'error',
+    }
+  }
+
+  const summary = summarizeSaasHistory(history, fallbackMrr)
+  const effectiveRevenue = summary.revenue ?? (persistedRevenue !== null && persistedRevenue >= 0 ? persistedRevenue : null)
   return {
     history: buildSaasHistoryChart(history, nowMs),
     lastSyncedAt,
-    mrr: summary.mrr ?? 0,
+    mrr: summary.mrr,
     revenue: effectiveRevenue,
-    formattedRevenue: `$${Math.round(effectiveRevenue)}`,
+    formattedRevenue: formatRevenue(effectiveRevenue),
     keyStatus: 'ok',
   }
 })

@@ -108,12 +108,43 @@ export function useSaasViewMeta() {
     }
   }
 
+  function getProviderMeta(slug: string, locale = 'es'): ViewMeta {
+    const providers: Record<string, { es: string; en: string }> = {
+      stripe: { es: 'Stripe', en: 'Stripe' },
+      mercadopago: { es: 'Mercado Pago', en: 'Mercado Pago' },
+      whop: { es: 'Whop', en: 'Whop' },
+      conekta: { es: 'Conekta', en: 'Conekta' },
+      polar: { es: 'Polar', en: 'Polar' },
+      dodo: { es: 'Dodo Payments', en: 'Dodo Payments' },
+      paddle: { es: 'Paddle', en: 'Paddle' },
+      revenuecat: { es: 'RevenueCat', en: 'RevenueCat' }
+    }
+    const providerName = providers[slug]?.[locale === 'en' ? 'en' : 'es'] || slug
+    const titleStart = locale === 'en' ? 'Startups using' : 'Startups que usan'
+    const fullTitle = `${titleStart} ${providerName}`
+    const year = new Date().getFullYear()
+    const description = locale === 'en'
+      ? `Explore SaaS startups using ${providerName}, with verified revenue and monthly recurring revenue on Facto.`
+      : `Explora startups SaaS que usan ${providerName}, con ingresos y MRR verificados en Facto.`
+    return {
+      titleStart,
+      titleHighlight: providerName,
+      fullTitle,
+      description,
+      seoTitle: locale === 'en'
+        ? `SaaS Startups Using ${providerName} [${year}] | Facto`
+        : `Startups SaaS que usan ${providerName} [${year}] | Facto`,
+      seoDescription: description
+    }
+  }
+
   function getActiveMeta(params: {
     categorySlug?: string | null
     categoryName?: string | null
     countrySlug?: string | null
     countryName?: string | null
     continentSlug?: string | null
+    providerSlug?: string | null
     locale?: string
   }): ViewMeta {
     const locale = params.locale || 'es'
@@ -123,6 +154,8 @@ export function useSaasViewMeta() {
     const hasCategory = !!params.categorySlug && params.categorySlug !== 'all'
     const hasCountry = !!params.countrySlug && params.countrySlug !== 'all' && params.countrySlug !== 'global'
     const hasContinent = !!params.continentSlug
+
+    if (params.providerSlug) return getProviderMeta(params.providerSlug, locale)
 
     if (hasCategory && hasCountry) {
       const catMeta = getCategoryMeta(params.categorySlug!, params.categoryName, locale)
@@ -182,6 +215,7 @@ export function useSaasViewMeta() {
     getCategoryMeta,
     getCountryMeta,
     getContinentMeta,
+    getProviderMeta,
     getActiveMeta
   }
 }

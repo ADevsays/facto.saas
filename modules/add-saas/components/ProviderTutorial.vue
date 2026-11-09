@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{
-  provider: 'stripe' | 'mercadopago' | 'whop' | 'none' | null
+  provider: 'stripe' | 'mercadopago' | 'whop' | 'conekta' | 'epayco' | 'polar' | 'dodo' | 'paddle' | 'revenuecat' | 'none' | null
 }>()
 
 import es from '../locales/es.json'
@@ -26,6 +26,12 @@ const tutorials = computed(() => ({
     linkText: t.value.tutorial.whopLink,
     link: 'https://whop.com/dashboard/developer'
   },
+  conekta: { title: 'Conekta · llave privada de solo lectura', steps: ['Crea una llave privada de producción y habilita solo `orders:read`, `charges:read`, `customers:read`, `subscriptions:read` y `plans:read`.', 'No habilites permisos `:write`; pega la llave privada generada.'], linkText: 'Abrir llaves de API', link: 'https://panel.conekta.com/developers' },
+  epayco: { title: 'ePayco · credenciales API', steps: ['Pega tu PUBLIC_KEY y PRIVATE_KEY de producción.', 'ePayco no documenta un perfil de solo lectura para este acceso. Facto lo usa únicamente para consultar transacciones e ingresos.', 'La API permite importar transacciones históricas. El MRR no se infiere de los pagos.'], linkText: 'Abrir llaves API', link: 'https://dashboard.epayco.co/' },
+  polar: { title: 'Polar · token de organización de solo lectura', steps: ['Crea un token con los permisos `orders:read` y `subscriptions:read`.', 'Pega el token de acceso de la organización.'], linkText: 'Abrir Polar', link: 'https://polar.sh/dashboard' },
+  dodo: { title: 'Dodo Payments · API key de solo lectura', steps: ['Crea una API key nueva y habilita acceso de lectura para Payments, Refunds y Subscriptions.', 'Deja desactivado el acceso de escritura y pega la key aquí.'], linkText: 'Abrir API keys', link: 'https://app.dodopayments.com/developer/api-keys' },
+  paddle: { title: 'Paddle · API key de solo lectura', steps: ['Crea una API key con `transaction.read`, `subscription.read` y `adjustment.read`.', 'Pega la API key. Facto no necesita permisos de escritura.'], linkText: 'Abrir API keys', link: 'https://vendors.paddle.com/authentication-v2' },
+  revenuecat: { title: 'RevenueCat · clave V2 de solo lectura', steps: ['Crea una clave secreta V2 con `charts_metrics:overview:read`.', 'Pega el ID del proyecto y la clave.'], linkText: 'Abrir RevenueCat', link: 'https://app.revenuecat.com/settings/api-keys' },
   none: {
     title: t.value.tutorial.noneTitle,
     steps: t.value.tutorial.noneSteps,
@@ -52,6 +58,7 @@ const current = computed(() => props.provider ? tutorials.value[props.provider] 
           v-if="current.link" 
           :href="current.link" 
           target="_blank" 
+          rel="noopener noreferrer"
           class="text-[10px] font-sans font-bold uppercase text-white/40 hover:text-[#00D4FF] transition-colors flex items-center gap-1"
         >
           {{ current.linkText }}

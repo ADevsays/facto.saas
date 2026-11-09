@@ -65,6 +65,7 @@ const { stats, pending, error, refresh } = await useStatsData()
           :summary="stats.summary"
           :by-category="stats.byCategory"
           :by-country="stats.byCountry"
+          :by-provider="stats.byProvider"
         />
       </template>
     </div>

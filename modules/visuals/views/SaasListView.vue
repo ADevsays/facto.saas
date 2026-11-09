@@ -26,6 +26,11 @@ const { sort, sortItems } = useSortFilter()
 const { categories, fetchCategories } = useCategories()
 const { countries, fetchCountries } = useCountries()
 const { locale } = useI18n()
+const route = useRoute()
+const PROVIDER_NAMES: Record<string, string> = { stripe: 'Stripe', mercadopago: 'Mercado Pago', whop: 'Whop' }
+const isProviderRoute = computed(() => route.path.includes('/saas/proveedor/') || route.path.includes('/saas/provider/'))
+const selectedProvider = computed(() => isProviderRoute.value ? String(route.params.slug || '') : undefined)
+const currentProviderName = computed(() => PROVIDER_NAMES[selectedProvider.value || ''] || selectedProvider.value || null)
 
 
 const currentCategoryName = computed(() => {
@@ -54,11 +59,12 @@ const catalogQuery = computed(() => ({
   sort: sort.value,
   category: selectedCategory.value,
   country: selectedCountry.value,
+  provider: selectedProvider.value,
   countries: isOnContinentRoute.value && !selectedCountry.value ? continent.value?.countrySlugs.join(',') : undefined,
 }))
 const catalogFetchKey = computed(() => {
-  const { sort: s, category: cat, country: c, countries: cs, limit } = catalogQuery.value
-  return `facto-saas-catalog:${s || 'latest'}:${cat || 'all'}:${c || 'all'}:${cs || 'all'}:${limit}`
+  const { sort: s, category: cat, country: c, countries: cs, provider: p, limit } = catalogQuery.value
+  return `facto-saas-catalog:${s || 'latest'}:${cat || 'all'}:${c || 'all'}:${cs || 'all'}:${p || 'all'}:${limit}`
 })
 
 const { data, pending, error } = useLazyFetch<SaasListItem[]>('/api/ranking/list', {
@@ -224,9 +230,10 @@ onUnmounted(() => {
 
     <div class="w-full max-w-5xl">
       <SaasBreadcrumb 
-        :name="currentCountryName || currentCategoryName || currentContinentName" 
+      :name="currentProviderName || currentCountryName || currentCategoryName || currentContinentName"
         :is-category="!!currentCategoryName && !currentCountryName" 
         :is-country="!!currentCountryName || !!currentContinentName" 
+      :is-provider="isProviderRoute"
       />
     </div>
 

@@ -65,7 +65,7 @@ function next() {
 
         <div class="flex flex-col gap-2 shrink-0">
           <label class="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-neutral-400 text-center">País</label>
-          <CountrySelect v-model="form.countrySlug" />
+          <CountrySelect v-model="form.countrySlug" for-adding />
         </div>
       </div>
 

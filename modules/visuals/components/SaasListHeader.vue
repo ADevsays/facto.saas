@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute } from '#app'
 import { useListHeaderFilters } from '../composables/useListHeaderFilters'
 import { useCountries } from '~/composables/useCountries'
 import SaasCategoryDropdown from './SaasCategoryDropdown.vue'
 import SaasCountryDropdown from './SaasCountryDropdown.vue'
 import SaasSortDropdown from './SaasSortDropdown.vue'
+import ProviderIcon from '~/modules/add-saas/components/ProviderIcon.vue'
 
 import es from '../locales/es.json'
 import en from '../locales/en.json'
 
 const { t } = useLanguage({ es, en })
 const { locale } = useI18n()
+const route = useRoute()
 const { getActiveMeta } = useSaasViewMeta()
 
 const {
@@ -36,6 +39,8 @@ const {
 const { countries } = useCountries()
 const { isOnContinentRoute, continentSlug, continent } = useCountryFilter()
 const { showAds } = useAdPreferences()
+const isProviderPage = computed(() => route.path.includes('/saas/proveedor/') || route.path.includes('/saas/provider/'))
+const providerSlug = computed(() => isProviderPage.value ? String(route.params.slug || '') : null)
 
 const displayedCountries = computed(() => {
   let list = countries.value
@@ -75,6 +80,7 @@ const activeMeta = computed(() => {
     countrySlug: country.value,
     countryName: currentCountryName.value,
     continentSlug: isOnContinentRoute.value ? continentSlug.value : null,
+    providerSlug: providerSlug.value,
     locale: locale.value
   })
 })
@@ -129,13 +135,20 @@ onUnmounted(() => {
   >
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-40">
       <!-- Title -->
-      <h1 class="font-serif text-3xl sm:text-4xl lg:text-[38px] xl:text-[42px] font-normal leading-tight tracking-tight text-white min-w-0 flex-1 break-words whitespace-normal">
-        {{ activeMeta.titleStart }} <span class="facto-effect">{{ activeMeta.titleHighlight }}</span>
-      </h1>
+      <div class="min-w-0 flex-1 flex items-center gap-3">
+        <ProviderIcon
+          v-if="providerSlug"
+          :provider="providerSlug as 'stripe' | 'mercadopago' | 'whop' | 'conekta' | 'epayco' | 'polar' | 'dodo' | 'paddle' | 'revenuecat'"
+          class="!w-10 !h-10 sm:!w-12 sm:!h-12"
+        />
+        <h1 class="font-serif text-3xl sm:text-4xl lg:text-[38px] xl:text-[42px] font-normal leading-tight tracking-tight text-white min-w-0 break-words whitespace-normal">
+          {{ activeMeta.titleStart }} <span class="facto-effect">{{ activeMeta.titleHighlight }}</span>
+        </h1>
+      </div>
 
       <!-- Filters and Sorting Dropdowns -->
       <div id="saas-filters-container" class="flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0 relative z-40 mt-3 lg:mt-0">
-        <SaasCategoryDropdown 
+        <SaasCategoryDropdown v-if="!isProviderPage"
           :is-open="isCategoryOpen"
           :current-label="currentCategoryLabel"
           :options="categoryOptions"
@@ -145,7 +158,7 @@ onUnmounted(() => {
           @select="selectCategoryOption"
         />
 
-        <SaasCountryDropdown 
+        <SaasCountryDropdown v-if="!isProviderPage"
           :is-open="isCountryOpen"
           :active-value="country"
           :countries="displayedCountries"

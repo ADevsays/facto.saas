@@ -9,6 +9,8 @@ export interface SaasHistoryData {
     amount: number
     created: number
   }>
+  mrrSnapshot?: number | null
+  revenueTotal?: number | null
 }
 
 export interface SaasHistorySummary {
@@ -21,7 +23,7 @@ export type SaasHistoryTimeframe = '7d' | '30d' | '60d' | 'all'
 
 export interface SaasHistoryPoint {
   at: number
-  mrr: number
+  mrr: number | null
   revenue: number
 }
 
@@ -77,17 +79,22 @@ export function normalizeSaasHistory(value: unknown): SaasHistoryData | null {
         return [{ created, amount }]
       })
     : []
+  const mrrSnapshot = raw.mrrSnapshot === null || raw.mrrSnapshot === undefined ? undefined : Number(raw.mrrSnapshot)
+  const revenueTotal = raw.revenueTotal === null || raw.revenueTotal === undefined ? undefined : Number(raw.revenueTotal)
 
-  return subscriptions.length > 0 || charges.length > 0
-    ? { subscriptions, charges }
-    : null
+  // Empty arrays and provider-level aggregate metrics are verified data, not
+  // unavailable history.
+  if (!Array.isArray(raw.subscriptions) && !Array.isArray(raw.charges) && !Number.isFinite(mrrSnapshot) && !Number.isFinite(revenueTotal)) return null
+  return {
+    ...(Array.isArray(raw.subscriptions) ? { subscriptions } : {}),
+    ...(Array.isArray(raw.charges) ? { charges } : {}),
+    ...(Number.isFinite(mrrSnapshot) ? { mrrSnapshot } : {}),
+    ...(Number.isFinite(revenueTotal) ? { revenueTotal } : {}),
+  }
 }
 
 export function hasFinancialHistory(history: SaasHistoryData | null | undefined): boolean {
-  return Boolean(
-    (Array.isArray(history?.subscriptions) && history.subscriptions.length > 0)
-    || (Array.isArray(history?.charges) && history.charges.length > 0),
-  )
+  return Boolean(history && (Array.isArray(history.subscriptions) || Array.isArray(history.charges) || Number.isFinite(history.mrrSnapshot) || Number.isFinite(history.revenueTotal)))
 }
 
 export function formatRevenue(value: number | null): string | null {
@@ -102,11 +109,11 @@ export function summarizeSaasHistory(
   fallbackMrr: number | null,
   nowSec = Math.floor(Date.now() / 1000),
 ): SaasHistorySummary {
-  let mrr = fallbackMrr
+  let mrr = history?.mrrSnapshot ?? fallbackMrr
   const subscriptions = Array.isArray(history?.subscriptions) ? history.subscriptions : []
   const charges = Array.isArray(history?.charges) ? history.charges : []
 
-  if (subscriptions.length > 0) {
+  if (Array.isArray(history?.subscriptions)) {
     mrr = Math.round(subscriptions.reduce((sum, subscription) => {
       const active = subscription.created <= nowSec
         && (subscription.canceledAt === null || subscription.canceledAt > nowSec)
@@ -118,7 +125,7 @@ export function summarizeSaasHistory(
     (sum, charge) => sum + (Number(charge.amount) || 0),
     0,
   ))
-  const revenue = chargedRevenue > 0 ? chargedRevenue : null
+  const revenue = Array.isArray(history?.charges) ? chargedRevenue : (history?.revenueTotal ?? null)
 
   return {
     mrr,
@@ -133,6 +140,8 @@ export function buildSaasHistoryChart(
 ): SaasHistoryChart | null {
   if (!hasFinancialHistory(history)) return null
 
+  if (!Array.isArray(history?.subscriptions) && !Array.isArray(history?.charges)) return null
+
   const subscriptions = history?.subscriptions || []
   const charges = history?.charges || []
   const oldest = Math.min(nowMs, ...subscriptions.map(item => item.created * 1000), ...charges.map(item => item.created * 1000))
@@ -145,13 +154,13 @@ export function buildSaasHistoryChart(
       const at = nowMs - range * 86_400_000 * (1 - index / 9)
       const atSec = Math.floor(at / 1000)
       const fromSec = atSec - Math.floor(stepMs / 1000)
-      const mrr = subscriptions.reduce((sum, item) => (
+      const mrr = Array.isArray(history?.subscriptions) ? subscriptions.reduce((sum, item) => (
         item.created <= atSec && (item.canceledAt === null || item.canceledAt > atSec) ? sum + item.mrr : sum
-      ), 0)
+      ), 0) : null
       const revenue = charges.reduce((sum, item) => (
         item.created > fromSec && item.created <= atSec ? sum + item.amount : sum
       ), 0)
-      return { at, mrr: Math.round(mrr), revenue: Math.round(revenue) }
+      return { at, mrr: mrr === null ? null : Math.round(mrr), revenue: Math.round(revenue) }
     })
     return [timeframe, points]
   })) as SaasHistoryChart

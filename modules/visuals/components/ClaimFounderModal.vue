@@ -55,7 +55,7 @@ const twitterUrl = ref('')
 const linkedinUrl = ref('')
 const instagramUrl = ref('')
 
-const provider = ref<'whop' | 'stripe' | 'mercadopago' | 'none'>('stripe')
+const provider = ref<'whop' | 'stripe' | 'mercadopago' | 'conekta' | 'epayco' | 'polar' | 'dodo' | 'paddle' | 'revenuecat' | 'none'>('stripe')
 const apiKey = ref('')
 const detectedMrr = ref<number | null>(null)
 

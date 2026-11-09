@@ -159,11 +159,12 @@ export default defineEventHandler(async (event) => {
         const history = await service.getHistory(body.providerKey)
         if (history) {
           let realAllTimeRevenue = 0
-          let mrrVal = pData.mrr ?? 0
+          let mrrVal = history.mrrSnapshot ?? pData.mrr ?? 0
 
           if (history.charges?.length) {
             realAllTimeRevenue = history.charges.reduce((sum: number, c: any) => sum + c.amount, 0)
           }
+          if (Number.isFinite(history.revenueTotal)) realAllTimeRevenue = Number(history.revenueTotal)
           if (history.subscriptions?.length) {
             const nowSec = Math.floor(Date.now() / 1000)
             let currentMrr = 0

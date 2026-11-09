@@ -2,9 +2,11 @@
 import { ref, watch, computed } from 'vue'
 import ProviderTutorial from './ProviderTutorial.vue'
 import AddSaasInput from './AddSaasInput.vue'
+import { resetProviderCredentials } from '../utils/submission'
+import type { PaymentProvider } from '../types'
 
 const props = defineProps<{
-  provider: 'stripe' | 'mercadopago' | 'whop' | 'none' | null
+  provider: PaymentProvider | 'none' | null
   detectedMrr: number | null
   isMpConnecting: boolean
   openMpAuth: () => void
@@ -22,11 +24,25 @@ const stripeProductId = ref('')
 const stripeProducts = ref<{id: string, name: string}[]>([])
 const isLoadingStripeProducts = ref(false)
 
+watch(() => props.provider, (nextProvider, previousProvider) => {
+  if (!previousProvider || !nextProvider || nextProvider === previousProvider) return
+  const cleared = resetProviderCredentials(previousProvider, nextProvider)
+  rawApiKey.value = cleared.rawApiKey
+  companyId.value = cleared.companyId
+  stripeProductId.value = cleared.stripeProductId
+  stripeProducts.value = cleared.stripeProducts
+  apiKey.value = ''
+})
+
 watch([rawApiKey, companyId, stripeProductId], ([newRaw, newComp, newProd]) => {
   if (props.provider === 'whop' && newComp.trim()) {
     apiKey.value = `${newComp.trim()}:${newRaw.trim()}`
   } else if (props.provider === 'stripe' && newProd.trim()) {
     apiKey.value = `${newProd.trim()}:${newRaw.trim()}`
+  } else if (props.provider === 'revenuecat') {
+    apiKey.value = JSON.stringify({ projectId: newComp.trim(), key: newRaw.trim() })
+  } else if (props.provider === 'epayco') {
+    apiKey.value = JSON.stringify({ publicKey: newComp.trim(), privateKey: newRaw.trim() })
   } else {
     apiKey.value = newRaw.trim()
   }
@@ -48,6 +64,22 @@ watch(apiKey, (newVal) => {
     const parts = newVal.split(':')
     stripeProductId.value = parts[0]
     rawApiKey.value = parts.slice(1).join(':')
+  } else if (props.provider === 'revenuecat' && newVal.startsWith('{')) {
+    try {
+      const credentials = JSON.parse(newVal)
+      companyId.value = credentials.projectId || ''
+      rawApiKey.value = credentials.key || ''
+    } catch {
+      rawApiKey.value = newVal
+    }
+  } else if (props.provider === 'epayco' && newVal.startsWith('{')) {
+    try {
+      const credentials = JSON.parse(newVal)
+      companyId.value = credentials.publicKey || ''
+      rawApiKey.value = credentials.privateKey || ''
+    } catch {
+      rawApiKey.value = newVal
+    }
   } else if (rawApiKey.value !== newVal) {
     rawApiKey.value = newVal
   }
@@ -159,6 +191,37 @@ watch(rawApiKey, (newVal) => {
         </svg>
         {{ isMpConnecting ? t.connection.connecting : (detectedMrr !== null ? t.connection.reconnectMp : t.connection.connectMp) }}
       </button>
+    </div>
+    <div v-else-if="provider === 'conekta' || provider === 'polar' || provider === 'paddle'" class="flex flex-col gap-2">
+      <AddSaasInput
+        v-model="rawApiKey"
+        :label="provider === 'conekta' ? 'Llave privada de solo lectura' : provider === 'polar' ? 'Token de organización (solo lectura)' : 'API key con permisos .read'"
+        :placeholder="provider === 'conekta' ? 'key_…' : provider === 'polar' ? 'polar_oat_…' : 'pdl_…'"
+        type="password"
+        autocomplete="new-password"
+      />
+    </div>
+    <div v-else-if="provider === 'revenuecat'" class="flex flex-col gap-2">
+      <AddSaasInput v-model="companyId" label="Project ID" type="text" placeholder="proj…" autocomplete="off" />
+      <AddSaasInput v-model="rawApiKey" label="Clave secreta V2 · solo lectura" type="password" placeholder="sk_…" autocomplete="new-password" />
+    </div>
+    <div v-else-if="provider === 'epayco'" class="flex flex-col gap-2">
+      <AddSaasInput v-model="companyId" :label="t.connection.epaycoPublicKey" type="text" placeholder="PUBLIC_KEY" autocomplete="off" />
+      <AddSaasInput v-model="rawApiKey" :label="t.connection.epaycoPrivateKey" type="password" placeholder="PRIVATE_KEY" autocomplete="new-password" />
+      <p class="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs leading-relaxed text-neutral-300">
+        {{ t.provider.epaycoSecurityWarning }}
+      </p>
+      <p class="px-1 text-xs leading-relaxed text-neutral-400">{{ t.connection.epaycoHistoryOnly }}</p>
+    </div>
+    <div v-else-if="provider === 'dodo'" class="flex flex-col gap-2">
+      <AddSaasInput
+        v-model="rawApiKey"
+        :label="t.connection.dodoReadOnlyLabel"
+        type="password"
+        placeholder="dodo_live_…"
+        autocomplete="new-password"
+      />
+      <p class="px-1 text-xs leading-relaxed text-neutral-400">{{ t.connection.dodoReadOnly }}</p>
     </div>
   </div>
 </template>

@@ -1,4 +1,4 @@
-export type PaymentProvider = 'stripe' | 'mercadopago' | 'whop'
+export type PaymentProvider = 'stripe' | 'mercadopago' | 'whop' | 'conekta' | 'epayco' | 'polar' | 'dodo' | 'paddle' | 'revenuecat'
 
 export interface ProviderValidationResult {
   valid: boolean
@@ -10,7 +10,12 @@ export interface ProviderValidationResult {
 export interface PaymentProviderService {
   validate(apiKey: string): Promise<ProviderValidationResult>
   getMrr(apiKey: string): Promise<ProviderValidationResult>
-  getHistory?(apiKey: string): Promise<any>
+  getHistory(apiKey: string): Promise<{
+    subscriptions?: Array<{ created: number; status?: string; canceledAt: number | null; mrr: number }>
+    charges?: Array<{ id?: string; amount: number; created: number }>
+    mrrSnapshot?: number | null
+    revenueTotal?: number | null
+  }>
 }
 
 export interface SaasSubmission {

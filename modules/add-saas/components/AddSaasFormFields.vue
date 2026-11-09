@@ -149,7 +149,7 @@ function handleFileSelect(event: Event) {
 
       <div class="flex flex-col gap-2 shrink-0">
         <label class="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-neutral-500 text-center">{{ t.fields.country }}</label>
-        <CountrySelect v-model="form.countrySlug" />
+        <CountrySelect v-model="form.countrySlug" :for-adding="!form.id" />
       </div>
     </div>
 

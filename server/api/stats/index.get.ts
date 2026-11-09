@@ -1,10 +1,11 @@
 import { supabase } from '~/server/lib/supabase'
-import { getDailyViewsMap } from '~/server/lib/dailyViews'
+import { getDailyViewsMap, getTodayDateString } from '~/server/lib/dailyViews'
 import type {
   StatDayPoint,
   StatWeekPoint,
   StatCategoryPoint,
   StatCountryPoint,
+  StatProviderPoint,
   StatsOverviewResponse
 } from '~/modules/stats/types'
 
@@ -13,6 +14,7 @@ export type {
   StatWeekPoint,
   StatCategoryPoint,
   StatCountryPoint,
+  StatProviderPoint,
   StatsOverviewResponse
 }
 
@@ -109,6 +111,7 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
         id, name, slug, mrr, revenue, currency, views, published_at, is_incognito,
         categories!saas_categories ( name, slug ),
         countries!saas_countries ( id, name, slug, flag, iso_code ),
+        payment_providers ( slug ),
         saas_metrics_cache ( created_at, history_synced_at )
       `)
       .eq('status', 'published')
@@ -147,6 +150,7 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
       slug: row.slug,
       mrr,
       revenue,
+      provider: (Array.isArray(row.payment_providers) ? row.payment_providers[0]?.slug : row.payment_providers?.slug) || null,
       mrrDate,
       views,
       date: validDate,
@@ -172,6 +176,7 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
 
   const categoryMap = new Map<string, StatCategoryPoint>()
   const countryMap = new Map<string, StatCountryPoint>()
+  const providerMap = new Map<string, StatProviderPoint>()
   const dailyAdditionsMap = new Map<string, { startups: number; mrr: number; revenue: number }>()
 
   for (const item of rows) {
@@ -182,6 +187,18 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
       if (item.revenue) totalRevenue += item.revenue
     }
     totalViews += item.views
+
+    if (item.provider) {
+      const existing = providerMap.get(item.provider) || {
+        slug: item.provider,
+        revenue: 0,
+        startups: 0,
+        averageRevenue: 0
+      }
+      existing.startups++
+      existing.revenue += item.revenue
+      providerMap.set(item.provider, existing)
+    }
 
     // Category aggregation
     if (item.category) {
@@ -355,9 +372,14 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
 
   const byCategory = Array.from(categoryMap.values()).sort((a, b) => b.totalMrr - a.totalMrr || b.count - a.count)
   const byCountry = Array.from(countryMap.values()).sort((a, b) => b.totalMrr - a.totalMrr || b.count - a.count)
+  const byProvider = Array.from(providerMap.values())
+    .map(provider => ({ ...provider, averageRevenue: provider.startups ? Math.round(provider.revenue / provider.startups) : 0 }))
+    .sort((a, b) => b.revenue - a.revenue || b.startups - a.startups || a.slug.localeCompare(b.slug))
 
   const todayBucket = dailyAdditionsMap.get(todayStr) || { startups: 0, mrr: 0, revenue: 0 }
-  const todayViewsAdded = computedDailyViewsMap.get(todayStr) || 0
+  // Daily view rows are keyed in the platform's canonical America/Bogota day,
+  // even when the rest of this response is requested in another timezone.
+  const todayViewsAdded = dailyViewsMap.get(getTodayDateString('America/Bogota')) || 0
 
   return {
     summary: {
@@ -386,6 +408,7 @@ export default defineEventHandler(async (event): Promise<StatsOverviewResponse> 
       weekly
     },
     byCategory,
-    byCountry
+    byCountry,
+    byProvider
   }
 })

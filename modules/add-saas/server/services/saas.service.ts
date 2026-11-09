@@ -10,12 +10,13 @@ export interface ProviderData {
   mrr: number | null
   currency: string
   hasProvider: boolean
+  clearProvider: boolean
 }
 
 export async function processProviderInfo(body: SaasSubmission, event: any): Promise<ProviderData> {
   const hasProvider = !!(body.providerSlug && body.providerKey)
   if (!hasProvider) {
-    return { providerId: null, providerKeyEncrypted: null, mrr: null, currency: 'USD', hasProvider: false }
+    return { providerId: null, providerKeyEncrypted: null, mrr: null, currency: 'USD', hasProvider: false, clearProvider: false }
   }
 
   const { data: providerRow } = await supabase
@@ -25,22 +26,26 @@ export async function processProviderInfo(body: SaasSubmission, event: any): Pro
     .single()
 
   if (!providerRow) {
-    return { providerId: null, providerKeyEncrypted: null, mrr: null, currency: 'USD', hasProvider: false }
+    return { providerId: null, providerKeyEncrypted: null, mrr: null, currency: 'USD', hasProvider: false, clearProvider: true }
   }
 
   let mrr: number | null = null
   let currency = 'USD'
 
+  let valid = false
   try {
     if (body.providerSlug === 'mercadopago' && body.providerKey === 'MERCADO_PAGO_OAUTH_TOKEN') {
       const cookieMrr = getCookie(event, 'mp_verified_mrr')
-      if (cookieMrr) {
-        mrr = parseInt(cookieMrr)
+      const parsedMrr = cookieMrr ? Number(cookieMrr) : Number.NaN
+      if (Number.isFinite(parsedMrr) && parsedMrr >= 0) {
+        mrr = parsedMrr
+        valid = true
       }
     } else {
       const service = getProvider(body.providerSlug!)
       const result = await service.getMrr(body.providerKey!)
       if (result.valid) {
+        valid = true
         mrr = result.mrr
         currency = result.currency
       }
@@ -49,12 +54,20 @@ export async function processProviderInfo(body: SaasSubmission, event: any): Pro
     console.error('[Publish] Failed to verify MRR:', e)
   }
 
+  // A provider association means its credential was verified. Rejected keys
+  // are never encrypted or stored as a connection; publication then follows
+  // the normal no-provider review path.
+  if (!valid) {
+    return { providerId: null, providerKeyEncrypted: null, mrr: null, currency: 'USD', hasProvider: false, clearProvider: true }
+  }
+
   return {
     providerId: providerRow.id,
     providerKeyEncrypted: encryptProviderKey(body.providerKey!),
     mrr,
     currency,
-    hasProvider: true
+    hasProvider: true,
+    clearProvider: false
   }
 }
 
@@ -86,10 +99,12 @@ export async function upsertSaasEntry(
     founder_email: body.founderEmail?.trim().toLowerCase() || null,
     startup_type: startupType,
     is_incognito: isIncognito,
-    ...(pData.mrr !== null && { mrr: pData.mrr, revenue: 0 }),
+    ...(pData.clearProvider
+      ? { mrr: null, revenue: null, provider_id: null, provider_key_encrypted: null }
+      : pData.mrr !== null && { mrr: pData.mrr, revenue: body.providerSlug === 'revenuecat' ? null : 0 }),
     ...(pData.currency && { currency: pData.currency }),
-    ...(pData.providerId && { provider_id: pData.providerId }),
-    ...(pData.providerKeyEncrypted && { provider_key_encrypted: pData.providerKeyEncrypted })
+    ...(!pData.clearProvider && pData.providerId && { provider_id: pData.providerId }),
+    ...(!pData.clearProvider && pData.providerKeyEncrypted && { provider_key_encrypted: pData.providerKeyEncrypted })
   }
 
   let entryId = body.id

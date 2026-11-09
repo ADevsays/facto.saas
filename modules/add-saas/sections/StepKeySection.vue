@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ProviderSelector from '../components/ProviderSelector.vue'
+import ProviderTutorial from '../components/ProviderTutorial.vue'
 import MrrStatusBadge from '../components/MrrStatusBadge.vue'
 import type { PaymentProvider, SaasSubmission, ProviderValidationResult } from '~/modules/add-saas/types'
 import { AlertCircle } from 'lucide-vue-next'
@@ -12,10 +13,17 @@ const rawApiKey = ref('')
 const companyId = ref('')
 
 const apiKey = computed(() => {
+  if (provider.value === 'revenuecat') return JSON.stringify({ projectId: companyId.value.trim(), key: rawApiKey.value.trim() })
   if (provider.value === 'whop' && companyId.value.trim().length > 0) {
     return `${companyId.value.trim()}:${rawApiKey.value.trim()}`
   }
   return rawApiKey.value.trim()
+})
+
+watch(provider, (next, previous) => {
+  if (!previous || next === previous) return
+  rawApiKey.value = ''
+  companyId.value = ''
 })
 const validating = ref(false)
 const publishing = ref(false)
@@ -88,7 +96,13 @@ function publishWithoutKey() {
         <ProviderSelector v-model="provider" />
       </div>
 
+      <ProviderTutorial :provider="provider || null" />
+
       <div v-if="provider" class="flex flex-col gap-3">
+        <template v-if="provider === 'revenuecat'">
+          <label class="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-neutral-300">Project ID</label>
+          <input v-model="companyId" type="text" autocomplete="off" placeholder="proj…" class="bg-white/[0.07] border border-white/20 rounded-xl px-4 py-3 text-white text-sm" />
+        </template>
         <label class="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-neutral-300">
           {{ provider === 'whop' ? 'Company ID (biz_...)' : 'API Key' }}
         </label>
@@ -106,7 +120,7 @@ function publishWithoutKey() {
           <input
             v-model="rawApiKey"
             type="password"
-            placeholder="sk_live_... (solo lectura)"
+            :placeholder="provider === 'conekta' ? 'key_… (solo lectura)' : provider === 'polar' ? 'polar_oat_…' : provider === 'paddle' ? 'pdl_…' : provider === 'revenuecat' ? 'V2 secret key' : 'sk_live_…'"
             class="flex-1 bg-white/[0.07] border border-white/20 rounded-xl px-4 py-4 text-white text-sm font-sans font-light placeholder:text-neutral-500 focus:outline-none focus:border-[#00D4FF]/70 focus:bg-white/[0.1] transition-all duration-300"
             @keydown.enter="validateKey"
           />

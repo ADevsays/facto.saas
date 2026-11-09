@@ -19,7 +19,7 @@ const logoUrl = defineModel<string>('logoUrl', { default: '' })
 const description = defineModel<string>('description', { default: '' })
 const websiteUrl = defineModel<string>('websiteUrl', { default: '' })
 const countrySlug = defineModel<string>('countrySlug', { default: '' })
-const provider = defineModel<'stripe' | 'mercadopago' | 'whop' | 'none' | null>('provider', { default: 'none' })
+const provider = defineModel<'stripe' | 'mercadopago' | 'whop' | 'conekta' | 'epayco' | 'polar' | 'dodo' | 'paddle' | 'revenuecat' | 'none' | null>('provider', { default: 'none' })
 const apiKey = defineModel<string>('apiKey', { default: '' })
 
 defineProps<{

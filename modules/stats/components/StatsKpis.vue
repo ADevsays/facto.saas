@@ -116,7 +116,7 @@ const todayViews = computed(() => {
           {{ t?.kpis?.total_mrr }}
         </span>
         <span class="text-[9px] font-mono text-emerald-400 px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shrink-0">
-          Stripe
+          Pasarelas verificadas
         </span>
       </div>
       <div class="my-2">

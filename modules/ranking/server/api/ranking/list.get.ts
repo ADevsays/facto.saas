@@ -45,6 +45,7 @@ export default defineEventHandler(async (event) => {
     category: query.category as string | undefined,
     country: query.country as string | undefined,
     countries: typeof query.countries === 'string' ? query.countries.split(',').filter(Boolean) : undefined,
+    provider: query.provider as ListQueryParams['provider'],
     q: query.q as string | undefined,
     limit: toPageNumber(query.limit, 100),
     offset: toPageNumber(query.offset, 0),

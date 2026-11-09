@@ -1,7 +1,7 @@
 import { supabase } from '~/server/lib/supabase'
 
 export default defineEventHandler(async () => {
-  const reservedSlugs = new Set(['categoria', 'pais', 'continente', 'category', 'country', 'continent'])
+  const reservedSlugs = new Set(['categoria', 'pais', 'continente', 'proveedor', 'category', 'country', 'continent', 'provider'])
 
   const { data, error } = await supabase
     .from('saas_entries')
