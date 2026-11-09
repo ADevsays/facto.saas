@@ -105,16 +105,26 @@ useHead(() => {
 
 const localePath = useLocalePath()
 
-function resolveOgLogoUrl(logoUrl?: string | null): string {
+function resolveOgLogoUrl(logoUrl?: string | null, websiteUrl?: string | null): string {
   const raw = String(logoUrl || '').trim()
+  if (!raw) return ''
+
   const clean = raw.toLowerCase().split('?')[0]
-  const isGeneratedFallback = clean.endsWith('.ico') || raw.includes('google.com/s2/favicons') || raw.includes('googleusercontent.com/s2/favicons') || raw.includes('icons.duckduckgo.com/ip3/') || raw.includes('icon.horse/icon/')
+  const isIco = clean.endsWith('.ico') || raw.includes('icons.duckduckgo.com/ip3/') || raw.includes('icon.horse/icon/')
 
-  if (!isGeneratedFallback && raw) return raw
+  // Google favicon endpoints return a PNG, which Satori can render. They are
+  // valid logo sources for older startups that have not uploaded a logo yet.
+  if (!isIco) return raw
 
-  // Satori does not provide a reliable image-error fallback. OG cards must use
-  // their rendered initial when Storage has no logo instead of a remote favicon.
-  return ''
+  const site = String(websiteUrl || '').trim()
+  if (!site) return ''
+
+  try {
+    const href = new URL(site.startsWith('http') ? site : `https://${site}`).href
+    return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(href)}&sz=128`
+  } catch {
+    return ''
+  }
 }
 
 if (import.meta.server && profileSaas.value) {
@@ -124,7 +134,7 @@ if (import.meta.server && profileSaas.value) {
   if (isMilestoneView) {
     defineOgImageComponent('VisitsMilestone', {
       name: String(serverSaas.name || 'SaaS'),
-      logoUrl: resolveOgLogoUrl(serverSaas.logoUrl),
+      logoUrl: resolveOgLogoUrl(serverSaas.logoUrl, serverSaas.websiteUrl),
       badgeUrl: String(serverSaas.latestMilestoneBadgeUrl || ''),
       milestone: serverSaas.latestMilestone,
       revenue: String(revenueDisplay.value),
@@ -135,7 +145,7 @@ if (import.meta.server && profileSaas.value) {
   } else {
     defineOgImageComponent('SaasProfile', {
       name: String(serverSaas.name || 'SaaS'),
-      logoUrl: resolveOgLogoUrl(serverSaas.logoUrl),
+      logoUrl: resolveOgLogoUrl(serverSaas.logoUrl, serverSaas.websiteUrl),
       revenue: String(revenueDisplay.value),
       views: String(viewsDisplay.value),
       category: String(serverSaas.categories?.[0]?.name || 'Software'),

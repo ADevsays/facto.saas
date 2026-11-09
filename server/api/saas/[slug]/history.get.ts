@@ -79,6 +79,7 @@ export default defineEventHandler(async (event) => {
       history = normalizeSaasHistory(rawHistory)
       if (hasFinancialHistory(history)) {
         const summary = summarizeSaasHistory(history, fallbackMrr)
+        const hasExplicitEmptyHistory = history.subscriptions?.length === 0 && history.charges?.length === 0
         const syncedAt = new Date(nowMs).toISOString()
         await Promise.all([
           supabase.from('saas_metrics_cache').upsert({
@@ -86,10 +87,9 @@ export default defineEventHandler(async (event) => {
             history_cache: history,
             history_synced_at: syncedAt,
           }),
-          supabase.from('saas_entries').update({
-          mrr: summary.mrr,
-          revenue: summary.revenue,
-          }).eq('id', entry.id),
+          hasExplicitEmptyHistory
+            ? supabase.from('saas_entries').update({ mrr: 0, revenue: 0, }).eq('id', entry.id)
+            : supabase.from('saas_entries').update({ mrr: summary.mrr, revenue: summary.revenue }).eq('id', entry.id),
         ])
         lastSyncedAt = nowMs
       }

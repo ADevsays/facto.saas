@@ -67,10 +67,10 @@ const fallbackInitial = computed(() => {
     </div>
 
     <!-- Main Content: Left Column + Right Badge -->
-    <div class="w-full flex flex-row items-center justify-between gap-[32px] my-auto">
+    <div class="w-full flex flex-1 flex-row items-center justify-between gap-[32px] min-h-0">
       
       <!-- Left Column: Title & Startup Info -->
-      <div class="w-[650px] flex flex-col items-start justify-center pl-2">
+      <div class="w-[650px] flex flex-col min-h-[176px] items-start justify-center pl-2">
         <span class="text-[#00D4FF] text-[13px] font-black tracking-[0.25em] uppercase mb-5">
           ¡NUEVO LOGRO DESBLOQUEADO!
         </span>
@@ -79,7 +79,7 @@ const fallbackInitial = computed(() => {
           <div
             class="w-[88px] h-[88px] rounded-[22px] overflow-hidden border border-white/15 bg-[#111622] flex items-center justify-center mr-5 shadow-2xl flex-shrink-0 relative"
           >
-            <img v-if="logoUrl" :src="logoUrl" width="88" height="88" class="w-full h-full object-cover" />
+            <img v-if="logoUrl" :src="logoUrl" width="88" height="88" class="w-full h-full object-cover object-center" />
             <div
               v-if="!logoUrl"
               style="width: 88px; height: 88px; display: flex; align-items: center; justify-content: center;"

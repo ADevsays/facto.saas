@@ -170,7 +170,8 @@ test('visits milestone OG mirrors the normal startup OG logo handling', () => {
   assert.doesNotMatch(profileOg, /endsWith\('\.webp'\)/)
   assert.match(profileApi, /latestMilestoneBadgeUrl = getMilestoneBadgeUrl\(milestone\)/)
   assert.match(profilePage, /badgeUrl: String\(serverSaas\.latestMilestoneBadgeUrl \|\| ''\)/)
-  assert.match(profilePage, /resolveOgLogoUrl\(serverSaas\.logoUrl\)/)
+  assert.match(profilePage, /resolveOgLogoUrl\(serverSaas\.logoUrl, serverSaas\.websiteUrl\)/)
+  assert.match(profilePage, /google\.com\/s2\/favicons/)
   assert.doesNotMatch(profilePage, /t0\.gstatic\.com\/faviconV2/)
 })
 

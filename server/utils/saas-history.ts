@@ -82,6 +82,13 @@ export function normalizeSaasHistory(value: unknown): SaasHistoryData | null {
   const mrrSnapshot = raw.mrrSnapshot === null || raw.mrrSnapshot === undefined ? undefined : Number(raw.mrrSnapshot)
   const revenueTotal = raw.revenueTotal === null || raw.revenueTotal === undefined ? undefined : Number(raw.revenueTotal)
 
+  // A cached response with malformed rows is not a valid empty history. Treat
+  // the whole cache as unusable so it cannot overwrite real public metrics.
+  if (
+    (Array.isArray(raw.subscriptions) && subscriptions.length !== raw.subscriptions.length)
+    || (Array.isArray(raw.charges) && charges.length !== raw.charges.length)
+  ) return null
+
   // Empty arrays and provider-level aggregate metrics are verified data, not
   // unavailable history.
   if (!Array.isArray(raw.subscriptions) && !Array.isArray(raw.charges) && !Number.isFinite(mrrSnapshot) && !Number.isFinite(revenueTotal)) return null
